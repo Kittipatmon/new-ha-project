@@ -236,87 +236,86 @@
 
         /* ===== HERO DOT NAV ===== */
         .hero-dots {
-            position: absolute;
-            bottom: 28px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 20;
-            display: flex;
-            gap: 8px;
-        }
-
-        .hero-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, .35);
-            cursor: pointer;
-            transition: all .3s;
-        }
-
-        .hero-dot.active {
-            width: 28px;
-            background: #fff;
+            display: none;
         }
 
         /* ===== SERVICES STRIP ===== */
         .svc-strip {
-            background: var(--navy);
+            background: transparent;
+            padding: 0 24px 60px;
+            margin-top: -80px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .svc-strip::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f8fafc;
+            transform: skewY(-4deg);
+            z-index: -1;
         }
 
         .svc-strip-inner {
             max-width: 1280px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            align-items: stretch;
         }
 
-        .svc-item {
-            padding: 48px 32px;
-            border-right: 1px solid rgba(255, 255, 255, .1);
+        .svc-card {
+            background: linear-gradient(145deg, #b91c1c 0%, #991b1b 100%);
+            border-radius: 1.25rem;
+            padding: 44px 24px 40px;
             text-align: center;
-            transition: background .3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
         }
 
-        .svc-item:last-child {
-            border-right: none;
-        }
-
-        .svc-item:hover {
-            background: var(--navy-md);
-        }
-
-        .svc-icon-circle {
-            width: 84px;
-            height: 84px;
+        .svc-card::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, .3);
+            background: rgba(255,255,255,0.06);
+            pointer-events: none;
+        }
+
+        .svc-card-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 2rem;
+            margin: 0 auto 24px;
+            font-size: 1.75rem;
             color: #fff;
-            transition: border-color .3s, background .3s;
+            background: rgba(255,255,255,0.08);
         }
 
-        .svc-item:hover .svc-icon-circle {
-            border-color: #f87171;
-            background: rgba(239, 68, 68, .12);
+        .svc-card-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
 
-        .svc-title {
-            font-size: .82rem;
-            font-weight: 700;
-            letter-spacing: .1em;
-            text-transform: uppercase;
-            color: #fff;
-            margin-bottom: 14px;
-        }
-
-        .svc-desc {
-            font-size: .83rem;
-            color: rgba(255, 255, 255, .65);
+        .svc-card-desc {
+            font-size: .85rem;
+            color: rgba(255, 255, 255, 0.85);
             line-height: 1.7;
         }
 
@@ -363,6 +362,8 @@
         .about-section {
             padding: 96px 0;
             background: #fff;
+            position: relative;
+            z-index: 11;
         }
 
         .dark .about-section {
@@ -795,7 +796,7 @@
         /* ===== BLOG SECTION ===== */
         .blog-section {
             padding: 88px 0;
-            background: var(--light-bg);
+            background: #fff;
         }
 
         .blog-inner {
@@ -1058,15 +1059,15 @@
             background: #161b27;
         }
 
+        .dark .svc-strip::before {
+            background: #1e293b;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media(max-width:1024px) {
             .svc-strip-inner {
-                grid-template-columns: 1fr;
-            }
-
-            .svc-item {
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, .1);
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 800px;
             }
 
             .about-inner {
@@ -1097,6 +1098,10 @@
         }
 
         @media(max-width:640px) {
+            .svc-strip-inner {
+                grid-template-columns: 1fr;
+            }
+
             .hr-grid {
                 grid-template-columns: 1fr 1fr;
             }
@@ -1233,29 +1238,33 @@
     <!-- ==================== SERVICES STRIP ==================== -->
     <div class="svc-strip">
         <div class="svc-strip-inner">
-            <div class="svc-item reveal reveal-up">
-                <div class="svc-icon-circle">
-                    <i class="fas fa-recycle"></i>
+            <div class="svc-card reveal reveal-up">
+                <div class="svc-card-icon">
+                    <i class="fa-solid fa-handshake"></i>
                 </div>
-                <div class="svc-title">Plastics / Synthetic Rubber</div>
-                <div class="svc-desc">Petrochemical plastics are synthetic materials derived from petrochemicals, such as
-                    crude oil or natural gas.</div>
+                <div class="svc-card-title">C (Corporation)</div>
+                <div class="svc-card-desc">ร่วมมือกับผู้มีส่วนได้เสีย ในการบูรณาการเพื่อส่งมอบผลิตภัณฑ์และบริการ พร้อมทั้งสร้างความพึงพอใจให้กับลูกค้า</div>
             </div>
-            <div class="svc-item reveal reveal-up" style="transition-delay:.1s">
-                <div class="svc-icon-circle">
-                    <i class="fas fa-oil-can"></i>
+            <div class="svc-card reveal reveal-up" style="transition-delay:.1s">
+                <div class="svc-card-icon">
+                    <i class="fa-solid fa-network-wired"></i>
                 </div>
-                <div class="svc-title">Transportation of Petroleum</div>
-                <div class="svc-desc">Products from production sites to refineries, distribution centers, and end-users via
-                    various methods.</div>
+                <div class="svc-card-title">C (Creating)</div>
+                <div class="svc-card-desc">สร้างสรรค์กับพันธมิตรและเครือข่ายในการวิจัยและพัฒนาเพื่อส่งมอบ นวัตกรรมด้านความปลอดภัยและป้องกันฟ้าผ่า</div>
             </div>
-            <div class="svc-item reveal reveal-up" style="transition-delay:.2s">
-                <div class="svc-icon-circle">
-                    <i class="fas fa-flask"></i>
+            <div class="svc-card reveal reveal-up" style="transition-delay:.2s">
+                <div class="svc-card-icon">
+                    <i class="fa-solid fa-chalkboard-teacher"></i>
                 </div>
-                <div class="svc-title">Pharmaceuticals for Medical Purposes</div>
-                <div class="svc-desc">Development, production, and proper usage are carefully regulated to ensure safety and
-                    effectiveness.</div>
+                <div class="svc-card-title">S (Shared)</div>
+                <div class="svc-card-desc">ร่วมกันกับทุกภาคส่วนในการสร้างสรรค์และเพิ่มคุณค่า เพื่อส่งมอบความ ปลอดภัยสู่สังคม</div>
+            </div>
+            <div class="svc-card reveal reveal-up" style="transition-delay:.3s">
+                <div class="svc-card-icon">
+                    <i class="fa-solid fa-people-carry-box"></i>
+                </div>
+                <div class="svc-card-title">V (Value)</div>
+                <div class="svc-card-desc">เสริมสร้างคุณค่า ยกระดับขีดความสามารถทรัพยากรมนุษย์ให้เป็นองค์กร นวัตกรรมระดับสากลสู่ความยั่งยืน</div>
             </div>
         </div>
     </div>
@@ -1267,18 +1276,14 @@
                 <div class="section-tag">About Us</div>
                 <h2 class="section-title">เกี่ยวกับ<br>Kumwell Group</h2>
                 <p class="section-desc" style="margin-bottom:16px;">
-                    The petrochemical industry refers to the sector that produces chemicals and products derived from
-                    petroleum and natural gas.
-                    These include plastics, fertilizers, synthetic fibers, and various other materials.
-                    The industry plays a crucial role in the global economy and has a significant impact on various sectors,
-                    such as manufacturing, agriculture, and construction.
+                    บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน) เป็นผู้ผลิตและจัดจำหน่ายผลิตภัณฑ์ในระบบต่อลงดิน เช่น แท่งหลักดิน อุปกรณ์เชื่อมตัวนำด้วยความร้อน สารปรับปรุงค่าความต้านทานดิน บ่อทดสอบหลักดิน เป็นต้น ระบบป้องกันฟ้าผ่า เช่น แท่งล่อฟ้า อุปกรณ์จับยึดตัวนำ เป็นต้น ระบบป้องกันเสิร์จ ระบบตรวจจับฟ้าผ่า และระบบแจ้งเตือนภัยฟ้าผ่า ตามมาตรฐานสากลอย่างครบวงจร ภายใต้ตราสินค้าแบรนด์ Kumwell ที่มีการส่งออกและตัวแทนจำหน่ายครอบคลุม 40 ประเทศทั่วโลก โดยมีวิสัยทัศน์ที่จะเป็นผู้นำระบบป้องกันฟ้าผ่า และนวัตกรรมด้านความปลอดภัย เป็นแบรนด์ที่มีความแข็งแกร่งระดับโลก และเป็นองค์กรที่เติบโตอย่างยั่งยืน
                 </p>
                 <p class="section-desc" style="margin-bottom:32px;">
-                    The goal of the petrochemical industry is to produce a variety of chemicals and materials from petroleum
+                    {{-- The goal of the petrochemical industry is to produce a variety of chemicals and materials from petroleum
                     or natural gas,
-                    which are used in various industries such as manufacturing, construction, and agriculture.
+                    which are used in various industries such as manufacturing, construction, and agriculture. --}}
                 </p>
-                <a href="#"
+                <a href="https://www.kumwell.com/" target="_blank"
                     style="display:inline-flex;align-items:center;gap:10px;background:var(--navy);color:#fff;font-weight:700;font-size:.9rem;padding:13px 28px;border-radius:6px;text-decoration:none;transition:all .25s;"
                     onmouseover="this.style.background='var(--navy-md)'" onmouseout="this.style.background='var(--navy)'">
                     View More <i class="fas fa-arrow-right"></i>
@@ -1297,7 +1302,7 @@
     </div>
 
     <!-- ==================== GOALS IMAGE GRID ==================== -->
-    <div class="goals-section">
+    {{-- <div class="goals-section">
         <div class="goals-grid">
             <!-- Main big cell -->
             <div class="goal-cell goal-cell-main reveal reveal-left">
@@ -1335,7 +1340,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- ==================== HR SERVICES ==================== -->
     <div id="services-grid" class="hr-section scroll-mt-20 relative overflow-hidden z-10">
@@ -1395,17 +1400,17 @@
         @endauth
 
         <!-- Recruitment -->
-        <a href="{{ route('recruitment.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.15s">
+        {{-- <a href="{{ route('recruitment.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.15s">
             <div class="hr-card-icon">
                 <i class="fa-solid fa-briefcase"></i>
             </div>
             <div class="hr-card-title">ระบบรับสมัครงาน</div>
             <div class="hr-card-desc">ตำแหน่งงานว่างและการรับสมัครบุคลากร</div>
-        </a>
+        </a> --}}
 
         <!-- Suggestion -->
         @auth
-            <a href="{{ route('suggestion.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.2s">
+            {{-- <a href="{{ route('suggestion.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.2s">
             @else
                 <div class="hr-card reveal reveal-up cursor-pointer login-open-btn" style="transition-delay:.2s">
                 @endauth
@@ -1415,7 +1420,7 @@
                 <div class="hr-card-title">ระบบข้อเสนอแนะ</div>
                 <div class="hr-card-desc">กล่องรับข้อเสนอแนะและข้อร้องเรียนต่างๆ</div>
                 @auth
-            </a>
+            </a> --}}
         @else
         </div>
     @endauth
@@ -1423,7 +1428,7 @@
     </div>
 
     <!-- Management Dashboards (HR Admin Only) -->
-    @if (Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+    @if (Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->role == 'admin'))
         <div style="padding-top:24px; border-top:1px solid var(--border);">
             <div class="subsec-label reveal reveal-left">
                 <div class="bar" style="background:#1d4ed8;"></div>
@@ -1452,7 +1457,7 @@
     </div>
 
     <!-- ==================== WHY US ==================== -->
-    <div class="why-section">
+    {{-- <div class="why-section">
         <div class="why-bg-pattern"></div>
         <div class="why-bg-glow"></div>
         <div class="why-inner">
@@ -1522,7 +1527,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- ==================== BLOG / NEWS ==================== -->
     <div id="news-grid" class="blog-section">

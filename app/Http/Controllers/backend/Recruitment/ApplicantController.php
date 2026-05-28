@@ -89,7 +89,7 @@ class ApplicantController extends Controller
             $application->load('statusLogs.user');
         }
 
-        $interviewers = \App\Models\User::orderBy('first_name')->get();
+        $interviewers = \App\Models\User::orderBy('firstname')->get();
 
         // Fetch application history (excluding current)
         $history = Application::where('applicant_id', $application->applicant_id)

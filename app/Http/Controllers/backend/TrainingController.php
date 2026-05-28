@@ -304,8 +304,8 @@ class TrainingController extends Controller
         $uniqueEmployeeCodes = $applyQuery->distinct()->pluck('employee_code');
 
         // 4. Query Users based on these codes
-        $applicants = \App\Models\User::whereIn('employee_code', $uniqueEmployeeCodes)
-            ->orderBy('employee_code', 'asc')
+        $applicants = \App\Models\User::whereIn('emp_code', $uniqueEmployeeCodes)
+            ->orderBy('emp_code', 'asc')
             ->paginate(20);
 
         // 5. MANUALLY Eager Load trainingApplies across connections
@@ -336,8 +336,8 @@ class TrainingController extends Controller
             ->distinct()
             ->pluck('employee_code');
 
-        $applicants = \App\Models\User::whereIn('employee_code', $uniqueEmployeeCodes)
-            ->orderBy('employee_code', 'asc')
+        $applicants = \App\Models\User::whereIn('emp_code', $uniqueEmployeeCodes)
+            ->orderBy('emp_code', 'asc')
             ->paginate(20);
 
         // MANUALLY Eager Load trainingApplies

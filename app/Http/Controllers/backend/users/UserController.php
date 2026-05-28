@@ -74,7 +74,6 @@ class UserController extends Controller
         $query = User::with(['department', 'division', 'section']);
 
         $simpleFilters = [
-            'employee_code' => 'like',
             'prefix'        => 'like',
             'position'      => 'like',
             'level_user'    => '=',
@@ -91,12 +90,17 @@ class UserController extends Controller
             }
         }
 
+        if ($request->filled('employee_code')) {
+            $value = trim($request->input('employee_code'));
+            $query->where('emp_code', 'like', "%{$value}%");
+        }
+
         if ($request->filled('fullname')) {
             $name = trim($request->input('fullname'));
             $query->where(function ($q) use ($name) {
-                $q->where('first_name', 'like', "%{$name}%")
-                  ->orWhere('last_name', 'like', "%{$name}%")
-                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$name}%"]);
+                $q->where('firstname', 'like', "%{$name}%")
+                  ->orWhere('lastname', 'like', "%{$name}%")
+                  ->orWhereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ["%{$name}%"]);
             });
         }
 
@@ -135,7 +139,7 @@ class UserController extends Controller
         }
 
         // เรียงรหัสพนักงานจากน้อยไปมาก
-        $query->orderBy('employee_code', 'asc');
+        $query->orderBy('emp_code', 'asc');
 
         return $query;
     }
@@ -195,8 +199,8 @@ public function store(Request $request)
         $user->employee_code = $validated['employee_code'];
         $user->sex           = $validated['sex'];
         $user->prefix        = $validated['prefix'];
-        $user->first_name    = $validated['first_name'];
-        $user->last_name     = $validated['last_name'];
+        $user->firstname    = $validated['first_name'];
+        $user->lastname     = $validated['last_name'];
         // $user->fullname      = $fullname;         // ถ้ามีคอลัมน์นี้ในตาราง
 
         $user->position      = $validated['position'] ?? null;
@@ -281,8 +285,8 @@ public function update(Request $request, $id)
         $user->employee_code = $validated['employee_code'];
         $user->sex           = $validated['sex'];
         $user->prefix        = $validated['prefix'];    
-        $user->first_name    = $validated['first_name'];
-        $user->last_name     = $validated['last_name'];
+        $user->firstname    = $validated['first_name'];
+        $user->lastname     = $validated['last_name'];
         // $user->fullname      = $fullname;         // ถ้ามีคอลัม
         $user->position      = $validated['position'] ?? null;
         $user->employee_type = $validated['employee_type'] ?? null;

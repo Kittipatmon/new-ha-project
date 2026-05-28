@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Division extends Model
 {
     // protected $connection = 'userkml';
-    protected $connection = 'userkml2025';
+    // protected $connection = 'userkml2025';
     protected $table = 'divisions';
 
     protected $primaryKey = 'division_id';

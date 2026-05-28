@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Department extends Model
 {
     // protected $connection = 'userkml';
-    protected $connection = 'userkml2025';
+    // protected $connection = 'userkml2025';
     protected $table = 'department';
     
 

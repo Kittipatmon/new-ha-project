@@ -23,9 +23,9 @@ class UserController extends Controller
 
         if ($s = trim((string) $request->input('q', ''))) {
             $q->where(function ($w) use ($s) {
-                $w->where('first_name', 'like', "%$s%")
-                  ->orWhere('last_name', 'like', "%$s%")
-                  ->orWhere('employee_code', 'like', "%$s%");
+                $w->where('firstname', 'like', "%$s%")
+                  ->orWhere('lastname', 'like', "%$s%")
+                  ->orWhere('emp_code', 'like', "%$s%");
             });
         }
 
@@ -44,7 +44,7 @@ class UserController extends Controller
         }
 
         // Order and pagination
-        $q->orderBy('first_name')->orderBy('last_name');
+        $q->orderBy('firstname')->orderBy('lastname');
         $perPage = (int) $request->input('per_page', 25);
         if ($perPage <= 0) { $perPage = 25; }
         $perPage = min($perPage, 100);

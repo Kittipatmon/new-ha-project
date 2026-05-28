@@ -122,7 +122,7 @@ class ApproveController extends Controller
             $search = trim($request->search);
             // Find matching users on their own connection, then filter hr_requests by employee_id
             $userIds = User::query()
-                ->whereRaw("CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')) LIKE ?", ["%{$search}%"])
+                ->whereRaw("CONCAT(COALESCE(firstname,''),' ',COALESCE(lastname,'')) LIKE ?", ["%{$search}%"])
                 ->pluck('id');
 
             $query->where(function ($q) use ($search, $userIds) {
@@ -205,7 +205,7 @@ class ApproveController extends Controller
         if ($request->filled('search')) {
             $search = trim($request->search);
             $userIds = User::query()
-                ->whereRaw("CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')) LIKE ?", ["%{$search}%"])
+                ->whereRaw("CONCAT(COALESCE(firstname,''),' ',COALESCE(lastname,'')) LIKE ?", ["%{$search}%"])
                 ->pluck('id');
 
             $query->where(function ($q) use ($search, $userIds) {
@@ -285,7 +285,7 @@ class ApproveController extends Controller
         if ($request->filled('search')) {
             $search = trim($request->search);
             $userIds = User::query()
-                ->whereRaw("CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')) LIKE ?", ["%{$search}%"])
+                ->whereRaw("CONCAT(COALESCE(firstname,''),' ',COALESCE(lastname,'')) LIKE ?", ["%{$search}%"])
                 ->pluck('id');
 
             $query->where(function ($q) use ($search, $userIds) {
@@ -423,7 +423,7 @@ class ApproveController extends Controller
         if ($request->filled('search')) {
             $search = trim($request->search);
             $userIds = User::query()
-                ->whereRaw("CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,'')) LIKE ?", ["%{$search}%"])
+                ->whereRaw("CONCAT(COALESCE(firstname,''),' ',COALESCE(lastname,'')) LIKE ?", ["%{$search}%"])
                 ->pluck('id');
 
             $query->where(function ($q) use ($search, $userIds) {

@@ -12,33 +12,26 @@ class User extends Authenticatable
 
     //  protected $connection = 'userkml2025';
     protected $connection = 'userkml2025';
-    protected $table = 'userskml';
+    protected $table = 'employees';
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = [
-        'employee_code',
-        'sex',
-        'prefix',
-        'first_name',
-        'last_name',
-        'position',
-        'employee_type',
-        'startwork_date',
-        'endwork_date',
-        'endwork_comment',
-        'workplace',
-        'section_id',
-        'division_id',
-        'department_id',
-        'photo_user',
-        'status',
-        'hr_status',
-        'level_user',
+        'emp_code',
+        'firstname',
+        'lastname',
+        'email',
+        'username',
         'password',
-        'remember_token',
+        'dept_id',
+        'status',
+        'role',
+        'procurement_role',
+        'profile_pic',
+        'signature',
+        'resign_date',
     ];
 
     protected $casts = [
@@ -51,6 +44,7 @@ class User extends Authenticatable
 
     protected $appends = [
         'fullname',
+        'employee_code',
         'level_user_label',
         'level_user_color',
         'hr_status_label',
@@ -68,8 +62,27 @@ class User extends Authenticatable
     // Accessor for `$user->fullname`
     public function getFullnameAttribute(): string
     {
-        $prefix = $this->prefix ? ($this->prefix . ' ') : '';
-        return trim("{$this->first_name} {$this->last_name}");
+        return trim("{$this->firstname} {$this->lastname}");
+    }
+
+    public function getEmployeeCodeAttribute()
+    {
+        return $this->emp_code;
+    }
+
+    public function getHrStatusAttribute()
+    {
+        return '1'; // Default inactive since column is gone
+    }
+
+    public function getPhotoUserAttribute()
+    {
+        return $this->profile_pic;
+    }
+
+    public function setPhotoUserAttribute($value)
+    {
+        $this->attributes['profile_pic'] = $value;
     }
 
     public function department()

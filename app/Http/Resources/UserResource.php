@@ -16,8 +16,8 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'employee_code' => $this->employee_code,
             'prefix' => $this->prefix,
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
+            'first_name' => $this->firstname,
+            'last_name' => $this->lastname,
             'fullname' => $this->fullname, // accessor on model
             'sex' => $this->sex,
             'position' => $this->position,

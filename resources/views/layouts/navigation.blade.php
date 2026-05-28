@@ -648,8 +648,8 @@
                                 return {
                                     results: $.map(data.data, function (item) {
                                         return {
-                                            id: item.employee_code,
-                                            text: item.employee_code + ' - ' + item.first_name + ' ' + item.last_name
+                                            id: item.emp_code,
+                                            text: item.emp_code + ' - ' + item.firstname + ' ' + item.lastname
                                         };
                                     }),
                                     pagination: {

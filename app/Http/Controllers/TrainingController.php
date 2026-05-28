@@ -47,7 +47,7 @@ class TrainingController extends Controller
     public function apply($id)
     {
         $training = Training::findOrFail($id);
-        $users = User::orderBy('employee_code')->get();
+        $users = User::orderBy('emp_code')->get();
         return view('training.apply', compact('training', 'users'));
     }
 
