@@ -30,7 +30,7 @@ class InterviewController extends Controller
                 'location' => 'nullable|string',
                 'meeting_link' => 'nullable|url',
                 'interviewer_ids' => 'required|array|min:1',
-                'interviewer_ids.*' => 'exists:userkml2025.userskml,id',
+                'interviewer_ids.*' => 'exists:userkml2025.employees,id',
                 'note' => 'nullable|string',
             ]);
 

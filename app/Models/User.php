@@ -10,7 +10,6 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    //  protected $connection = 'userkml2025';
     protected $connection = 'userkml2025';
     protected $table = 'employees';
     protected $primaryKey = 'id';
@@ -28,7 +27,6 @@ class User extends Authenticatable
         'dept_id',
         'status',
         'role',
-        'procurement_role',
         'profile_pic',
         'signature',
         'resign_date',
@@ -37,9 +35,7 @@ class User extends Authenticatable
     protected $casts = [
         'id' => 'integer',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'startwork_date' => 'datetime',
-        'endwork_date' => 'datetime',
+        'resign_date' => 'datetime',
     ];
 
     protected $appends = [
@@ -52,6 +48,87 @@ class User extends Authenticatable
         'status_label',
         'status_color',
     ];
+
+    // Accessors/Mutators to dynamically map missing/changed columns
+    public function getStartworkDateAttribute()
+    {
+        return $this->created_at;
+    }
+
+    public function setStartworkDateAttribute($value)
+    {
+        $this->attributes['created_at'] = $value;
+    }
+
+    public function getEndworkDateAttribute()
+    {
+        return $this->resign_date;
+    }
+
+    public function setEndworkDateAttribute($value)
+    {
+        $this->attributes['resign_date'] = $value;
+    }
+
+    public function getDepartmentIdAttribute()
+    {
+        return $this->dept_id;
+    }
+
+    public function setDepartmentIdAttribute($value)
+    {
+        $this->attributes['dept_id'] = $value;
+    }
+
+    public function getDivisionIdAttribute()
+    {
+        return $this->department ? $this->department->division_id : null;
+    }
+
+    public function setDivisionIdAttribute($value)
+    {
+        // No-op to prevent database errors when saving
+    }
+
+    public function getSectionIdAttribute()
+    {
+        return $this->department ? $this->department->section_id : null;
+    }
+
+    public function setSectionIdAttribute($value)
+    {
+        // No-op to prevent database errors when saving
+    }
+
+    public function getLevelUserAttribute()
+    {
+        return $this->role === 'admin' ? self::LEVEL_USER_SYSTEM_ADMIN : self::LEVEL_USER_OPERATION_STAFF;
+    }
+
+    public function setLevelUserAttribute($value)
+    {
+        // No-op
+    }
+
+    public function getSexAttribute()
+    {
+        return 'ชาย'; // default
+    }
+
+    public function setSexAttribute($value)
+    {
+        // No-op
+    }
+
+    public function getWorkplaceAttribute()
+    {
+        return 'HQ'; // default
+    }
+
+    public function setWorkplaceAttribute($value)
+    {
+        // No-op
+    }
 
     public function usertype()
     {
@@ -70,9 +147,19 @@ class User extends Authenticatable
         return $this->emp_code;
     }
 
+    public function setEmployeeCodeAttribute($value)
+    {
+        $this->attributes['emp_code'] = $value;
+    }
+
     public function getHrStatusAttribute()
     {
         return '1'; // Default inactive since column is gone
+    }
+
+    public function setHrStatusAttribute($value)
+    {
+        // No-op to prevent database error
     }
 
     public function isHrOrAdmin()
@@ -92,21 +179,62 @@ class User extends Authenticatable
 
     public function department()
     {
-        return $this->belongsTo(Department::class, 'department_id', 'department_id');
+        $db = config('database.connections.mysql.database', 'hrsystem');
+        $instance = new Department();
+        $instance->setTable("{$db}.department");
+        return $this->newBelongsTo(
+            $instance->newQuery(),
+            $this,
+            'dept_id',
+            'department_id',
+            'department'
+        );
     }
 
     public function division()
     {
-        return $this->belongsTo(Division::class, 'division_id', 'division_id');
+        $db = config('database.connections.mysql.database', 'hrsystem');
+        
+        $related = new Division();
+        $related->setTable("{$db}.divisions");
+        
+        $through = new Department();
+        $through->setTable("{$db}.department");
+
+        return $this->newHasOneThrough(
+            $related->newQuery(),
+            $this,
+            $through,
+            'department_id', // Foreign key on Department table
+            'division_id',   // Foreign key on Division table
+            'dept_id',       // Local key on User table
+            'division_id'    // Local key on Department table
+        );
     }
 
     public function section()
     {
-        return $this->belongsTo(Section::class, 'section_id', 'section_id');
+        $db = config('database.connections.mysql.database', 'hrsystem');
+        
+        $related = new Section();
+        $related->setTable("{$db}.sections");
+        
+        $through = new Department();
+        $through->setTable("{$db}.department");
+
+        return $this->newHasOneThrough(
+            $related->newQuery(),
+            $this,
+            $through,
+            'department_id', // Foreign key on Department table
+            'section_id',    // Foreign key on Section table
+            'dept_id',       // Local key on User table
+            'section_id'     // Local key on Department table
+        );
     }
 
-    const STATUS_ACTIVE = '0';
-    const STATUS_INACTIVE = '1';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'resign';
 
     public static function getStatusOptions()
     {

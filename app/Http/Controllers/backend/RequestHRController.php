@@ -70,9 +70,12 @@ class RequestHRController extends Controller
         ];
 
         // 2. Chart by division
-        // แก้ไข: เปลี่ยน userkml2025 เป็น userkmlsystem
-        $divisionData = HrRequests::join('userkmlsystem.userskml', 'hr_requests.employee_id', '=', 'userkmlsystem.userskml.id')
-            ->join('sections', 'userkmlsystem.userskml.section_id', '=', 'sections.section_id')
+        $db = config('database.connections.mysql.database', 'hrsystem');
+        $userDb = config('database.connections.userkml2025.database', 'appkum_user');
+
+        $divisionData = HrRequests::join("{$userDb}.employees as employees", 'hr_requests.employee_id', '=', 'employees.id')
+            ->join("{$db}.department as department", 'employees.dept_id', '=', 'department.department_id')
+            ->join("{$db}.sections as sections", 'department.section_id', '=', 'sections.section_id')
             ->select('sections.section_code as section_code', DB::raw('count(*) as total'))
             ->groupBy('sections.section_code')
             ->get();
@@ -88,9 +91,8 @@ class RequestHRController extends Controller
         $categoryCounts = $categoryData->pluck('total');
 
         // 4. Chart by department
-        // แก้ไข: เปลี่ยน userkml2025 เป็น userkmlsystem
-        $departmentData = HrRequests::join('userkmlsystem.userskml', 'hr_requests.employee_id', '=', 'userkmlsystem.userskml.id')
-            ->join('department', 'userkmlsystem.userskml.department_id', '=', 'department.department_id')
+        $departmentData = HrRequests::join("{$userDb}.employees as employees", 'hr_requests.employee_id', '=', 'employees.id')
+            ->join("{$db}.department as department", 'employees.dept_id', '=', 'department.department_id')
             ->select('department.department_name as department_name', DB::raw('count(*) as total'))
             ->groupBy('department.department_name')
             ->get();
@@ -149,23 +151,27 @@ class RequestHRController extends Controller
             $baseQuery->whereDate('hr_requests.created_at', '<=', $request->end_date);
         }
 
+        $db = config('database.connections.mysql.database', 'hrsystem');
+        $userDb = config('database.connections.userkml2025.database', 'appkum_user');
         $joinedUsers = false;
+
         if ($request->section_id || $request->division_id || $request->department_id) {
-            $baseQuery->join('userkmlsystem.userskml', 'hr_requests.employee_id', '=', 'userkmlsystem.userskml.id');
+            $baseQuery->join("{$userDb}.employees as employees", 'hr_requests.employee_id', '=', 'employees.id')
+                ->join("{$db}.department as department", 'employees.dept_id', '=', 'department.department_id');
             $joinedUsers = true;
         }
 
         if ($request->section_id) {
-            $baseQuery->where('userkmlsystem.userskml.section_id', $request->section_id);
+            $baseQuery->where('department.section_id', $request->section_id);
         }
 
         if ($request->division_id) {
-            $baseQuery->where('userkmlsystem.userskml.division_id', $request->division_id);
+            $baseQuery->where('department.division_id', $request->division_id);
         }
 
         // Apply Department Filter
         if ($request->department_id) {
-            $baseQuery->where('userkmlsystem.userskml.department_id', $request->department_id);
+            $baseQuery->where('department.department_id', $request->department_id);
         }
 
         // Apply Status Filter
@@ -212,9 +218,10 @@ class RequestHRController extends Controller
         $q2 = clone $baseQuery;
         // Check if already joined users
         if (!$joinedUsers) {
-            $q2->join('userkmlsystem.userskml', 'hr_requests.employee_id', '=', 'userkmlsystem.userskml.id');
+            $q2->join("{$userDb}.employees as employees", 'hr_requests.employee_id', '=', 'employees.id')
+                ->join("{$db}.department as department", 'employees.dept_id', '=', 'department.department_id');
         }
-        $divisionData = $q2->join('sections', 'userkmlsystem.userskml.section_id', '=', 'sections.section_id')
+        $divisionData = $q2->join("{$db}.sections as sections", 'department.section_id', '=', 'sections.section_id')
             ->select('sections.section_code as section_code', DB::raw('count(*) as total'))
             ->groupBy('sections.section_code')
             ->get();
@@ -233,10 +240,10 @@ class RequestHRController extends Controller
         // 4. Chart by department
         $q4 = clone $baseQuery;
         if (!$joinedUsers) {
-            $q4->join('userkmlsystem.userskml', 'hr_requests.employee_id', '=', 'userkmlsystem.userskml.id');
+            $q4->join("{$userDb}.employees as employees", 'hr_requests.employee_id', '=', 'employees.id')
+                ->join("{$db}.department as department", 'employees.dept_id', '=', 'department.department_id');
         }
-        $departmentData = $q4->join('department', 'userkmlsystem.userskml.department_id', '=', 'department.department_id')
-            ->select('department.department_name as department_name', DB::raw('count(*) as total'))
+        $departmentData = $q4->select('department.department_name as department_name', DB::raw('count(*) as total'))
             ->groupBy('department.department_name')
             ->get();
         $departmentLabels = $departmentData->pluck('department_name');
@@ -355,41 +362,75 @@ class RequestHRController extends Controller
             // Determine approver_manager_id based on creator's level_user
             $currentUser = Auth::user();
             $approverManagerId = null;
+            $db = config('database.connections.mysql.database', 'hrsystem');
 
             if ($currentUser) {
-                $level = (int) $currentUser->level_user;
+                // If the level_user column exists, use it. Otherwise, query admins in the department/division.
+                $hasLevelUser = \Schema::connection('userkml2025')->hasColumn('employees', 'level_user');
 
-                if (in_array($level, [1, 2, 3, 4, 5, 6], true)) {
-                    $approver = User::where('level_user', User::LEVEL_USER_DEPT_MGR)
-                        ->where('department_id', $currentUser->department_id)
-                        ->where('division_id', $currentUser->division_id)
-                        ->first();
+                if ($hasLevelUser) {
+                    $level = (int) $currentUser->level_user;
 
-                    if (!$approver) {
+                    if (in_array($level, [1, 2, 3, 4, 5, 6], true)) {
                         $approver = User::where('level_user', User::LEVEL_USER_DEPT_MGR)
-                            ->where('department_id', $currentUser->department_id)
+                            ->join("{$db}.department as dept", 'employees.dept_id', '=', 'dept.department_id')
+                            ->where('dept.department_id', $currentUser->dept_id)
+                            ->where('dept.division_id', $currentUser->division_id)
+                            ->select('employees.*')
                             ->first();
-                    }
 
-                    if (!$approver) {
-                        $approver = User::where('level_user', User::LEVEL_USER_DIVISION_MGR)
-                            ->where('division_id', $currentUser->division_id)
+                        if (!$approver) {
+                            $approver = User::where('level_user', User::LEVEL_USER_DEPT_MGR)
+                                ->where('dept_id', $currentUser->dept_id)
+                                ->first();
+                        }
+
+                        if (!$approver) {
+                            $approver = User::where('level_user', User::LEVEL_USER_DIVISION_MGR)
+                                ->join("{$db}.department as dept", 'employees.dept_id', '=', 'dept.department_id')
+                                ->where('dept.division_id', $currentUser->division_id)
+                                ->select('employees.*')
+                                ->first();
+                        }
+
+                        if (!$approver) {
+                            $approver = User::where('level_user', User::LEVEL_USER_C_LEVEL)->first();
+                        }
+
+                        $approverManagerId = $approver?->id;
+
+                    } elseif (in_array($level, [7, 8], true)) {
+                        $approver = User::where('level_user', User::LEVEL_USER_C_LEVEL)
+                            ->join("{$db}.department as dept", 'employees.dept_id', '=', 'dept.department_id')
+                            ->where('dept.section_id', $currentUser->section_id)
+                            ->select('employees.*')
                             ->first();
+
+                        if (!$approver) {
+                            $approver = User::where('level_user', User::LEVEL_USER_C_LEVEL)->first();
+                        }
+
+                        $approverManagerId = $approver?->id;
                     }
-
-                    if (!$approver) {
-                        $approver = User::where('level_user', User::LEVEL_USER_C_LEVEL)->first();
-                    }
-
-                    $approverManagerId = $approver?->id;
-
-                } elseif (in_array($level, [7, 8], true)) {
-                    $approver = User::where('level_user', User::LEVEL_USER_C_LEVEL)
-                        ->where('section_id', $currentUser->section_id)
+                } else {
+                    // Fallback logic when level_user column does not exist:
+                    // Find an admin in the user's department
+                    $approver = User::where('role', 'admin')
+                        ->where('dept_id', $currentUser->dept_id)
                         ->first();
 
                     if (!$approver) {
-                        $approver = User::where('level_user', User::LEVEL_USER_C_LEVEL)->first();
+                        // Find any admin in the user's division
+                        $approver = User::join("{$db}.department as dept", 'employees.dept_id', '=', 'dept.department_id')
+                            ->where('dept.division_id', $currentUser->division_id)
+                            ->where('employees.role', 'admin')
+                            ->select('employees.*')
+                            ->first();
+                    }
+
+                    if (!$approver) {
+                        // Find any admin
+                        $approver = User::where('role', 'admin')->first();
                     }
 
                     $approverManagerId = $approver?->id;

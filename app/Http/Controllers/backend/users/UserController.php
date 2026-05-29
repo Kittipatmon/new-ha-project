@@ -83,10 +83,16 @@ class UserController extends Controller
             'workplace'     => 'like',
         ];
 
+        $hasColumn = function($col) {
+            return Schema::connection('userkml2025')->hasColumn('employees', $col);
+        };
+
         foreach ($simpleFilters as $field => $operator) {
             if ($request->filled($field)) {
                 $value = trim($request->input($field));
-                $query->where($field, $operator, ($operator === 'like' ? "%{$value}%" : $value));
+                if ($hasColumn($field)) {
+                    $query->where($field, $operator, ($operator === 'like' ? "%{$value}%" : $value));
+                }
             }
         }
 
@@ -104,23 +110,39 @@ class UserController extends Controller
             });
         }
 
-        $relations = [
-            'department' => ['name' => 'department_name', 'code' => 'department_code'],
-            'division'   => ['name' => 'division_name',   'code' => 'division_code'],
-            'section'    => ['name' => 'section_name',    'code' => 'section_code'],
-        ];
+        if ($request->filled('department')) {
+            $val = $request->input('department');
+            if (is_numeric($val)) {
+                $query->where('dept_id', (int)$val);
+            } else {
+                $query->whereHas('department', function ($q) use ($val) {
+                    $q->where('department_name', 'like', "%{$val}%")
+                      ->orWhere('department_code', 'like', "%{$val}%");
+                });
+            }
+        }
 
-        foreach ($relations as $relation => $fields) {
-            if ($request->filled($relation)) {
-                $value = $request->input($relation);
-                if (is_numeric($value)) {
-                    $query->where("{$relation}_id", (int)$value);
-                } else {
-                    $query->whereHas($relation, function ($q) use ($fields, $value) {
-                        $q->where($fields['name'], 'like', "%{$value}%")
-                          ->orWhere($fields['code'], 'like', "%{$value}%");
-                    });
-                }
+        if ($request->filled('division')) {
+            $val = $request->input('division');
+            if (is_numeric($val)) {
+                $query->whereHas('division', fn($q) => $q->where('divisions.division_id', (int)$val));
+            } else {
+                $query->whereHas('division', function ($q) use ($val) {
+                    $q->where('division_name', 'like', "%{$val}%")
+                      ->orWhere('division_code', 'like', "%{$val}%");
+                });
+            }
+        }
+
+        if ($request->filled('section')) {
+            $val = $request->input('section');
+            if (is_numeric($val)) {
+                $query->whereHas('section', fn($q) => $q->where('sections.section_id', (int)$val));
+            } else {
+                $query->whereHas('section', function ($q) use ($val) {
+                    $q->where('section_name', 'like', "%{$val}%")
+                      ->orWhere('section_code', 'like', "%{$val}%");
+                });
             }
         }
 
@@ -128,14 +150,14 @@ class UserController extends Controller
         $to   = $request->input('startwork_date_to');
 
         if ($from && $to) {
-            $query->whereBetween('startwork_date', [
+            $query->whereBetween('created_at', [
                 Carbon::parse($from)->startOfDay(),
                 Carbon::parse($to)->endOfDay()
             ]);
         } elseif ($from) {
-            $query->whereDate('startwork_date', '>=', Carbon::parse($from));
+            $query->whereDate('created_at', '>=', Carbon::parse($from));
         } elseif ($to) {
-            $query->whereDate('startwork_date', '<=', Carbon::parse($to));
+            $query->whereDate('created_at', '<=', Carbon::parse($to));
         }
 
         // เรียงรหัสพนักงานจากน้อยไปมาก
@@ -163,7 +185,7 @@ public function store(Request $request)
             'employee_code' => [
                 'required',
                 'max:50',
-                Rule::unique('userkml2025.userskml', 'employee_code'),
+                Rule::unique('userkml2025.employees', 'emp_code'),
             ],
             'sex'           => 'required|string|max:20',
             'prefix'        => 'required|string|max:50',
@@ -172,12 +194,12 @@ public function store(Request $request)
             'position'      => 'nullable|string|max:255',
             'employee_type' => 'nullable|string|max:255',
             'workplace'    => 'nullable|string|max:255',
-            'department_id' => 'nullable|integer|exists:userkml2025.department,department_id',
-            'division_id'   => 'nullable|integer|exists:userkml2025.divisions,division_id',
-            'section_id'    => 'nullable|integer|exists:userkml2025.sections,section_id',
+            'department_id' => 'nullable|integer|exists:department,department_id',
+            'division_id'   => 'nullable|integer|exists:divisions,division_id',
+            'section_id'    => 'nullable|integer|exists:sections,section_id',
 
-            'level_user'    => 'required|integer',
-            'hr_status'     => 'required|integer',
+            'level_user'    => 'required',
+            'hr_status'     => 'required',
             'startwork_date' => 'nullable|date',
         ],
         [
@@ -193,15 +215,12 @@ public function store(Request $request)
     );
 
     DB::transaction(function () use ($validated) {
-        // $fullname = trim(($validated['prefix'] ?? '') . ' ' . $validated['first_name'] . ' ' . $validated['last_name']);
-
         $user = new User();
         $user->employee_code = $validated['employee_code'];
         $user->sex           = $validated['sex'];
         $user->prefix        = $validated['prefix'];
         $user->firstname    = $validated['first_name'];
         $user->lastname     = $validated['last_name'];
-        // $user->fullname      = $fullname;         // ถ้ามีคอลัมน์นี้ในตาราง
 
         $user->position      = $validated['position'] ?? null;
         $user->workplace     = $validated['workplace'] ?? null;
@@ -244,7 +263,7 @@ public function update(Request $request, $id)
             'employee_code' => [
                 'required',
                 'max:50',
-                Rule::unique('userkml2025.userskml', 'employee_code')->ignore($id, 'id'),
+                Rule::unique('userkml2025.employees', 'emp_code')->ignore($id, 'id'),
             ],
             'sex'           => 'required|string|max:20',
             'prefix'        => 'required|string|max:50',
@@ -253,12 +272,12 @@ public function update(Request $request, $id)
             'position'      => 'nullable|string|max:255',
             'employee_type' => 'nullable|string|max:255',
             'workplace'    => 'nullable|string|max:255',
-            'department_id' => 'nullable|integer|exists:userkml2025.department,department_id',
-            'division_id'   => 'nullable|integer|exists:userkml2025.divisions,division_id',
-            'section_id'    => 'nullable|integer|exists:userkml2025.sections,section_id',
-            'level_user'    => 'required|integer',
-            'hr_status'     => 'required|integer',
-            'status'        => 'required|integer',
+            'department_id' => 'nullable|integer|exists:department,department_id',
+            'division_id'   => 'nullable|integer|exists:divisions,division_id',
+            'section_id'    => 'nullable|integer|exists:sections,section_id',
+            'level_user'    => 'required',
+            'hr_status'     => 'required',
+            'status'        => 'required|string',
             'startwork_date' => 'nullable|date',
             'endwork_date' => 'nullable|date|required_if:status,' . User::STATUS_INACTIVE,
             'endwork_comment' => 'nullable|string|max:1000|required_if:status,' . User::STATUS_INACTIVE,
@@ -279,15 +298,12 @@ public function update(Request $request, $id)
     );
 
     DB::transaction(function () use ($validated, $id) {
-        // $fullname = trim(($validated['prefix'] ?? '') . ' ' . $validated['first_name'] . ' ' . $validated['last_name']);
-
         $user = User::findOrFail($id);
         $user->employee_code = $validated['employee_code'];
         $user->sex           = $validated['sex'];
         $user->prefix        = $validated['prefix'];    
         $user->firstname    = $validated['first_name'];
         $user->lastname     = $validated['last_name'];
-        // $user->fullname      = $fullname;         // ถ้ามีคอลัม
         $user->position      = $validated['position'] ?? null;
         $user->employee_type = $validated['employee_type'] ?? null;
         $user->workplace     = $validated['workplace'] ?? null;
@@ -301,10 +317,11 @@ public function update(Request $request, $id)
 
         $isInactive = (string)($validated['status'] ?? '') === (string)User::STATUS_INACTIVE;
 
-        // รองรับทั้งกรณีมี/ยังไม่มีคอลัมน์ในฐานข้อมูล เพื่อกัน error ระหว่างรอ migrate
         $schema = Schema::connection($user->getConnectionName());
         if ($schema->hasColumn($user->getTable(), 'endwork_date')) {
             $user->endwork_date = $isInactive ? ($validated['endwork_date'] ?? null) : null;
+        } elseif ($schema->hasColumn($user->getTable(), 'resign_date')) {
+            $user->resign_date = $isInactive ? ($validated['endwork_date'] ?? null) : null;
         }
         if ($schema->hasColumn($user->getTable(), 'endwork_comment')) {
             $user->endwork_comment = $isInactive ? ($validated['endwork_comment'] ?? null) : null;

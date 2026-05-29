@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Department extends Model
 {
-    protected $connection = 'userkml2025';
+    protected $connection = 'mysql';
     protected $table = 'department';
     protected $primaryKey = 'department_id';
 

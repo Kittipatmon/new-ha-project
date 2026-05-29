@@ -6,10 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Department extends Model
 {
-    // protected $connection = 'userkml';
-    // protected $connection = 'userkml2025';
+    protected $connection = 'mysql';
     protected $table = 'department';
-    
 
     protected $primaryKey = 'department_id';
 

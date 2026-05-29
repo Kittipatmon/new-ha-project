@@ -9,20 +9,6 @@
             margin: 24px;
         }
 
-        @font-face {
-            font-family: 'THSarabun';
-            font-style: normal;
-            font-weight: 400;
-            src: url('{{ public_path('fonts/THSarabun.ttf') }}') format('truetype');
-        }
-
-        @font-face {
-            font-family: 'THSarabun';
-            font-style: normal;
-            font-weight: 700;
-            src: url("{{ public_path('fonts/THSarabun Bold.ttf') }}") format('truetype');
-        }
-
         body {
             font-family: 'THSarabun', sans-serif;
             font-size: 16px;
@@ -47,6 +33,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            page-break-inside: avoid;
         }
 
         th,
@@ -97,6 +84,10 @@
             text-align: right;
             font-size: 12px;
             color: #777;
+        }
+
+        .keep-together {
+            page-break-inside: avoid;
         }
     </style>
 </head>

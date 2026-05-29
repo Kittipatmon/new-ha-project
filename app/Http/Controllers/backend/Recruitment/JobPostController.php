@@ -32,11 +32,15 @@ class JobPostController extends Controller
         $departments = Department::where('department_status', '0')->get();
         $positions = JobPosition::where('status', 'active')->get();
 
-        // Pull distinct positions from existing employees
-        $employeePositions = \App\Models\User::whereNotNull('position')
-            ->where('position', '!=', '')
-            ->distinct()
-            ->pluck('position');
+        // Pull distinct positions from existing employees (safely fallback if column does not exist)
+        if (\Schema::connection('userkml2025')->hasColumn('employees', 'position')) {
+            $employeePositions = \App\Models\User::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->pluck('position');
+        } else {
+            $employeePositions = collect([]);
+        }
 
         return view('backend.recruitment.posts.create', compact('departments', 'positions', 'recruitmentRequest', 'employeePositions'));
     }
@@ -45,7 +49,7 @@ class JobPostController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'department_id' => 'required|exists:userkml2025.department,department_id',
+            'department_id' => 'required|exists:department,department_id',
             'job_position_id' => 'nullable|exists:recruitment_job_positions,id',
             'position_name' => 'required|string|max:255',
             'recruitment_request_id' => 'nullable|exists:recruitment_requests,id',
@@ -88,11 +92,15 @@ class JobPostController extends Controller
         $departments = Department::where('department_status', '0')->get();
         $positions = JobPosition::where('status', 'active')->get();
 
-        // Pull distinct positions from existing employees
-        $employeePositions = \App\Models\User::whereNotNull('position')
-            ->where('position', '!=', '')
-            ->distinct()
-            ->pluck('position');
+        // Pull distinct positions from existing employees (safely fallback if column does not exist)
+        if (\Schema::connection('userkml2025')->hasColumn('employees', 'position')) {
+            $employeePositions = \App\Models\User::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->pluck('position');
+        } else {
+            $employeePositions = collect([]);
+        }
 
         return view('backend.recruitment.posts.edit', compact('jobPost', 'departments', 'positions', 'employeePositions'));
     }
@@ -101,7 +109,7 @@ class JobPostController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'department_id' => 'required|exists:userkml2025.department,department_id',
+            'department_id' => 'required|exists:department,department_id',
             'job_position_id' => 'nullable|exists:recruitment_job_positions,id',
             'position_name' => 'required|string|max:255',
             'vacancy' => 'required|integer|min:1',

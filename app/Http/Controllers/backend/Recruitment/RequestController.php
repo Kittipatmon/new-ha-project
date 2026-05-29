@@ -26,15 +26,23 @@ class RequestController extends Controller
         $departments = Department::where('department_status', '0')->get();
         $positions = JobPosition::where('status', 'active')->get();
 
-        $employeePositions = \App\Models\User::whereNotNull('position')
-            ->where('position', '!=', '')
-            ->distinct()
-            ->pluck('position');
+        if (\Schema::connection('userkml2025')->hasColumn('employees', 'position')) {
+            $employeePositions = \App\Models\User::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->pluck('position');
+        } else {
+            $employeePositions = collect([]);
+        }
 
-        // Fetch potential approvers (Level 5 and above: Head Section, Dept Mgr, etc.)
-        $approvers = \App\Models\User::where('level_user', '>=', '5')
-            ->where('status', '0')
-            ->get();
+        // Fetch potential approvers (Level 5 and above: Head Section, Dept Mgr, etc. or active admins as fallback)
+        if (\Schema::connection('userkml2025')->hasColumn('employees', 'level_user')) {
+            $approvers = \App\Models\User::where('level_user', '>=', '5')
+                ->where('status', '0')
+                ->get();
+        } else {
+            $approvers = \App\Models\User::active()->where('role', 'admin')->get();
+        }
 
         return view('backend.recruitment.requests.create', compact('departments', 'positions', 'employeePositions', 'approvers'));
     }
@@ -42,7 +50,7 @@ class RequestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'department_id' => 'required|exists:userkml2025.department,department_id',
+            'department_id' => 'required|exists:department,department_id',
             'job_position_id' => 'nullable|exists:recruitment_job_positions,id',
             'position_name' => 'required|string|max:255',
             'headcount' => 'required|integer|min:1',
@@ -52,8 +60,8 @@ class RequestController extends Controller
             'salary_min' => 'nullable|numeric|min:0',
             'salary_max' => 'nullable|numeric|min:0',
             'required_start_date' => 'nullable|date',
-            'approver_manager_id' => 'required|exists:userkml2025.userskml,id',
-            'approver_executive_id' => 'required|exists:userkml2025.userskml,id',
+            'approver_manager_id' => 'required|exists:userkml2025.employees,id',
+            'approver_executive_id' => 'required|exists:userkml2025.employees,id',
         ]);
 
         $validated['request_no'] = 'REQ-' . strtoupper(Str::random(8));
@@ -69,9 +77,13 @@ class RequestController extends Controller
     public function show(RecruitmentRequest $recruitmentRequest)
     {
         $recruitmentRequest->load(['department', 'jobPosition', 'requester', 'managerApprover', 'executiveApprover']);
-        $approvers = \App\Models\User::where('level_user', '>=', '5')
-            ->where('status', '0')
-            ->get();
+        if (\Schema::connection('userkml2025')->hasColumn('employees', 'level_user')) {
+            $approvers = \App\Models\User::where('level_user', '>=', '5')
+                ->where('status', '0')
+                ->get();
+        } else {
+            $approvers = \App\Models\User::active()->where('role', 'admin')->get();
+        }
         return view('backend.recruitment.requests.show', compact('recruitmentRequest', 'approvers'));
     }
 
@@ -79,7 +91,7 @@ class RequestController extends Controller
     {
         $validated = $request->validate([
             'approver_type' => 'required|in:manager,executive',
-            'approver_id' => 'required|exists:userkml2025.userskml,id',
+            'approver_id' => 'required|exists:userkml2025.employees,id',
         ]);
 
         // Authorization: Only HR or the requester can change approvers

@@ -1,8 +1,8 @@
 @extends('layouts.manpower.app')
 
 @section('content')
-    <div class="min-h-screen p-6 pt-8 pb-20 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-gray-200">
-        <div class="max-w-8xl mx-auto space-y-8">
+    <div class="min-h-screen p-4 sm:p-6 lg:p-8 pt-8 pb-24 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-gray-200">
+        <div class="max-w-8xl mx-auto space-y-10">
             
             <!-- Top Navigation & Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -57,8 +57,8 @@
                         </div>
                     </div>
 
-                    <div class="relative">
-                        <button @click="open = !open" @click.away="open = false" 
+                    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <button @click="open = !open" 
                             class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-2xl text-sm shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all">
                             <i class="fa-solid fa-file-export text-blue-200"></i>
                             Export Report
@@ -85,6 +85,9 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Spacer --}}
+            <div class="h-2"></div>
 
             <!-- Stats/Summary Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -155,6 +158,9 @@
                 </div>
             </div>
 
+            {{-- Spacer --}}
+            <div class="h-2"></div>
+
             {{-- Charts Section --}}
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 
@@ -207,6 +213,9 @@
                 </div>
             </div>
 
+            {{-- Spacer --}}
+            <div class="h-2"></div>
+
             <!-- Monthly Hiring Trend Chart (Full Width) -->
             <div class="bg-white dark:bg-[#1E2129] p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -224,6 +233,9 @@
                 </div>
                 <div id="manpowerMonthlyComparisonChart" class="w-full" style="min-height: 420px;"></div>
             </div>
+
+            {{-- Spacer --}}
+            <div class="h-2"></div>
 
             {{-- Level Distribution (Full Width) --}}
             <div class="bg-white dark:bg-[#1E2129] p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
@@ -263,6 +275,9 @@
                 </div>
             </div>
 
+            {{-- Spacer --}}
+            <div class="h-2"></div>
+
             {{-- Tables Section --}}
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 
@@ -293,13 +308,13 @@
                                                 <i class="fa-solid fa-user"></i>
                                             </div>
                                             <div>
-                                                <div class="text-sm font-bold text-slate-800 dark:text-gray-200">{{ $hire->prefix_name }}{{ $hire->first_name }} {{ $hire->last_name }}</div>
-                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{{ $hire->division_name }}</div>
+                                                <div class="text-sm font-bold text-slate-800 dark:text-gray-200">{{ $hire->fullname }}</div>
+                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{{ $hire->division->division_name ?? ($hire->department->department_name ?? '-') }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-5 text-center">
-                                        <span class="text-xs font-bold text-slate-600 dark:text-slate-400">{{ $hire->start_date ? \Carbon\Carbon::parse($hire->start_date)->format('d M Y') : '-' }}</span>
+                                        <span class="text-xs font-bold text-slate-600 dark:text-slate-400">{{ $hire->created_at ? \Carbon\Carbon::parse($hire->created_at)->format('d M Y') : '-' }}</span>
                                     </td>
                                     <td class="px-8 py-5 text-right">
                                         <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border border-emerald-100 dark:border-emerald-900/30">
@@ -336,7 +351,7 @@
                             <tbody class="divide-y divide-slate-50 dark:divide-white/5">
                                 @forelse($probationUpcoming as $emp)
                                 @php 
-                                    $probationDate = \Carbon\Carbon::parse($emp->startwork_date)->addDays(119);
+                                    $probationDate = \Carbon\Carbon::parse($emp->created_at)->addDays(119);
                                     $daysLeft = now()->diffInDays($probationDate, false);
                                 @endphp
                                 <tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
@@ -446,7 +461,7 @@
                 ...baseOptions,
                 series: series,
                 chart: { ...baseOptions.chart, type: 'area', height: 420, stacked: false },
-                colors: ['#3b82f6', '#10b981', '#f59e0b'],
+                colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
                 stroke: { curve: 'smooth', width: 3 },
                 fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] } },
                 xaxis: { ...baseOptions.xaxis, categories: months },

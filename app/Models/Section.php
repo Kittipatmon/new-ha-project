@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Section extends Model
 {
-
-    // protected $connection = 'userkml2025';
+    protected $connection = 'mysql';
     protected $table = 'sections';
 
     protected $primaryKey = 'section_id';
