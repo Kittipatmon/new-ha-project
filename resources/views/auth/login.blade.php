@@ -77,22 +77,16 @@
                         <label for="employee_code" class="block text-sm font-medium text-white">
                             รหัสพนักงาน
                         </label>
-                        <select id="employee_code" name="employee_code" required
-                            class="select select-bordered py-6 mt-2 block w-full text-black rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 selectemp2">
-                            <option value="" disabled selected>-- เลือกข้อมูล --</option>
-                            @foreach($employees as $code => $fullName)
-                            <option value="{{ $code }}">{{ $fullName }} ({{ $code }})</option>
-                            @endforeach
-                        </select>
-                        <!-- <input
+                        <input
                             id="employee_code"
                             name="employee_code"
                             type="text"
                             autocomplete="username"
                             required
                             class="mt-2 block w-full text-black rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                            placeholder="you@example.com"
-                        /> -->
+                            placeholder="กรอกรหัสพนักงาน"
+                            value="{{ old('employee_code') }}"
+                        />
                     </div>
 
                     {{-- Password --}}
@@ -159,29 +153,7 @@
 </body>
 </html>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        (function () {
-            function onReady(fn){
-                if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                    queueMicrotask(fn);
-                } else {
-                    document.addEventListener('DOMContentLoaded', fn);
-                }
-            }
-            onReady(function(){
-                if (window.$ && $.fn && $.fn.select2) {
-                    $('.selectemp2').select2({
-                        placeholder: "-- Select Employee Code --",
-                        allowClear: true,
-                        width: '100%'
-                    });
-                }
-            });
-        })();
-    </script>
 @endpush

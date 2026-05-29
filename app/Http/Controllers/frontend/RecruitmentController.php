@@ -304,7 +304,7 @@ class RecruitmentController extends Controller
             ->orderBy('created_at', 'desc');
 
         // If not HR, filter by where they are the manager or executive approver
-        if ($user->hr_status != 0) {
+        if (!$user->isHrOrAdmin()) {
             $query->where(function($q) use ($user) {
                 $q->where('approver_manager_id', $user->id)
                   ->orWhere('approver_executive_id', $user->id);
@@ -322,7 +322,7 @@ class RecruitmentController extends Controller
         $recruitmentRequest = RecruitmentRequest::with(['department', 'jobPosition', 'requester', 'managerApprover', 'executiveApprover', 'targetManagerApprover', 'targetExecutiveApprover'])->findOrFail($id);
 
         // Authorization check
-        if ($user->hr_status != 0 && 
+        if (!$user->isHrOrAdmin() && 
             $user->id != $recruitmentRequest->approver_manager_id && 
             $user->id != $recruitmentRequest->approver_executive_id) {
             abort(403, 'Unauthorized action.');

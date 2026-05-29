@@ -83,7 +83,7 @@ class RequestController extends Controller
         ]);
 
         // Authorization: Only HR or the requester can change approvers
-        if (Auth::user()->hr_status != 0 && Auth::id() != $recruitmentRequest->requested_by) {
+        if (!Auth::user()->isHrOrAdmin() && Auth::id() != $recruitmentRequest->requested_by) {
             return back()->with('error', 'คุณไม่มีสิทธิ์แก้ไขผู้อนุมัติสำหรับคำขอนี้');
         }
 

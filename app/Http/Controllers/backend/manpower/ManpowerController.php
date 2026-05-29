@@ -15,7 +15,7 @@ class ManpowerController extends Controller
 {
     public function dashboard(Request $request)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $filter = $request->input('period', 'month');

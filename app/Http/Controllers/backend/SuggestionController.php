@@ -23,7 +23,7 @@ class SuggestionController extends Controller
 
     public function dashboard()
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $total = Suggestion::count();
@@ -158,7 +158,7 @@ class SuggestionController extends Controller
 
     public function list(Request $request)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $suggestions = $this->filteredSuggestions($request)->paginate(50)->withQueryString();
@@ -225,7 +225,7 @@ class SuggestionController extends Controller
 
     public function edit($id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $suggestion = Suggestion::findOrFail($id);
@@ -235,7 +235,7 @@ class SuggestionController extends Controller
 
     public function show($id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $suggestion = Suggestion::findOrFail($id);
@@ -256,7 +256,7 @@ class SuggestionController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $validated = $request->validate([
@@ -288,7 +288,7 @@ class SuggestionController extends Controller
 
     public function destroy($id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $suggestion = Suggestion::findOrFail($id);

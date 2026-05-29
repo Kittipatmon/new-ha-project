@@ -127,7 +127,7 @@
                         Dashboard
                     </div>
                 </a> -->
-                @if(Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+                @if(Auth::check() && Auth::user()->isHrOrAdmin())
                     <div class="relative group">
                         @php
                             $dashboardActive = request()->routeIs('leavereports.dashboard');
@@ -191,7 +191,7 @@
                     </div>
                 @endif
 
-                @if(Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+                @if(Auth::check() && Auth::user()->isHrOrAdmin())
                     <div class="relative group">
                         @php
                             $requestActive = request()->routeIs('request-categories.*') || request()->routeIs('request-types.*') || request()->routeIs('request-subtypes.*');
@@ -229,7 +229,7 @@
                     </div>
                 @endif
 
-                @if(Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+                @if(Auth::check() && Auth::user()->isHrOrAdmin())
                     <div class="relative group">
                         @php
                             $hrActive = request()->routeIs('users.*') || request()->routeIs('usertypes.*') || request()->routeIs('sections.*') || request()->routeIs('divisions.*') || request()->routeIs('departments.*');
@@ -269,7 +269,7 @@
                     </div>
                 @endif
 
-                @if(Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+                @if(Auth::check() && Auth::user()->isHrOrAdmin())
                     <div class="relative group">
                         @php
                             $suggestionActive = request()->routeIs('suggestion.list');
@@ -310,7 +310,7 @@
                     </div>
                 @endif
 
-                @if(Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+                @if(Auth::check() && Auth::user()->isHrOrAdmin())
                     <div class="relative group">
                         @php
                             $trainingActive = request()->routeIs('backend.training.*');
@@ -348,7 +348,7 @@
                     </div>
                 @endif
 
-                @if(Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+                @if(Auth::check() && Auth::user()->isHrOrAdmin())
                     <div class="relative group">
                         @php
                             $recruitmentActive = request()->routeIs('backend.recruitment.*');

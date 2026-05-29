@@ -172,7 +172,7 @@
                         </li>
                         @auth
                             @php
-                                $isApprover = Auth::user()->hr_status == 0 ||
+                                $isApprover = Auth::user()->isHrOrAdmin() ||
                                     \App\Models\Recruitment\RecruitmentRequest::where('approver_manager_id', Auth::id())
                                         ->orWhere('approver_executive_id', Auth::id())
                                         ->exists();
@@ -383,7 +383,7 @@
 
             @auth
                 @php
-                    $isApprover = Auth::user()->hr_status == 0 ||
+                    $isApprover = Auth::user()->isHrOrAdmin() ||
                         \App\Models\Recruitment\RecruitmentRequest::where('approver_manager_id', Auth::id())
                             ->orWhere('approver_executive_id', Auth::id())
                             ->exists();
@@ -483,19 +483,9 @@
                 <div>
                     <label for="employee_code"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">รหัสพนักงาน</label>
-                    <select id="employee_code" name="employee_code" required
-                        class="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500">
-                        <option value="" disabled selected>-- เลือกรหัสพนักงาน --</option>
-                        @isset($employees)
-                            @foreach($employees as $employee)
-                                <option value="{{ $employee->employee_code }}" {{ old('employee_code') == $employee->employee_code ? 'selected' : '' }}>
-                                    {{ $employee->employee_code }} - {{ $employee->first_name }} {{ $employee->last_name }}
-                                </option>
-                            @endforeach
-                        @endisset
-                    </select>
-                    <!-- <input id="employee_code" name="employee_code" type="text" autocomplete="username" required
-                                                                                                       clas        s="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500" value="{{ old('employee_code') }}"> -->
+                    <input id="employee_code" name="employee_code" type="text" autocomplete="username" required
+                        class="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500"
+                        placeholder="กรอกรหัสพนักงาน" value="{{ old('employee_code') }}">
                     @error('employee_code')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -530,36 +520,6 @@
 @endguest
 
 <script>
-    (function injectSelect2() {
-        const hasJQuery = typeof window.jQuery !== 'undefined';
-        function addScript(src, cb) { const s = document.createElement('script'); s.src = src; s.onload = cb; document.head.appendChild(s); }
-        function addStyle(href) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; document.head.appendChild(l); }
-        addStyle('https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
-        if (!hasJQuery) {
-            addScript('https://code.jquery.com/jquery-3.6.0.min.js', function () {
-                addScript('https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', initSelect2);
-            });
-        } else {
-            addScript('https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', initSelect2);
-        }
-        function initSelect2() {
-            if (!window.jQuery) return; // safety
-            jQuery(function ($) {
-                const $emp = $('#employee_code');
-                if ($emp.length && !$emp.hasClass('select2-initialized')) {
-                    $emp.addClass('select2-initialized').select2({
-                        placeholder: '-- เลือกรหัสพนักงาน --',
-                        width: '100%',
-                        dropdownParent: $('#login-modal'),
-                        language: {
-                            noResults: function () { return 'ไม่พบข้อมูล'; }
-                        }
-                    });
-                }
-            });
-        }
-    })();
-
     document.addEventListener('DOMContentLoaded', function () {
         // Theme Toggle Logic (match manpower)
         const themeToggleBtn = document.getElementById('theme-toggle-btn');

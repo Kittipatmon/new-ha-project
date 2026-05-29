@@ -66,7 +66,7 @@
                     </a>
                 </div>
                 <div class="flex flex-wrap justify-center items-center gap-4 mt-12 px-4">
-                    @if(Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->employee_code == '11648'))
+                    @if(Auth::check() && Auth::user()->isHrOrAdmin())
                         <div class="dropdown dropdown-bottom">
                             <div tabindex="0" role="button"
                                 class="group flex items-center gap-4 px-5 py-4 rounded-[1.5rem] bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 hover:border-red-500/50 hover:bg-red-50/50 dark:hover:bg-red-500/5 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 min-w-[280px]">

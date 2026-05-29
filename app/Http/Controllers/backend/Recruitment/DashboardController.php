@@ -12,7 +12,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $stats = [

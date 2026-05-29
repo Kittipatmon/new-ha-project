@@ -1,6 +1,6 @@
 @extends('layouts.hrrequest.app')
 @section('content')
-@if(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))
+@if(auth()->check() && auth()->user()->isHrOrAdmin())
     <div class="max-w-8xl mx-auto px-4 py-4 font-prompt">
     <div class="flex items-center text-sm mb-4 space-x-2">
         <a href="{{ route('welcome') }}" class="text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Home</a>

@@ -75,6 +75,11 @@ class User extends Authenticatable
         return '1'; // Default inactive since column is gone
     }
 
+    public function isHrOrAdmin()
+    {
+        return $this->dept_id == 15 || $this->role === 'admin';
+    }
+
     public function getPhotoUserAttribute()
     {
         return $this->profile_pic;

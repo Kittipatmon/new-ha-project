@@ -59,7 +59,7 @@ Route::get('/', function () {
 })->name('welcome');
 
 Route::get('/dashboard', function () {
-    if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+    if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
         abort(403);
     }
     return view('dashboard');

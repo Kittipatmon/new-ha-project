@@ -10,7 +10,7 @@ class TrainingController extends Controller
 {
     public function index()
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $trainings = Training::orderBy('created_at', 'desc')->paginate(10);
@@ -19,7 +19,7 @@ class TrainingController extends Controller
 
     public function create()
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         return view('backend.training.create');
@@ -27,7 +27,7 @@ class TrainingController extends Controller
 
     public function store(Request $request)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $validated = $request->validate([
@@ -74,7 +74,7 @@ class TrainingController extends Controller
 
     public function edit($id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $training = Training::findOrFail($id);
@@ -83,7 +83,7 @@ class TrainingController extends Controller
 
     public function update(Request $request, $id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $validated = $request->validate([
@@ -138,7 +138,7 @@ class TrainingController extends Controller
 
     public function destroy($id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $training = Training::findOrFail($id);
@@ -149,7 +149,7 @@ class TrainingController extends Controller
 
     public function dashboard(Request $request)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $query = Training::query();
@@ -272,7 +272,7 @@ class TrainingController extends Controller
 
     public function applicants(Request $request)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $applyQuery = \App\Models\TrainingApply::query();
@@ -326,7 +326,7 @@ class TrainingController extends Controller
 
     public function courseApplicants($id)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $training = Training::findOrFail($id);

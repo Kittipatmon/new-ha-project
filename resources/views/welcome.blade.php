@@ -30,6 +30,7 @@
             --light-bg: #fef2f2;
             --text: #1e293b;
             --text-sub: #64748b;
+            --text-gray: #bdbdbdff;
             --border: #fecaca;
         }
 
@@ -209,29 +210,22 @@
             text-shadow: 0 1px 8px rgba(0, 0, 0, .4);
         }
 
-        /* ปุ่ม View More สไตล์ pill ขาว */
+        /* ปุ่ม View More สไตล์ pill พื้นหลังทึบสีขาว เห็นง่าย */
         .btn-hero-viewmore {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, .15);
-            border: 1.5px solid rgba(255, 255, 255, .75);
-            color: #fff;
+            background: #fff;
+            border: 1.5px solid #fff;
+            color: var(--navy);
             font-weight: 600;
             font-size: .9rem;
             padding: 11px 40px;
             border-radius: 999px;
             text-decoration: none;
             letter-spacing: .04em;
-            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             transition: all .25s;
-        }
-
-        .btn-hero-viewmore:hover {
-            background: rgba(255, 255, 255, .28);
-            border-color: #fff;
-            color: #fff;
-            transform: translateY(-2px);
         }
 
         /* ===== HERO DOT NAV ===== */
@@ -545,6 +539,20 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 20px;
+        }
+
+        .hr-grid-centered {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        @media(max-width:640px) {
+            .hr-grid-centered {
+                grid-template-columns: 1fr;
+            }
         }
 
         .hr-card {
@@ -867,7 +875,7 @@
             overflow: hidden;
             position: relative;
             background: #e2e8f0;
-            border: 1px solid var(--border);
+            border: 1px solid var(--text-gray);
         }
 
         .dark .blog-thumb {
@@ -1350,7 +1358,7 @@
             style="background-image: url('{{ asset('images/welcome/plant_night.png') }}');">
         </div>
 
-        <div class="hr-inner relative z-10">
+        <div class="hr-inner relative z-10 mt-1">
             <div style="text-align:center; margin-bottom:56px;" class="reveal reveal-up">
                 <div class="section-tag" style="justify-content:center;">Our Services</div>
                 <h2 class="section-title">ระบบบริการ <span style="color:var(--blue-lt)">HR</span></h2>
@@ -1359,100 +1367,66 @@
             </div>
 
             <!-- Employee Services -->
-            <div class="subsec-label reveal reveal-left">
-                <div class="bar" style="background:var(--blue-lt);"></div>
-                <h3>ระบบบริการผู้ใช้งาน</h3>
-            </div>
-            <div class="hr-grid" style="margin-bottom:48px;">
+            @php
+                $isHrOrAdmin = Auth::check() && Auth::user()->isHrOrAdmin();
+            @endphp
+
+            <div class="{{ $isHrOrAdmin ? 'hr-grid' : 'hr-grid-centered' }}" style="margin-bottom:48px;">
 
                 <!-- HR Request -->
                 @auth
                     <a href="{{ route('request.hr') }}" class="hr-card reveal reveal-up" style="transition-delay:.05s">
-                    @else
-                        <div class="hr-card reveal reveal-up cursor-pointer login-open-btn" style="transition-delay:.05s">
-                        @endauth
+                @else
+                    <div class="hr-card reveal reveal-up cursor-pointer login-open-btn" style="transition-delay:.05s">
+                @endauth
                         <div class="hr-card-icon">
                             <i class="fa-regular fa-file-lines"></i>
                         </div>
                         <div class="hr-card-title">ระบบจัดการคำร้อง</div>
                         <div class="hr-card-desc">คำร้องทุกประเภท แก้ไขเวลา ใบรับรอง ฯลฯ</div>
-                        @auth
+                @auth
                     </a>
                 @else
-                </div>
-            @endauth
+                    </div>
+                @endauth
 
-            <!-- Training -->
-            @auth
-                <a href="{{ route('training.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.1s">
+                <!-- Training -->
+                @auth
+                    <a href="{{ route('training.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.1s">
                 @else
                     <div class="hr-card reveal reveal-up cursor-pointer login-open-btn" style="transition-delay:.1s">
-                    @endauth
-                    <div class="hr-card-icon">
-                        <i class="fa-solid fa-chalkboard-user"></i>
-                    </div>
-                    <div class="hr-card-title">ระบบฝึกอบรม</div>
-                    <div class="hr-card-desc">ระบบฝึกอบรมและพัฒนาทักษะพนักงาน</div>
-                    @auth
-                </a>
-            @else
-            </div>
-        @endauth
-
-        <!-- Recruitment -->
-        {{-- <a href="{{ route('recruitment.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.15s">
-            <div class="hr-card-icon">
-                <i class="fa-solid fa-briefcase"></i>
-            </div>
-            <div class="hr-card-title">ระบบรับสมัครงาน</div>
-            <div class="hr-card-desc">ตำแหน่งงานว่างและการรับสมัครบุคลากร</div>
-        </a> --}}
-
-        <!-- Suggestion -->
-        @auth
-            {{-- <a href="{{ route('suggestion.index') }}" class="hr-card reveal reveal-up" style="transition-delay:.2s">
-            @else
-                <div class="hr-card reveal reveal-up cursor-pointer login-open-btn" style="transition-delay:.2s">
                 @endauth
-                <div class="hr-card-icon">
-                    <i class="fa-regular fa-comment-dots"></i>
-                </div>
-                <div class="hr-card-title">ระบบข้อเสนอแนะ</div>
-                <div class="hr-card-desc">กล่องรับข้อเสนอแนะและข้อร้องเรียนต่างๆ</div>
+                        <div class="hr-card-icon">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                        <div class="hr-card-title">ระบบฝึกอบรม</div>
+                        <div class="hr-card-desc">ระบบฝึกอบรมและพัฒนาทักษะพนักงาน</div>
                 @auth
-            </a> --}}
-        @else
-        </div>
-    @endauth
-
-    </div>
-
-    <!-- Management Dashboards (HR Admin Only) -->
-    @if (Auth::check() && (Auth::user()->hr_status == '0' || Auth::user()->role == 'admin'))
-        <div style="padding-top:24px; border-top:1px solid var(--border);">
-            <div class="subsec-label reveal reveal-left">
-                <div class="bar" style="background:#1d4ed8;"></div>
-                <h3>ระบบจัดการและวิเคราะห์</h3>
-            </div>
-            <div class="hr-grid">
-                <a href="{{ route('manpower.dashboard') }}" class="hr-card reveal reveal-up"
-                    style="transition-delay:.05s">
-                    <div class="hr-card-icon">
-                        <i class="fa-solid fa-users-gear"></i>
+                    </a>
+                @else
                     </div>
-                    <div class="hr-card-title">ระบบอัตรากำลังพล</div>
-                    <div class="hr-card-desc">ระบบจัดการและวิเคราะห์อัตรากำลังพล</div>
-                </a>
-                <a href="{{ route('request.data') }}" class="hr-card reveal reveal-up" style="transition-delay:.1s">
-                    <div class="hr-card-icon">
-                        <i class="fa-solid fa-database"></i>
-                    </div>
-                    <div class="hr-card-title">ระบบจัดการข้อมูล</div>
-                    <div class="hr-card-desc">จัดการข้อมูลพนักงานและฐานข้อมูลระบบ</div>
-                </a>
+                @endauth
+
+                <!-- Management Dashboards (HR Admin Only) -->
+                @if ($isHrOrAdmin)
+                    <a href="{{ route('manpower.dashboard') }}" class="hr-card reveal reveal-up" style="transition-delay:.15s">
+                        <div class="hr-card-icon">
+                            <i class="fa-solid fa-users-gear"></i>
+                        </div>
+                        <div class="hr-card-title">ระบบอัตรากำลังพล</div>
+                        <div class="hr-card-desc">ระบบจัดการและวิเคราะห์อัตรากำลังพล</div>
+                    </a>
+
+                    <a href="{{ route('request.data') }}" class="hr-card reveal reveal-up" style="transition-delay:.2s">
+                        <div class="hr-card-icon">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                        <div class="hr-card-title">ระบบจัดการข้อมูล</div>
+                        <div class="hr-card-desc">จัดการข้อมูลพนักงานและฐานข้อมูลระบบ</div>
+                    </a>
+                @endif
+
             </div>
-        </div>
-    @endif
     </div>
     </div>
 

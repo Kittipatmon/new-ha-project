@@ -29,7 +29,7 @@ class RequestHRController extends Controller
 {
     public function dashboard()
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             abort(403);
         }
         $departments = Department::all();
@@ -135,7 +135,7 @@ class RequestHRController extends Controller
 
     public function dashboardFilter(Request $request)
     {
-        if (!(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))) {
+        if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
         // Base query builder

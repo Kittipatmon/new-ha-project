@@ -1,7 +1,7 @@
 @extends('layouts.suggestion.app')
 @section('title', 'Dashboard รับเรื่องร้องเรียน')
 @section('content')
-    @if(auth()->check() && (auth()->user()->hr_status == 0 || auth()->user()->employee_code == '11648'))
+    @if(auth()->check() && auth()->user()->isHrOrAdmin())
         <div class="max-w-8xl mx-auto px-4 py-4 font-prompt">
                             <div class="flex items-center text-sm mb-4 space-x-2 mt-6 ">
                                 <a href="{{ route('welcome') }}"
