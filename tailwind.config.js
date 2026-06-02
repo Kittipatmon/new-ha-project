@@ -14,10 +14,18 @@ export default {
     theme: {
         extend: {
             colors: {
-                'kumwell-red': '#B21F24', // Standard Kumwell Red
+                kumwell: {
+                    red: '#D71920', // Standard Kumwell Red
+                    dark: '#121418',
+                    card: '#1E2129',
+                    hover: '#2A2E38'
+                }
+            },
+            width: {
+                '68': '17rem',
             },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Prompt', ...defaultTheme.fontFamily.sans],
             },
         },
     },

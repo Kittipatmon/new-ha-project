@@ -355,7 +355,7 @@ class RequestHRController extends Controller
             $hrRequest->employee_id = Auth::user()->id;
             $hrRequest->category_id = $request->category_id;
             $hrRequest->type_id = $request->type_id;
-            $hrRequest->subtype_id = $request->subtype_id;
+            $hrRequest->subtype_id = $request->subtype_id ?: null;
             $hrRequest->status = HrRequests::STATUS_PENDING;
             $hrRequest->submitted_at = now();
 
@@ -637,7 +637,7 @@ class RequestHRController extends Controller
 
             $hrRequest->category_id = $request->category_id;
             $hrRequest->type_id = $request->type_id;
-            $hrRequest->subtype_id = $request->subtype_id;
+            $hrRequest->subtype_id = $request->subtype_id ?: null;
 
             // Update title if type changed
             $type = RequestType::find($request->type_id);

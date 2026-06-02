@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'แก้ไขข้อมูลพนักงาน : ' . $user->employee_code)
 
 @section('content')
@@ -266,7 +266,7 @@
                     <div id="endwork_fields_wrapper" 
                          class="bg-red-50 border border-red-100 dark:bg-red-900/20 dark:border-red-900/50 p-6 rounded-xl mt-4 transition-all duration-300" 
                          style="display:none;">
-                        <h4 class="text-red-600 dark:text-red-400 font-semibold mb-4 flex items-center gap-2">
+                        <h4 class="text-kumwell-red dark:text-red-400 font-semibold mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-user-xmark"></i> ข้อมูลการสิ้นสุดงาน
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">

@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'รายละเอียดข้อเสนอแนะและร้องเรียน')
 
 @section('content')

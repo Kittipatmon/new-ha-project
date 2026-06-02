@@ -33,13 +33,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="images" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">รูปภาพ (เลือกได้หลายไฟล์)</label>
-                        <input type="file" name="images[]" id="images" multiple accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-gray-600 dark:file:text-gray-200">
+                        <input type="file" name="images[]" id="images" multiple accept="image/*" class="block w-full text-sm text-slate-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-gray-600 dark:file:text-gray-200">
                         <div id="images_preview" class="mt-2 grid grid-cols-3 gap-2"></div>
                     </div>
                     
                     <div>
                         <label for="file_news" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">แนบไฟล์ (เลือกได้หลายไฟล์)</label>
-                        <input type="file" name="file_news[]" id="file_news" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-200">
+                        <input type="file" name="file_news[]" id="file_news" multiple class="block w-full text-sm text-slate-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-600 dark:file:text-gray-200">
                         <div id="file_news_preview" class="mt-2 space-y-1 text-xs"></div>
                     </div>
                 </div>

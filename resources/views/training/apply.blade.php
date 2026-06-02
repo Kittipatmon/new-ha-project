@@ -1,7 +1,7 @@
 @extends('layouts.training.app')
 
 @section('content')
-    <div class="min-h-screen p-6 pt-10 pb-20 bg-gray-50 dark:bg-[#15171e] text-slate-800 dark:text-gray-200">
+    <div class="min-h-screen p-6 pt-10 pb-20 bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-gray-200">
         <div class="max-w-8xl mx-auto px-4">
             <!-- Breadcrumbs -->
             <div class="flex items-center text-sm mb-4 space-x-2">
@@ -32,7 +32,7 @@
 
             <!-- Form Card -->
             <div
-                class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden relative">
+                class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden relative">
                 <div class="absolute top-0 w-full h-2 bg-gradient-to-r from-red-500 to-red-600 left-0"></div>
 
                 <div class="p-8 sm:p-12">

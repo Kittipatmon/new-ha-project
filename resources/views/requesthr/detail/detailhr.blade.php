@@ -1,279 +1,259 @@
 @extends('layouts.hrrequest.app')
 @section('content')
-    <div class="text-sm breadcrumbs text-base-content/60 mt-4">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 font-prompt">
+    <!-- Breadcrumbs -->
+    <div class="text-sm breadcrumbs text-gray-500 dark:text-gray-400 mb-6">
         <ul>
-            <li><a>Home</a></li>
-            <li><a href="{{ route('request.hr') }}">Request HR</a></li>
-            <li><a href="{{ route('approve.approvehrlist') }}">รายการรอดำเนินการ</a></li>
-            <li class="text-red-600">รายละเอียดคำร้อง</li>
+            <li><a href="{{ route('welcome') }}" class="hover:text-red-500 transition-colors">Home</a></li>
+            <li><a href="{{ route('request.hr') }}" class="hover:text-red-500 transition-colors">Request HR</a></li>
+            <li><a href="{{ route('approve.approvehrlist') }}" class="hover:text-red-500 transition-colors">รายการรอดำเนินการ</a></li>
+            <li class="font-medium text-red-600 dark:text-red-500">รายละเอียดคำร้อง</li>
         </ul>
     </div>
-<div
-    class="mb-3 p-6 border border-gray-300 dark:border-gray-200/40 rounded-xl bg-base-100 dark:bg-gray-800 shadow-lg">
 
-
-    <div class="flex justify-between items-start mb-6 ">
+    <!-- Header Block -->
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
         <div>
-            <h1 class="text-2xl font-bold">รายละเอียดคำร้อง</h1>
-            <div class="text-error text-sm font-semibold mt-1">
-                {{ $hrrequest->request_code }}
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <i class="fas fa-file-alt text-red-500"></i> รายละเอียดคำร้อง
+            </h1>
+            <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                รหัสอ้างอิง: <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $hrrequest->request_code }}</span>
             </div>
         </div>
         <div>
-            <div class="badge {{ $hrrequest->status_color }} p-3 font-semibold text-white">
+            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border badge {{ $hrrequest->status_color }} shadow-sm">
                 {{ $hrrequest->status_label }}
-            </div>
+            </span>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
-        <div class="lg:col-span-7 flex flex-col gap-3 ">
-
-            <div class="card bg-base-100 shadow-sm border border-gray-300 dark:border-gray-200/40 rounded-xl">
-                <div class="card-body p-6">
-                    <h2 class="card-title text-base font-bold mb-2">ข้อมูลผู้ร้องขอ</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Primary Details -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Unified Details Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                
+                <!-- Section 1: User Info -->
+                <div class="p-6">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                        <i class="fas fa-user-circle text-gray-400"></i> ข้อมูลผู้ร้องขอ
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 bg-gray-50/50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                         <div>
-                            <div class="text-xs text-base-content/60 mb-1">ชื่อ-นามสกุล</div>
-                            <div class="font-semibold text-sm">
-                                {{ $hrrequest->user->fullname }}
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">ชื่อ-นามสกุล</div>
+                            <div class="font-semibold text-sm text-gray-800 dark:text-gray-200">
+                                {{ $hrrequest->user?->fullname ?? 'ไม่พบข้อมูล' }}
                             </div>
                         </div>
                         <div>
-                            <div class="text-xs text-base-content/60 mb-1">แผนก</div>
-                            <div class="text-sm">
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">แผนก</div>
+                            <div class="font-medium text-sm text-gray-700 dark:text-gray-300">
                                 {{ $hrrequest->user->department->department_name ?? '-' }}
                             </div>
                         </div>
                         <div>
-                            <div class="text-xs text-base-content/60 mb-1">ฝ่าย</div>
-                            <div class="text-sm">
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">ฝ่าย</div>
+                            <div class="font-medium text-sm text-gray-700 dark:text-gray-300">
                                 {{ $hrrequest->user->division->division_name ?? '-' }}
                             </div>
                         </div>
                         <div>
-                            <div class="text-xs text-base-content/60 mb-1">ส่วน</div>
-                            <div class="text-sm">
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">ส่วน</div>
+                            <div class="font-medium text-sm text-gray-700 dark:text-gray-300">
                                 {{ $hrrequest->user->section->section_code ?? '-' }}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card bg-base-100 shadow-sm border border-gray-300 dark:border-gray-200/40 rounded-xl">
-                <div class="card-body p-6">
-                    <h2 class="card-title text-base font-bold mb-2">ข้อมูลคำร้อง</h2>
+                <hr class="border-gray-100 dark:border-gray-700">
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <!-- Section 2: Request Info -->
+                <div class="p-6">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                        <i class="fas fa-list-alt text-gray-400"></i> ข้อมูลคำร้อง
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div>
-                            <div class="text-xs text-base-content/60 mb-1">ประเภทคำขอ</div>
-                            <div class="text-sm">{{ $hrrequest->category->name_th ?? '-' }}</div>
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">หมวดหมู่คำร้อง</div>
+                            <div class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $hrrequest->category->name_th ?? '-' }}</div>
                         </div>
                         <div>
-                            <div class="text-xs text-base-content/60 mb-1">ตัวเลือกการร้องขอ</div>
-                            <div class="text-sm">{{ $hrrequest->type->name_th ?? '-' }}</div>
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">ประเภทคำขอ</div>
+                            <div class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $hrrequest->type->name_th ?? '-' }}</div>
                         </div>
                         <div>
-                            <div class="text-xs text-base-content/60 mb-1">ประเภทย่อย</div>
-                            <div class="text-sm">{{ $hrrequest->subtype->name_th ?? '-' }}</div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <div class="text-xs text-base-content/60 mb-1">รายละเอียด</div>
-                            <div class="text-sm">
-                                @if($hrrequest->detail)
-                                    {!! nl2br(e($hrrequest->detail)) !!}
-                                @endif
-
-                                 @if(!empty($hrrequest->welfares->welfare_reason))
-                                        <div>{{ $hrrequest->welfares->welfare_reason ?? '-' }}</div>
-                                @endif
-                             
-                            </div>
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">ประเภทย่อย</div>
+                            <div class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $hrrequest->subtype->name_th ?? '-' }}</div>
                         </div>
                     </div>
+
+                    @if($hrrequest->detail || !empty($hrrequest->welfares->welfare_reason))
+                    <div class="bg-gray-50/50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">รายละเอียดเพิ่มเติม</div>
+                        <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            @if($hrrequest->detail)
+                                {!! nl2br(e($hrrequest->detail)) !!}
+                            @endif
+                            @if(!empty($hrrequest->welfares->welfare_reason))
+                                @if($hrrequest->detail) <br><br> @endif
+                                {{ $hrrequest->welfares->welfare_reason ?? '-' }}
+                            @endif
+                        </div>
+                    </div>
+                    @endif
                 </div>
-            </div>
+                
+                <hr class="border-gray-100 dark:border-gray-700">
 
-            <div class="card bg-base-100 shadow-sm border border-gray-300 dark:border-gray-200/40 rounded-xl">
-                <div class="card-body p-6">
-                    <h2 class="card-title text-base font-bold mb-2">สถานะการอนุมัติ</h2>
-                    <div class="flex justify-between items-center border-b border-base-200 pb-4 mb-2">
-                        <div>
-                            <div class="font-bold text-sm">
-                                {{ $hrrequest->approverManager->fullname ?? '-' }}
+                <!-- Section 3: Approval Status -->
+                <div class="p-6">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                        <i class="fas fa-tasks text-gray-400"></i> ลำดับการพิจารณา
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Manager Approval -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-4 rounded-xl border {{ $hrrequest->approver_manager_status == '0' ? 'border-yellow-200 bg-yellow-50/50 dark:border-yellow-900/50 dark:bg-yellow-900/10' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800' }}">
+                            <div class="flex items-start gap-3">
+                                <div class="mt-0.5">
+                                    <i class="fas fa-user-tie text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">พิจารณาโดย (หัวหน้างาน)</div>
+                                    <div class="font-bold text-sm text-gray-800 dark:text-gray-200">
+                                        {{ $hrrequest->approverManager->fullname ?? '-' }}
+                                    </div>
+                                    @if($hrrequest->approver_manager_comment)
+                                    <div class="text-xs font-medium mt-1 {{ $hrrequest->approver_manager_status == '1' ? 'text-green-600' : ($hrrequest->approver_manager_status == '2' ? 'text-red-600' : 'text-orange-600') }}">
+                                        "{{ $hrrequest->approver_manager_comment }}"
+                                    </div>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="text-xs text-base-content/60">
-                                <span class="px-2 py-1 rounded-full badge {{ $hrrequest->approver_manager_status_color }} badge-sm">
+                            <div class="text-left sm:text-right">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium badge {{ $hrrequest->approver_manager_status_color }}">
                                     {{ $hrrequest->approver_manager_status_label }}
                                 </span>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="font-bold text-sm">
-                                {{ $hrrequest->approverManager->fullname ?? '-' }}
+
+                        <!-- HR Approval -->
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-4 rounded-xl border {{ $hrrequest->approver_hr_status == '0' ? 'border-blue-200 bg-blue-50/50 dark:border-blue-900/50 dark:bg-blue-900/10' : 'border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800' }}">
+                            <div class="flex items-start gap-3">
+                                <div class="mt-0.5">
+                                    <i class="fas fa-user-shield text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">พิจารณาโดย (ฝ่ายบุคคล)</div>
+                                    <div class="font-bold text-sm text-gray-800 dark:text-gray-200">
+                                        {{ $hrrequest->approverhr->fullname ?? 'รอรับเรื่อง' }}
+                                    </div>
+                                    @if($hrrequest->approver_hr_comment)
+                                    <div class="text-xs font-medium mt-1 {{ $hrrequest->approver_hr_status == '1' ? 'text-green-600' : ($hrrequest->approver_hr_status == '2' ? 'text-red-600' : 'text-orange-600') }}">
+                                        "{{ $hrrequest->approver_hr_comment }}"
+                                    </div>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="text-xs text-base-content/60">
-                                @if($hrrequest->approver_manager_status == '1')
-                                <span class="text-green-500 font-semibold">
-                                    {{ $hrrequest->approver_manager_comment ?? '-' }}
-                                </span>
-                                @endif
-                                @if($hrrequest->approver_manager_status == '2')
-                                <span class="text-red-500 font-semibold">
-                                    {{ $hrrequest->approver_manager_comment ?? '-' }}
-                                </span>
-                                @endif
-                                @if($hrrequest->approver_manager_status == '3')
-                                <span class="text-orange-500 font-semibold">
-                                    {{ $hrrequest->approver_manager_comment ?? '-' }}
-                                </span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-base-200 pb-4 mb-2">
-                        <div>
-                            <div class="font-bold text-sm">
-                                {{ $hrrequest->approverhr->fullname ?? '-' }}
-                            </div>
-                            <div class="text-xs text-base-content/60">
-                                <span
-                                    class="px-2 py-1 rounded-full badge {{ $hrrequest->approver_hr_status_color }} badge-sm">
+                            <div class="text-left sm:text-right flex flex-col items-start sm:items-end gap-2">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium badge {{ $hrrequest->approver_hr_status_color }}">
                                     {{ $hrrequest->approver_hr_status_label }}
                                 </span>
                                 @if($hrrequest->approver_hr_status == '3' && $hrrequest->status == 'pending')    
-                                <a href="#" class="btn btn-warning btn-sm ml-2 hover:underline" title="ห้ามกดตอนนี้">
+                                <a href="#" class="inline-flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 dark:text-orange-400 font-medium transition-colors">
                                     <i class="fas fa-edit"></i> แก้ไขข้อมูล
                                 </a>
                                 @endif
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="font-bold text-sm">
-                                {{ $hrrequest->approverhr->fullname ?? '-' }}
-                            </div>
-                            <div class="text-xs text-base-content/60">
-                                @if($hrrequest->approver_hr_status == '1')
-                                <span class="text-green-500 font-semibold">
-                                    {{ $hrrequest->approver_hr_comment ?? '-' }}
-                                </span>
-                                @endif
-                                @if($hrrequest->approver_hr_status == '2')
-                                <span class="text-red-500 font-semibold">
-                                    {{ $hrrequest->approver_hr_comment ?? '-' }}
-                                </span>
-                                @endif
-                                @if($hrrequest->approver_hr_status == '3')
-                                <span class="text-orange-500 font-semibold">
-                                    {{ $hrrequest->approver_hr_comment ?? '-' }}
-                                </span>
-                                @endif
-                            </div>
-                        </div>
                     </div>
-                    <div class="text-xs text-red-500/60">
-                        วันที่ส่งคำร้อง: {{ $hrrequest->created_at->format('d/m/Y H:i') }}
+
+                    <div class="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                        <i class="far fa-clock"></i> วันที่ส่งคำร้อง: {{ $hrrequest->created_at->format('d/m/Y H:i') }}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="lg:col-span-5 flex flex-col gap-6">
+        <!-- Right Column: Contextual & Actions -->
+        <div class="lg:col-span-5 space-y-6">
+            
             @if($hrrequest->type_id == '9')
-            <div class="card bg-base-100 shadow-sm border border-gray-300 dark:border-gray-200/40 rounded-xl">
-                <div class="card-body p-6">
-                    <h2 class="card-title text-base font-bold mb-2">ความปลอดภัย/อุปกรณ์</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                    <i class="fas fa-hard-hat text-gray-400"></i> ความปลอดภัย/อุปกรณ์
+                </h2>
 
-                    <div class="mb-4">
-                        <div class="text-xs text-base-content/60 mb-1">เหตุผล</div>
-                        <div class="text-sm">test</div>
-                    </div>
+                <div class="mb-5 bg-gray-50/50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">เหตุผล</div>
+                    <div class="text-sm text-gray-800 dark:text-gray-200">test</div>
+                </div>
 
-                    <div class="text-xs text-base-content/60 mb-2">รายการอุปกรณ์ที่ขอ</div>
-                    <div class="overflow-x-auto">
-                        <table class="table table-sm w-full">
-                            <thead>
-                                <tr class="border-b border-base-200 text-base-content/60">
-                                    <th>ลำดับ</th>
-                                    <th>รายการ</th>
-                                    <th class="text-right">จำนวน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-base-200">
-                                    <td>1</td>
-                                    <td>test</td>
-                                    <td class="text-right">1</td>
-                                </tr>
-                                <tr class="border-b-0">
-                                    <td>2</td>
-                                    <td>test1</td>
-                                    <td class="text-right">2</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">รายการอุปกรณ์ที่ขอ</div>
+                <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900/50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ลำดับ</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายการ</th>
+                                <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">จำนวน</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-4 py-3 text-sm text-gray-500">1</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 font-medium">test</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">1</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <td class="px-4 py-3 text-sm text-gray-500">2</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 font-medium">test1</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-200 text-right">2</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             @endif
-
-            <!-- <div class="card bg-base-100 shadow-sm border border-gray-300 dark:border-gray-200/40 rounded-xl">
-                <div class="card-body p-6">
-                    <h2 class="card-title text-base font-bold mb-2">ดำเนินการอนุมัติ</h2>
-                    <form action="#" method="POST">
-                        @csrf
-                        <div class="form-control mb-4">
-                            <label class="label">
-                                <span class="label-text text-xs text-base-content/60">หมายเหตุ (ถ้ามี)</span>
-                            </label>
-                            <textarea class="textarea textarea-bordered h-24 bg-base-200" placeholder="ระบุหมายเหตุ..."></textarea>
-                        </div>
-                        
-                        <div class="flex gap-2">
-                            <button type="submit" class="btn btn-success text-white rounded-full px-6 btn-sm md:btn-md font-normal">อนุมัติ</button>
-                            <button type="button" class="btn btn-error text-white rounded-full px-6 btn-sm md:btn-md font-normal">ปฏิเสธ</button>
-                        </div>
-                    </form>
-                </div>
-            </div> -->
 
             @if($hrrequest->status == 'approved_hr')
-            <div class="card bg-base-100 shadow-sm border border-gray-300 dark:border-gray-200/40 rounded-xl">
-                <div class="card-body p-6">
-                    <h2 class="card-title text-base font-bold">ดำเนินการอนุมัติ</h2>
-                    <form id="approveForm" action="{{ route('approve.hrCheck', $hrrequest->hr_request_id) }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="status" id="statusInput">
-                        <div class="form-control mb-4">
-                            <label class="label">
-                                <span class="label-text text-sm text-red-500">หมายเหตุ (ถ้ามี)</span>
-                            </label> <br>
-                            <textarea name="comment" class="textarea textarea-bordered h-24 bg-base-200" placeholder="ระบุหมายเหตุ..."></textarea>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="confirmAction('1', 'อนุมัติ', 'คุณต้องการอนุมัติคำร้องนี้ใช่หรือไม่?', 'success')" class="btn btn-success text-white rounded-full px-6 btn-sm md:btn-md font-normal">
-                                <i class="fas fa-check"></i> อนุมัติ
-                            </button>
-                            <button type="button" onclick="confirmAction('3', 'ส่งกลับแก้ไข', 'คุณต้องการส่งกลับแก้ไขคำร้องนี้ใช่หรือไม่?', 'warning')" class="btn btn-warning text-white rounded-full px-6 btn-sm md:btn-md font-normal">
-                                <i class="fas fa-undo"></i> ส่งกลับแก้ไข
-                            </button>
-                            <button type="button" onclick="confirmAction('2', 'ไม่อนุมัติ', 'คุณต้องการไม่อนุมัติคำร้องนี้ใช่หรือไม่?', 'error')" class="btn btn-error text-white rounded-full px-6 btn-sm md:btn-md font-normal">
-                                <i class="fas fa-times"></i> ไม่อนุมัติ
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900 overflow-hidden p-6 ring-1 ring-blue-50 dark:ring-blue-900/30">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                    <i class="fas fa-clipboard-check text-blue-500"></i> ดำเนินการอนุมัติ (HR)
+                </h2>
+                <form id="approveForm" action="{{ route('approve.hrCheck', $hrrequest->hr_request_id) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="status" id="statusInput">
+                    
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            หมายเหตุ <span class="text-gray-400 font-normal">(ถ้ามี)</span>
+                        </label>
+                        <textarea name="comment" class="w-full rounded-xl border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors p-3 text-sm h-24" placeholder="ระบุเหตุผลประกอบการพิจารณา..."></textarea>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="button" onclick="confirmAction('1', 'อนุมัติ', 'คุณต้องการอนุมัติคำร้องนี้ใช่หรือไม่?', 'success')" class="flex-1 inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <i class="fas fa-check"></i> อนุมัติ
+                        </button>
+                        <button type="button" onclick="confirmAction('3', 'ส่งกลับแก้ไข', 'คุณต้องการส่งกลับแก้ไขคำร้องนี้ใช่หรือไม่?', 'warning')" class="flex-1 inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                            <i class="fas fa-undo"></i> ส่งกลับ
+                        </button>
+                        <button type="button" onclick="confirmAction('2', 'ไม่อนุมัติ', 'คุณต้องการไม่อนุมัติคำร้องนี้ใช่หรือไม่?', 'error')" class="flex-1 inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i class="fas fa-times"></i> ไม่อนุมัติ
+                        </button>
+                    </div>
+                </form>
             </div>
             @endif
+            
         </div>
     </div>
-
-    
-
 </div>
 @endsection
 
@@ -285,10 +265,15 @@
             text: text,
             icon: icon,
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#dc2626',
             confirmButtonText: 'ยืนยัน',
-            cancelButtonText: 'ยกเลิก'
+            cancelButtonText: 'ยกเลิก',
+            customClass: {
+                popup: 'rounded-2xl',
+                confirmButton: 'rounded-xl',
+                cancelButton: 'rounded-xl'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('statusInput').value = status;

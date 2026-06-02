@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'ข่าวสารและกิจกรรม')
 @section('content')
 <div class="container mx-auto px-4 py-3">
@@ -61,9 +61,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="{{ route('news.detail', $news->news_id) }}" class="btn btn-info btn-sm text-white">
-                                <i class="fa-solid fa-eye"></i> 
-                            </a>
+                            
                             <button class="btn btn-warning btn-sm edit-btn" data-id="{{ $news->news_id }}">
                                 <i class="fa-solid fa-pen-to-square"></i> 
                             </button>

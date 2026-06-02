@@ -39,17 +39,19 @@
                             <input type="hidden" name="period" :value="value">
                         </form>
                         
-                        <button @click="open = !open" type="button" 
-                            class="flex items-center justify-between gap-3 px-5 py-2.5 bg-white dark:bg-slate-800 border-0 ring-1 ring-slate-200 dark:ring-white/10 rounded-2xl text-sm font-bold shadow-sm transition-all hover:ring-blue-500 min-w-[140px]">
+                        <button @click="open = !open" type="button" aria-haspopup="true" :aria-expanded="open.toString()"
+                            class="flex items-center justify-between gap-3 px-5 py-2.5 bg-white dark:bg-slate-800 border-0 ring-1 ring-slate-200 dark:ring-white/10 rounded-2xl text-sm font-bold shadow-sm transition-all hover:ring-blue-500 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <span class="text-slate-700 dark:text-slate-200" x-text="selected"></span>
                             <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" :class="{'rotate-180': open}"></i>
                         </button>
 
-                        <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2"
-                            class="absolute right-0 z-50 mt-3 w-44 origin-top-right rounded-2xl bg-white dark:bg-slate-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/5 overflow-hidden py-1.5" style="display: none;">
+                        <div x-show="open" @click.away="open = false" 
+                            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
+                            class="absolute right-0 z-50 mt-3 w-44 origin-top-right rounded-2xl bg-white dark:bg-slate-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/5 overflow-hidden py-1.5" style="display: none;" role="menu">
                             <template x-for="option in options" :key="option.value">
-                                <button @click="select(option)" type="button" 
-                                    class="flex items-center w-full px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <button @click="select(option)" type="button" role="menuitem"
+                                    class="flex items-center w-full px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus:bg-slate-50 dark:focus:bg-white/5 transition-colors">
                                     <span x-text="option.label"></span>
                                     <i x-show="value === option.value" class="fa-solid fa-check ml-auto text-blue-500 text-xs"></i>
                                 </button>
@@ -58,24 +60,26 @@
                     </div>
 
                     <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                        <button @click="open = !open" 
-                            class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-2xl text-sm shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+                        <button @click="open = !open" aria-haspopup="true" :aria-expanded="open.toString()"
+                            class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-2xl text-sm shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all">
                             <i class="fa-solid fa-file-export text-blue-200"></i>
                             Export Report
                             <i class="fa-solid fa-chevron-down text-[8px] ml-1 transition-transform" :class="{'rotate-180': open}"></i>
                         </button>
                         
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2"
-                            class="absolute right-0 z-50 mt-3 w-60 origin-top-right rounded-3xl bg-white dark:bg-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden py-2" style="display: none;">
-                            <a href="{{ route('manpower.export.excel', ['period' => $currentFilter ?? 'month']) }}" 
-                                class="flex items-center px-5 py-4 text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                        <div x-show="open" 
+                            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
+                            class="absolute right-0 z-50 mt-3 w-60 origin-top-right rounded-3xl bg-white dark:bg-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden py-2" style="display: none;" role="menu">
+                            <a href="{{ route('manpower.export.excel', ['period' => $currentFilter ?? 'month']) }}" role="menuitem"
+                                class="flex items-center px-5 py-4 text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 focus:outline-none focus:bg-slate-50 dark:focus:bg-white/5 transition-colors">
                                 <div class="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 mr-4">
                                     <i class="fa-solid fa-file-excel text-lg"></i>
                                 </div>
                                 Export to Excel
                             </a>
-                            <a href="{{ route('manpower.export.pdf', ['period' => $currentFilter ?? 'month']) }}" 
-                                class="flex items-center px-5 py-4 text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                            <a href="{{ route('manpower.export.pdf', ['period' => $currentFilter ?? 'month']) }}" role="menuitem"
+                                class="flex items-center px-5 py-4 text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 focus:outline-none focus:bg-slate-50 dark:focus:bg-white/5 transition-colors">
                                 <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 mr-4">
                                     <i class="fa-solid fa-file-pdf text-lg"></i>
                                 </div>
@@ -92,7 +96,7 @@
             <!-- Stats/Summary Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Card 1 -->
-                <div class="bg-white dark:bg-[#1E2129] p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
                     <div class="absolute -top-6 -right-6 w-24 h-24 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
                     <div class="flex items-center gap-5 relative z-10">
                         <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-blue-500/30 shrink-0">
@@ -102,7 +106,7 @@
                             <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">พนักงานทั้งหมด</p>
                             <p class="text-4xl font-black text-slate-800 dark:text-white">{{ number_format($totalEmployees) }}</p>
                             <div class="flex items-center mt-2 text-[11px]">
-                                <span class="font-black {{ $growthRate >= 0 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center bg-{{ $growthRate >= 0 ? 'emerald' : 'rose' }}-50 dark:bg-{{ $growthRate >= 0 ? 'emerald' : 'rose' }}-900/20 px-2 py-0.5 rounded-full">
+                                <span class="font-black flex items-center px-2 py-0.5 rounded-full {{ $growthRate >= 0 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'text-rose-500 bg-rose-50 dark:bg-rose-900/20' }}">
                                     <i class="fa-solid {{ $growthRate >= 0 ? 'fa-caret-up' : 'fa-caret-down' }} mr-1"></i>
                                     {{ number_format(abs($growthRate), 1) }}%
                                 </span>
@@ -113,7 +117,7 @@
                 </div>
 
                 <!-- Card 2 -->
-                <div class="bg-white dark:bg-[#1E2129] p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
                     <div class="absolute -top-6 -right-6 w-24 h-24 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
                     <div class="flex items-center gap-5 relative z-10">
                         <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-emerald-500/30 shrink-0">
@@ -128,7 +132,7 @@
                 </div>
 
                 <!-- Card 3 -->
-                <div class="bg-white dark:bg-[#1E2129] p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
                     <div class="absolute -top-6 -right-6 w-24 h-24 bg-rose-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
                     <div class="flex items-center gap-5 relative z-10">
                         <div class="w-16 h-16 bg-gradient-to-br from-rose-400 to-rose-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-rose-500/30 shrink-0">
@@ -143,7 +147,7 @@
                 </div>
 
                 <!-- Card 4 -->
-                <div class="bg-white dark:bg-[#1E2129] p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
                     <div class="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
                     <div class="flex items-center gap-5 relative z-10">
                         <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-amber-500/30 shrink-0">
@@ -166,7 +170,7 @@
                 
                 <!-- Main Charts Column -->
                 <div class="lg:col-span-2 space-y-8">
-                    <div class="bg-white dark:bg-[#1E2129] p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden">
+                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden">
                         <div class="flex items-center justify-between mb-8">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
@@ -179,7 +183,7 @@
                         <div id="divisionChart" class="w-full" style="min-height: 350px;"></div>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1E2129] p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
+                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
                         <div class="flex items-center justify-between mb-8">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
@@ -195,7 +199,7 @@
 
                 <!-- Workplace & Gender -->
                 <div class="space-y-8">
-                    <div class="bg-white dark:bg-[#1E2129] p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
+                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
                         <h3 class="mb-8 text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
                             <i class="fa-solid fa-location-dot text-rose-500"></i>
                             สถานที่ทำงาน
@@ -203,7 +207,7 @@
                         <div id="workplaceChart" class="w-full" style="min-height: 300px;"></div>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1E2129] p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
+                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
                         <h3 class="mb-8 text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
                             <i class="fa-solid fa-venus-mars text-indigo-500"></i>
                             สัดส่วนเพศ
@@ -217,7 +221,7 @@
             <div class="h-2"></div>
 
             <!-- Monthly Hiring Trend Chart (Full Width) -->
-            <div class="bg-white dark:bg-[#1E2129] p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
+            <div class="bg-white dark:bg-slate-800 p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                     <div>
                         <h3 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-3">
@@ -238,7 +242,7 @@
             <div class="h-2"></div>
 
             {{-- Level Distribution (Full Width) --}}
-            <div class="bg-white dark:bg-[#1E2129] p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
+            <div class="bg-white dark:bg-slate-800 p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
                 <h3 class="mb-10 text-2xl font-black text-slate-800 dark:text-white flex items-center gap-3">
                     <i class="fa-solid fa-sitemap text-amber-500"></i>
                     โครงสร้างระดับพนักงาน (Level Hierarchy)
@@ -282,7 +286,7 @@
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 
                 <!-- Recent Hires Table -->
-                <div class="bg-white dark:bg-[#1E2129] rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden">
                     <div class="p-8 border-b border-slate-50 dark:border-white/5 flex items-center justify-between">
                         <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
                             <i class="fa-solid fa-user-clock text-blue-500"></i>
@@ -308,7 +312,7 @@
                                                 <i class="fa-solid fa-user"></i>
                                             </div>
                                             <div>
-                                                <div class="text-sm font-bold text-slate-800 dark:text-gray-200">{{ $hire->fullname }}</div>
+                                                <div class="text-sm font-bold text-slate-800 dark:text-gray-200 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">{{ $hire->fullname }}</div>
                                                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{{ $hire->division->division_name ?? ($hire->department->department_name ?? '-') }}</div>
                                             </div>
                                         </div>
@@ -323,7 +327,15 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic">ไม่มีข้อมูลพนักงานใหม่</td></tr>
+                                <tr>
+                                    <td colspan="3" class="px-8 py-16 text-center">
+                                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 mb-4 text-slate-300 dark:text-slate-600">
+                                            <i class="fa-solid fa-user-xmark text-2xl"></i>
+                                        </div>
+                                        <p class="text-slate-500 dark:text-slate-400 font-bold">ไม่มีข้อมูลพนักงานใหม่</p>
+                                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">ยังไม่มีพนักงานบรรจุใหม่ในช่วงเวลานี้</p>
+                                    </td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -331,7 +343,7 @@
                 </div>
 
                 <!-- Probation Table -->
-                <div class="bg-white dark:bg-[#1E2129] rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden">
                     <div class="p-8 border-b border-slate-50 dark:border-white/5 flex items-center justify-between">
                         <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
                             <i class="fa-solid fa-calendar-check text-amber-500"></i>
@@ -361,7 +373,7 @@
                                                 <i class="fa-solid fa-hourglass-half"></i>
                                             </div>
                                             <div>
-                                                <div class="text-sm font-bold text-slate-800 dark:text-gray-200">{{ $emp->fullname }}</div>
+                                                <div class="text-sm font-bold text-slate-800 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">{{ $emp->fullname }}</div>
                                                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">Emp ID: {{ $emp->employee_code }}</div>
                                             </div>
                                         </div>
@@ -376,7 +388,15 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="3" class="px-8 py-10 text-center text-slate-400 italic">ไม่มีพนักงานครบกำหนดในช่วงนี้</td></tr>
+                                <tr>
+                                    <td colspan="3" class="px-8 py-16 text-center">
+                                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 mb-4 text-slate-300 dark:text-slate-600">
+                                            <i class="fa-solid fa-calendar-check text-2xl"></i>
+                                        </div>
+                                        <p class="text-slate-500 dark:text-slate-400 font-bold">ไม่มีพนักงานครบกำหนด</p>
+                                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">ไม่มีพนักงานครบกำหนดทดลองงานใน 30 วันนี้</p>
+                                    </td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>

@@ -227,7 +227,7 @@
 
                                             {{-- Action Icon --}}
                                             <a href="{{ $fileUrl }}" target="_blank"
-                                                class="ml-2 flex-shrink-0 w-10 h-10 bg-slate-100 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 text-slate-600 dark:text-gray-400 hover:text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-sm"
+                                                class="ml-2 flex-shrink-0 w-10 h-10 bg-slate-100 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 text-slate-700 dark:text-gray-300 hover:text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-sm"
                                                 title="Download">
                                                 <i class="fas fa-download text-sm"></i>
                                             </a>

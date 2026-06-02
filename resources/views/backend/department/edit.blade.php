@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'แก้ไขข้อมูลแผนก (Edit Department)')
 @section('content')
 <div class="max-w-8xl rounded-xl shadow-xl p-6 border border-gray-300/60">

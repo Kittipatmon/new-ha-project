@@ -46,7 +46,7 @@
                             <span class="font-medium text-gray-900 dark:text-gray-200">{{ $request->request_code }}</span>
                         </td>
                         <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                            {{ $request->user->fullname }}
+                            {{ $request->user?->fullname ?? 'ไม่พบข้อมูล' }}
                         </td>
                         <td class="px-6 py-4 text-gray-600 dark:text-gray-400">
                             <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">{{ $request->category->name_th ?? '-' }}</span>
@@ -67,11 +67,11 @@
                         <td class="px-6 py-4 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <a href="{{ route('requesthr.detailUser', $request->hr_request_id ) }}" 
-                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-500 border border-transparent rounded-lg shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all group-hover:shadow-md" title="ดูรายละเอียด">
+                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-500 border border-transparent rounded-lg shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all group-hover:shadow-md" title="ดูรายละเอียด" aria-label="ดูรายละเอียด">
                                     <i class="fas fa-eye text-[10px]"></i>
                                 </a>
                                 <a href="#" 
-                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-500 border border-transparent rounded-lg shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all group-hover:shadow-md" title="ยกเลิกคำร้อง">
+                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-500 border border-transparent rounded-lg shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all group-hover:shadow-md" title="ยกเลิกคำร้อง" aria-label="ยกเลิกคำร้อง">
                                     <i class="fas fa-times text-[10px]"></i>
                                 </a>
                             </div>

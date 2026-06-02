@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'รายละเอียดพนักงาน : ' . $user->employee_code)
 
 @section('content')
@@ -117,7 +117,7 @@
                     </h3>
                     <div class="mt-3 space-y-3">
                         <div class="flex justify-between items-center bg-white/60 dark:bg-black/20 p-2 rounded-lg">
-                            <span class="text-sm text-red-600 dark:text-red-300">วันที่สิ้นสุด</span>
+                            <span class="text-sm text-kumwell-red dark:text-red-300">วันที่สิ้นสุด</span>
                             <span class="font-bold text-red-800 dark:text-red-200">
                                 {{ isset($user->endwork_date) ? $user->endwork_date->format('d/m/Y') : '-' }}
                             </span>

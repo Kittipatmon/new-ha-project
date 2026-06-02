@@ -52,7 +52,7 @@
             <!-- Stats/Summary Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Card 1 -->
-                <div class="bg-white dark:bg-[#1E2129] p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
                     <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <i class="fa-solid fa-book-open text-6xl text-blue-500"></i>
                     </div>
@@ -70,7 +70,7 @@
                 </div>
 
                 <!-- Card 2 -->
-                <div class="bg-white dark:bg-[#1E2129] p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
                     <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <i class="fa-solid fa-users text-6xl text-emerald-500"></i>
                     </div>
@@ -88,7 +88,7 @@
                 </div>
 
                 <!-- Card 3 -->
-                <div class="bg-white dark:bg-[#1E2129] p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
                     <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <i class="fa-solid fa-chart-pie text-6xl text-amber-500"></i>
                     </div>
@@ -106,7 +106,7 @@
                 </div>
 
                 <!-- Card 4 -->
-                <div class="bg-white dark:bg-[#1E2129] p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-transform relative overflow-hidden group">
                     <div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <i class="fa-solid fa-fire text-6xl text-red-500"></i>
                     </div>
@@ -130,7 +130,7 @@
             <!-- Charts Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Bar Chart -->
-                <div class="lg:col-span-2 bg-white dark:bg-[#1E2129] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 flex flex-col min-h-[450px]">
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 flex flex-col min-h-[450px]">
                     <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-6 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-ranking-star text-amber-500"></i> สถิติความสนใจรายหลักสูตร
                     </h3>
@@ -140,7 +140,7 @@
                 <!-- Right Side Donut/Bar -->
                 <div class="flex flex-col gap-6">
                     <!-- Format Breakdown -->
-                    <div class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6">
                         <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-6 uppercase tracking-wider flex items-center gap-2">
                             <i class="fa-solid fa-chalkboard-user text-blue-500"></i> รูปแบบการฝึกอบรม
                         </h3>
@@ -148,7 +148,7 @@
                     </div>
 
                     <!-- Additional Stats -->
-                    <div class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 flex-grow text-center flex flex-col items-center justify-center">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 flex-grow text-center flex flex-col items-center justify-center">
                         <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-6 uppercase tracking-wider w-full text-left flex items-center gap-2">
                             <i class="fa-solid fa-building-user text-emerald-500"></i> ความสนใจแยกตามหน่วยงาน
                         </h3>
@@ -158,7 +158,7 @@
             </div>
 
             <!-- Monthly Comparison Chart (Full Width) -->
-            <div class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6">
                 <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-6 uppercase tracking-wider flex items-center gap-2">
                     <i class="fa-solid fa-chart-line text-red-500"></i> เปรียบเทียบจำนวผู้สมัครแต่ละเดือน (รายปี)
                 </h3>
@@ -166,7 +166,7 @@
             </div>
 
             <!-- Recent Registrations (Connect with training_applies) -->
-            <div class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col relative">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col relative">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
                 <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
                     <div>
@@ -246,9 +246,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Delay rendering slightly to allow Tailwind CDN to inject styles before ApexCharts calculates dimensions
-            setTimeout(function() {
-                const labels = @json($labels);
+            const labels = @json($labels);
             const dataCounts = @json($data);
 
             const formatLabels = @json($formatLabels);
@@ -392,7 +390,6 @@
                 }));
             });
             observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-            }, 100);
         });
     </script>
 @endsection

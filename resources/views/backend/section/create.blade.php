@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 
 @section('content')
 <div class="max-w-xl bg-base-100 rounded-lg shadow-md p-8 mt-8">

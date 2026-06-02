@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'เพิ่มพนักงานใหม่')
 @section('content')
 <div class="max-w-8xl mx-auto p-6 rounded-lg shadow-md border border-gray-300/40">

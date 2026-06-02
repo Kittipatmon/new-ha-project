@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'แก้ไขข้อมูลการฝึกอบรม')
 @section('content')
     <div class="container mx-auto px-4 py-6">

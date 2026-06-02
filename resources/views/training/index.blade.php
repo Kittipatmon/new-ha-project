@@ -32,7 +32,7 @@
         }
     </style>
 
-    <div class="min-h-screen p-6 pt-10 pb-20 bg-gray-50 dark:bg-[#15171e] text-slate-800 dark:text-gray-200">
+    <div class="min-h-screen p-6 pt-10 pb-20 bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-gray-200">
         <div class="max-w-8xl mx-auto px-4">
             <!-- Breadcrumbs -->
             <div class="flex items-center text-sm mb-4 space-x-2">
@@ -65,7 +65,7 @@
             @endif
 
             <!-- Filter Form Card -->
-            <div class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 mb-8 relative overflow-hidden">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 mb-8 relative overflow-hidden">
                 <div class="absolute top-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600 left-0"></div>
 
                 <form id="searchForm" action="{{ route('training.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 relative">
@@ -116,7 +116,7 @@
             <!-- Results Container -->
             <div id="resultsContainer">
                 <!-- Desktop Table View -->
-                <div class="hidden md:block bg-white dark:bg-[#1E2129] table-rounded shadow-xl shadow-slate-200/50 dark:shadow-black/50 relative">
+                <div class="hidden md:block bg-white dark:bg-slate-800 table-rounded shadow-xl shadow-slate-200/50 dark:shadow-black/50 relative">
                     <div class="absolute top-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600 left-0 z-10"></div>
                     <div class="overflow-x-auto relative z-0">
                         <table class="w-full text-center border-collapse">
@@ -222,7 +222,7 @@
                 <!-- Mobile Card View -->
                 <div class="md:hidden space-y-6" id="mobileCardContainer">
                     @forelse($courses as $course)
-                        <div class="bg-white dark:bg-[#1E2129] rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-full group">
+                        <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-full group">
                             @if($course['image'])
                                 <div class="relative h-48 overflow-hidden">
                                     <img src="{{ asset('images/training/' . $course['image']) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $course['branch'] }}" loading="lazy">
@@ -297,7 +297,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-12 text-center">
+                        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-12 text-center">
                             <i class="fa-solid fa-calendar-xmark text-5xl mb-4 text-gray-200 dark:text-gray-700"></i>
                             <p class="text-slate-500 dark:text-slate-400 font-medium">ไม่พบรายการฝึกอบรมที่เปิดรับสมัคร</p>
                         </div>
@@ -315,9 +315,9 @@
         </div>
     </div>
 
-    <!-- Details Modal -->
-    <div id="detailsModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-[#1E2129] rounded-3xl shadow-2xl w-full max-w-2xl transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh] border border-slate-100 dark:border-white/10 relative overflow-hidden" id="modalContent">
+    <!-- Details Modal (Native Dialog) -->
+    <dialog id="detailsModal" class="bg-transparent m-auto p-0 backdrop:bg-slate-900/60 backdrop:dark:bg-black/80 backdrop:backdrop-blur-sm w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] max-w-2xl overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] border border-slate-100 dark:border-white/10 relative overflow-hidden w-full mx-auto" id="modalContent">
             <!-- Decoration -->
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-red-600"></div>
 
@@ -331,12 +331,12 @@
                         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">ข้อมูลประกอบการพิจารณาสมัครฝึกอบรม</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeDetails()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-red-600 transition-colors focus:outline-none">
+                <button type="button" onclick="closeDetails()" aria-label="ปิดหน้าต่างรายละเอียด" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <div class="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50 dark:bg-[#15171e]/50">
+            <div class="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50 dark:bg-slate-900/50">
                 <div id="modalImageContainer" class="hidden mb-6">
                     <img id="modalImage" src="" class="w-full h-auto max-h-64 object-cover rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md" alt="Course Image">
                 </div>
@@ -348,18 +348,17 @@
                 </div>
             </div>
 
-            <div class="p-6 sm:px-8 sm:py-5 border-t border-gray-100 dark:border-gray-800 flex justify-end bg-white dark:bg-[#1E2129] rounded-b-3xl">
+            <div class="p-6 sm:px-8 sm:py-5 border-t border-gray-100 dark:border-gray-800 flex justify-end bg-white dark:bg-slate-800 rounded-b-3xl">
                 <button type="button" onclick="closeDetails()"
                     class="px-8 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-slate-700 dark:text-gray-200 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-800 transition-all shadow-sm">
                     ปิดหน้าต่าง
                 </button>
             </div>
         </div>
-    </div>
+    </dialog>
 
     @push('scripts')
         <script>
-            // --- Modal Logic ---
             function showDetails(title, text, imageUrl) {
                 document.getElementById('modalTitle').textContent = title;
                 document.getElementById('modalText').textContent = text;
@@ -376,38 +375,23 @@
                 }
 
                 const modal = document.getElementById('detailsModal');
-                const content = document.getElementById('modalContent');
-
-                modal.classList.remove('hidden');
+                
+                // Show modal natively
+                modal.showModal();
+                
                 // Prevent body scroll
                 document.body.style.overflow = 'hidden';
-
-                // Trigger reflow
-                void modal.offsetWidth;
-
-                modal.classList.remove('opacity-0');
-                modal.classList.add('opacity-100');
-
-                content.classList.remove('scale-95');
-                content.classList.add('scale-100');
+                document.documentElement.style.overflow = 'hidden';
             }
 
             function closeDetails() {
                 const modal = document.getElementById('detailsModal');
-                const content = document.getElementById('modalContent');
-
-                modal.classList.remove('opacity-100');
-                modal.classList.add('opacity-0');
-
-                content.classList.remove('scale-100');
-                content.classList.add('scale-95');
+                
+                modal.close();
 
                 // Restore body scroll
                 document.body.style.overflow = '';
-
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
+                document.documentElement.style.overflow = '';
             }
 
             // --- Document Logic ---
@@ -421,18 +405,18 @@
                 }
             }
 
-            // Close on clicking outside
+            // Close on clicking backdrop (outside dialog content)
             document.getElementById('detailsModal').addEventListener('click', function (e) {
                 if (e.target === this) {
                     closeDetails();
                 }
             });
 
-            // Close on Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && !document.getElementById('detailsModal').classList.contains('hidden')) {
-                    closeDetails();
-                }
+            // Close on Escape key is handled natively by <dialog>, 
+            // but we need to ensure body overflow is restored
+            document.getElementById('detailsModal').addEventListener('close', function(e) {
+                document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
             });
 
             // --- AJAX Search Logic ---

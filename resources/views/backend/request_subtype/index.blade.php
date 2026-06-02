@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'ประเภทย่อยคำร้อง')
 
 @section('header_actions')
@@ -28,7 +28,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($requestsubtypes as $index => $requestsubtype)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-150">
+                            <tr class="hover:bg-red-50/30 dark:hover:bg-gray-700/50 transition-colors group">
                                 <td class="px-6 py-2">{{ $loop->iteration }}</td>
                                 <!-- <td class="px-6 py-2 font-mono text-sm text-blue-600 dark:text-blue-400">{{ $requestsubtype->code ?? '-' }}</td> -->
                                 <td class="px-6 py-2 font-mono text-sm text-blue-600 dark:text-blue-400">
@@ -62,20 +62,19 @@
                                         data-type_id="{{ $requestsubtype->requestType->id ?? '' }}" title="แก้ไข">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-                                    <button type="button" class="btn btn-error btn-sm btn-square text-white deleteBtn shadow-sm"
-                                        data-id="{{ $requestsubtype->id }}" data-name="{{ $requestsubtype->name_th }}"
-                                        title="ลบ">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                     <form action="{{ route('request-subtypes.destroy', $requestsubtype->id) }}" method="POST" class="inline form-delete">
+                                         @csrf
+                                         @method('DELETE')
+                                         <button type="submit" class="btn btn-error btn-sm btn-square text-white shadow-sm" title="ลบ">
+                                             <i class="fa-solid fa-trash"></i>
+                                         </button>
+                                     </form>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-10 text-gray-500 dark:text-gray-400">
-                                    <div class="flex flex-col items-center">
-                                        <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-50"></i>
-                                        <p>ไม่พบข้อมูลประเภทคำร้อง</p>
-                                    </div>
+                                <td colspan="5" class="p-0 border-b-0">
+                                    <x-empty-state icon="file-lines" title="ไม่พบประเภทย่อย" description="ยังไม่มีข้อมูลในระบบ" />
                                 </td>
                             </tr>
                         @endforelse
@@ -207,28 +206,6 @@
         </div>
     </div>
 
-    <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md transform transition-all scale-100">
-            <div class="p-6 text-center">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                    <i class="fa-solid fa-triangle-exclamation text-3xl text-red-600"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">ยืนยันการลบ?</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-300 mb-6">
-                    คุณต้องการลบรายการ <span id="deleteName" class="font-bold text-gray-800 dark:text-white"></span>
-                    ใช่หรือไม่?<br>
-                    การกระทำนี้ไม่สามารถย้อนกลับได้
-                </p>
-                <form method="POST" id="deleteForm" class="flex justify-center space-x-3">
-                    @csrf
-                    @method('DELETE')
-                    <button type="button" class="btn btn-ghost" data-close-delete>ยกเลิก</button>
-                    <button type="submit" class="btn btn-error text-white px-6">ยืนยันลบ</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
     @push('scripts')
         <script>
             // Utility functions to Open/Close Modals
@@ -252,7 +229,6 @@
             // Elements
             const createModal = document.getElementById('createModal');
             const editModal = document.getElementById('editModal');
-            const deleteModal = document.getElementById('deleteModal');
 
             // --- Create Modal Logic ---
             document.getElementById('openCreateModal')?.addEventListener('click', () => {
@@ -285,17 +261,26 @@
                 });
             });
 
-            // --- Delete Modal Logic ---
-            document.querySelectorAll('.deleteBtn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const id = btn.dataset.id;
-                    const name = btn.dataset.name;
-
-                    document.getElementById('deleteName').textContent = name;
-                    const deleteForm = document.getElementById('deleteForm');
-                    deleteForm.action = `{{ url('request-subtypes') }}/${id}`;
-
-                    openModal(deleteModal);
+            // --- Delete Confirmation Logic ---
+            document.querySelectorAll('.form-delete').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'ยืนยันการลบ?',
+                            text: 'เมื่อลบแล้วจะไม่สามารถกู้คืนได้',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'ใช่, ลบเลย',
+                            cancelButtonText: 'ยกเลิก',
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                        }).then((result) => {
+                            if (result.isConfirmed) form.submit();
+                        });
+                    } else {
+                        if (confirm('ยืนยันการลบ?')) form.submit();
+                    }
                 });
             });
 
@@ -303,17 +288,16 @@
             // Close buttons (X and Cancel)
             document.querySelectorAll('[data-close-create]').forEach(btn => btn.addEventListener('click', () => closeModal(createModal)));
             document.querySelectorAll('[data-close-edit]').forEach(btn => btn.addEventListener('click', () => closeModal(editModal)));
-            document.querySelectorAll('[data-close-delete]').forEach(btn => btn.addEventListener('click', () => closeModal(deleteModal)));
 
             // Close on Escape key
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    [createModal, editModal, deleteModal].forEach(m => closeModal(m));
+                    [createModal, editModal].forEach(m => closeModal(m));
                 }
             });
 
             // Close when clicking outside (Backdrop)
-            [createModal, editModal, deleteModal].forEach(modal => {
+            [createModal, editModal].forEach(modal => {
                 modal?.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         closeModal(modal);

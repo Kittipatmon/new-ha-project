@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @section('title', 'รายการข้อเสนอแนะและร้องเรียน')
 @section('content')
     <div class="container mx-auto px-4 py-3">
