@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, SoftDeletes;
 
     protected $connection = 'userkml2025';
     protected $table = 'employees';
@@ -112,22 +113,22 @@ class User extends Authenticatable
 
     public function getSexAttribute()
     {
-        return 'ชาย'; // default
+        return $this->attributes['sex'] ?? 'ชาย';
     }
 
     public function setSexAttribute($value)
     {
-        // No-op
+        $this->attributes['sex'] = $value;
     }
 
     public function getWorkplaceAttribute()
     {
-        return 'HQ'; // default
+        return $this->attributes['workplace'] ?? 'HQ';
     }
 
     public function setWorkplaceAttribute($value)
     {
-        // No-op
+        $this->attributes['workplace'] = $value;
     }
 
     public function usertype()
@@ -179,32 +180,14 @@ class User extends Authenticatable
 
     public function department()
     {
-        $db = config('database.connections.mysql.database', 'hrsystem');
-        $instance = new Department();
-        $instance->setTable("{$db}.department");
-        return $this->newBelongsTo(
-            $instance->newQuery(),
-            $this,
-            'dept_id',
-            'department_id',
-            'department'
-        );
+        return $this->belongsTo(Department::class, 'dept_id', 'department_id');
     }
 
     public function division()
     {
-        $db = config('database.connections.mysql.database', 'hrsystem');
-        
-        $related = new Division();
-        $related->setTable("{$db}.divisions");
-        
-        $through = new Department();
-        $through->setTable("{$db}.department");
-
-        return $this->newHasOneThrough(
-            $related->newQuery(),
-            $this,
-            $through,
+        return $this->hasOneThrough(
+            Division::class,
+            Department::class,
             'department_id', // Foreign key on Department table
             'division_id',   // Foreign key on Division table
             'dept_id',       // Local key on User table
@@ -214,18 +197,9 @@ class User extends Authenticatable
 
     public function section()
     {
-        $db = config('database.connections.mysql.database', 'hrsystem');
-        
-        $related = new Section();
-        $related->setTable("{$db}.sections");
-        
-        $through = new Department();
-        $through->setTable("{$db}.department");
-
-        return $this->newHasOneThrough(
-            $related->newQuery(),
-            $this,
-            $through,
+        return $this->hasOneThrough(
+            Section::class,
+            Department::class,
             'department_id', // Foreign key on Department table
             'section_id',    // Foreign key on Section table
             'dept_id',       // Local key on User table
@@ -434,7 +408,7 @@ class User extends Authenticatable
 
     public function trainingApplies()
     {
-        return $this->hasMany(TrainingApply::class, 'employee_code', 'employee_code');
+        return $this->hasMany(TrainingApply::class, 'employee_code', 'emp_code');
     }
 
 }

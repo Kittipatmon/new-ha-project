@@ -73,4 +73,14 @@ class Department extends Model
         return self::getStatusOptions()[$this->department_status]['icon'] ?? '';
     }
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('all_departments');
+        });
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('all_departments');
+        });
+    }
+
 }

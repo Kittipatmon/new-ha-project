@@ -15,7 +15,7 @@ class TrainingApply extends Model
     ];
     public function user()
     {
-        return $this->belongsTo(User::class, 'employee_code', 'employee_code');
+        return $this->belongsTo(User::class, 'employee_code', 'emp_code');
     }
 
     public function training()

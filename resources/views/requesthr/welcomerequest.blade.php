@@ -1,7 +1,7 @@
 @extends('layouts.hrrequest.app')
 
 @section('content')
-    <div class="p-8">
+    <div class="p-8 pb-28">
         <div class="max-w-7xl mx-auto">
 
             <!-- Breadcrumb -->

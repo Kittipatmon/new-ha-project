@@ -9,7 +9,7 @@
     </div>
 
     <div class=" dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto w-full">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
@@ -47,7 +47,7 @@
                                 <span class="text-gray-400 text-xs">ไม่มีภาพ</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ $news->title }}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white min-w-[200px] break-words whitespace-normal">{{ $news->title }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ $news->created_at->format('d/m/Y') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                             @if($news->is_active)

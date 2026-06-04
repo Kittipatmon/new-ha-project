@@ -64,4 +64,14 @@ class Division extends Model
         return self::getStatusOptions()[$this->division_status]['icon'] ?? '';
     }
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('all_divisions');
+        });
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('all_divisions');
+        });
+    }
+
 }

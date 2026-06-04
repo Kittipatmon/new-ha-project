@@ -2,9 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\backend\requestdata\SectionController;
-use App\Http\Controllers\backend\requestdata\DivisionController;
-use App\Http\Controllers\backend\requestdata\DepartmentController;
+use App\Http\Controllers\Backend\RequestData\SectionController;
+use App\Http\Controllers\Backend\RequestData\DivisionController;
+use App\Http\Controllers\Backend\RequestData\DepartmentController;
 use App\Http\Controllers\hrrequest\RequestDataController;
 use App\Http\Controllers\Api\UserController;
 

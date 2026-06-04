@@ -171,53 +171,53 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="table w-full whitespace-nowrap">
+        <div class="overflow-x-auto w-full">
+            <table class="table w-full">
                 <thead
                     class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-200 dark:border-gray-700">
                     <tr>
-                        <th class="py-4 px-4 rounded-tl-lg">รหัสพนักงาน</th>
-                        <th class="px-4">ชื่อ-นามสกุล</th>
-                        <th class="px-4">แผนก</th>
-                        <th class="px-4">ฝ่าย</th>
-                        <th class="px-4">สายงาน</th>
-                        <th class="px-4">ตำแหน่ง</th>
-                        <th class="px-4">ประเภทพนักงาน</th>
-                        <!-- <th>เริ่มงาน</th> -->
-                        <th class="px-4">ระดับ</th>
-                        <th class="px-4">สถานะ HR</th>
-                        <th class="px-4">สถานะ Active</th>
-                        <th class="w-24 text-center px-4 rounded-tr-lg">จัดการ</th>
+                        <th class="py-4 px-4 rounded-tl-lg whitespace-nowrap">รหัสพนักงาน</th>
+                        <th class="px-4 whitespace-nowrap">ชื่อ-นามสกุล</th>
+                        <th class="px-4 whitespace-nowrap">แผนก</th>
+                        <th class="px-4 whitespace-nowrap">ฝ่าย</th>
+                        <th class="px-4 whitespace-nowrap">สายงาน</th>
+                        <th class="px-4 whitespace-nowrap">ตำแหน่ง</th>
+                        <th class="px-4 whitespace-nowrap">ประเภทพนักงาน</th>
+                        <!-- <th class="whitespace-nowrap">เริ่มงาน</th> -->
+                        <th class="px-4 whitespace-nowrap">ระดับ</th>
+                        <th class="px-4 whitespace-nowrap">สถานะ HR</th>
+                        <th class="px-4 whitespace-nowrap">สถานะ Active</th>
+                        <th class="w-24 text-center px-4 rounded-tr-lg whitespace-nowrap">จัดการ</th>
                     </tr>
                 </thead>
                 <tbody id="users-body"
                     class="text-gray-700 dark:text-gray-300 divide-y divide-gray-100 dark:divide-gray-700">
                     @forelse($users as $user)
                     <tr class="hover:bg-red-50/30 dark:hover:bg-gray-700/50 transition-colors">
-                        <td class="font-medium">{{ $user->employee_code }}</td>
+                        <td class="font-medium whitespace-nowrap">{{ $user->employee_code }}</td>
                         <td>
-                            <div class="font-bold">{{ $user->fullname }}</div>
+                            <div class="font-bold min-w-[150px] break-words whitespace-normal">{{ $user->fullname }}</div>
                         </td>
-                        <td>{{ $user->department->department_name ?? '-' }}</td>
-                        <td>{{ $user->division->division_name ?? '-' }}</td>
-                        <td>{{ $user->section->section_code ?? '-' }}</td>
-                        <td>{{ $user->position }}</td>
+                        <td class="min-w-[120px] break-words whitespace-normal">{{ $user->department->department_name ?? '-' }}</td>
+                        <td class="min-w-[120px] break-words whitespace-normal">{{ $user->division->division_name ?? '-' }}</td>
+                        <td class="min-w-[100px] break-words whitespace-normal">{{ $user->section->section_code ?? '-' }}</td>
+                        <td class="min-w-[120px] break-words whitespace-normal">{{ $user->position }}</td>
                         <td class="whitespace-nowrap">
                             {{ $user->employee_type ?? '-' }}
                         </td>
                         <!-- <td class="whitespace-nowrap">
                             {{ $user->startwork_date ? \Carbon\Carbon::parse($user->startwork_date)->format('d M Y') : '-' }}
                         </td> -->
-                        <td>
+                        <td class="whitespace-nowrap">
                             <x-status-badge :color="$user->level_user_color" :label="$user->level_user_label" />
                         </td>
-                        <td>
+                        <td class="whitespace-nowrap">
                             <x-status-badge :color="$user->hr_status_color" :label="$user->hr_status_label" />
                         </td>
-                        <td>
+                        <td class="whitespace-nowrap">
                             <x-status-badge :color="$user->status_color" :label="$user->status_label" />
                         </td>
-                        <td>
+                        <td class="whitespace-nowrap">
                             <div class="flex justify-center gap-1">
                                 <x-action-button href="{{ route('users.show', $user->id) }}" action="ดูข้อมูล" icon="eye" color="info" />
                                 <x-action-button href="{{ route('users.edit', $user->id) }}" action="แก้ไข" icon="pen-to-square" color="warning" />

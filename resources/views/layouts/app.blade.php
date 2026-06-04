@@ -8,7 +8,7 @@
     <title>HR System</title>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap');
 
         body {
             font-family: 'Prompt', sans-serif;
@@ -48,7 +48,7 @@
 
 <body class="bg-gray-50 dark:bg-kumwell-dark text-gray-800 dark:text-gray-200 antialiased">
 
-    @if(request()->routeIs('welcome'))
+    @if(request()->routeIs('welcome') || request()->routeIs('news.newsAll') || request()->routeIs('news.detail'))
         <div class="min-h-screen">
             @yield('content')
         </div>

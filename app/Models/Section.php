@@ -61,4 +61,14 @@ class Section extends Model
         return $this->hasMany(User::class, 'section_id', 'section_id');
     }
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('all_sections');
+        });
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('all_sections');
+        });
+    }
+
 }

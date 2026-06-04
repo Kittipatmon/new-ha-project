@@ -3,8 +3,9 @@
 @section('title', 'ข่าวสารและกิจกรรม')
 
 @section('content')
+    @include('layouts.navigation')
     {{-- Background: ใช้สีพื้นหลังที่นุ่มนวลขึ้นใน Light mode และเข้มลึกใน Dark mode --}}
-    <div class="min-h-screen transition-colors duration-300 pb-16 font-light" style="font-family: 'Kanit', sans-serif;">
+    <div class="min-h-screen transition-colors duration-300 pt-20 pb-16 font-light" style="font-family: 'Kanit', sans-serif;">
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-6">
             {{-- Breadcrumb --}}
@@ -14,10 +15,19 @@
                 <span class="text-red-500">ข่าวสาร</span>
             </div>
 
-            {{-- Section Title --}}
+            {{-- Section Title
             <div class="flex items-center">
                 <h2 class="text-3xl font-light text-gray-800 dark:text-gray-100 pr-4">News</h2>
                 <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+            </div> --}}
+            <!-- Header matching the screenshot -->
+            <div class="flex items-center mb-12">
+                <div class="bg-[#F5A623] text-white px-5 py-3 font-bold text-sm md:text-base flex items-center gap-2.5 shadow-sm shrink-0">
+                    <i class="fa-solid fa-bullhorn text-sm"></i>
+                    ข่าวประชาสัมพันธ์
+                </div>
+                <!-- Decorative repeating dot grid pattern -->
+                <div class="flex-1 h-11 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] dark:bg-[radial-gradient(#475569_1px,transparent_1px)] [background-size:5px_5px] opacity-90 ml-3 pointer-events-none"></div>
             </div>
         </div>
 
@@ -119,4 +129,5 @@
 
         </div>
     </div>
+    @include('layouts.footer')
 @endsection

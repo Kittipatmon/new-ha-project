@@ -4,44 +4,34 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\frontend\SystemController;
+use App\Http\Controllers\Frontend\SystemController;
 
-use App\Http\Controllers\backend\RequestHRController;
-use App\Http\Controllers\backend\requestdata\RequestDataController;
-use App\Http\Controllers\backend\users\SectionController;
-use App\Http\Controllers\backend\users\DivisionController;
-use App\Http\Controllers\backend\users\DepartmentController;
+use App\Http\Controllers\Backend\RequestHRController;
+use App\Http\Controllers\Backend\RequestData\RequestDataController;
+use App\Http\Controllers\Backend\Users\SectionController;
+use App\Http\Controllers\Backend\Users\DivisionController;
+use App\Http\Controllers\Backend\Users\DepartmentController;
 
-use App\Http\Controllers\backend\hrrequest\RequestCategoriesController;
-use App\Http\Controllers\backend\hrrequest\RequestTypeController;
-use App\Http\Controllers\backend\hrrequest\RequestSubtypeController;
+use App\Http\Controllers\Backend\HrRequest\RequestCategoriesController;
+use App\Http\Controllers\Backend\HrRequest\RequestTypeController;
+use App\Http\Controllers\Backend\HrRequest\RequestSubtypeController;
 
-use App\Http\Controllers\backend\ApproveController;
-use App\Http\Controllers\backend\LeaveReportsController;
+use App\Http\Controllers\Backend\ApproveController;
+use App\Http\Controllers\Backend\LeaveReportsController;
 
 
-use App\Http\Controllers\backend\NewsController;
-use App\Http\Controllers\backend\SuggestionController;
-use App\Http\Controllers\backend\TrainingController;
-use App\Http\Controllers\backend\users\UserController;
-use App\Http\Controllers\backend\users\UserTypeController;
+use App\Http\Controllers\Backend\NewsController;
+use App\Http\Controllers\Backend\SuggestionController;
+use App\Http\Controllers\Backend\TrainingController;
+use App\Http\Controllers\Backend\Users\UserController;
+use App\Http\Controllers\Backend\Users\UserTypeController;
 
-use App\Http\Controllers\backend\manpower\ManpowerController;
+use App\Http\Controllers\Backend\Manpower\ManpowerController;
 
 use App\Models\datacenter\News;
 use App\Models\hrrequest\HrRequests;
 
-Route::get('/api/departments', [DepartmentController::class, 'apiDepartments']);
-Route::resource('departments', DepartmentController::class);
 
-Route::get('/api/sections', [SectionController::class, 'apiSections']);
-Route::resource('sections', SectionController::class);
-
-Route::get('/api/divisions', [DivisionController::class, 'apiDivisions']);
-Route::resource('division', DivisionController::class);
-
-Route::get('/api/users', [UserController::class, 'apiUsers']);
-Route::resource('users', UserController::class);
 
 Route::get('/', function () {
     $newsItems = News::where('is_active', true)
@@ -65,16 +55,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// welcomeSystem
-Route::get('/welcome-system', [SystemController::class, 'welcomeSystem'])->name('welcome.system');
-Route::get('/requestHR/dashboard', [RequestHRController::class, 'dashboard'])->name('requesthr.dashboard');
-Route::get('/requestHR/dashboard/filter', [RequestHRController::class, 'dashboardFilter'])->name('requesthr.dashboard.filter');
 
-
-Route::get('/manpower/dashboard', [ManpowerController::class, 'dashboard'])->name('manpower.dashboard');
-Route::get('/manpower/index', [ManpowerController::class, 'index'])->name('manpower.index');
-Route::get('/manpower/export/excel', [ManpowerController::class, 'exportExcel'])->name('manpower.export.excel');
-Route::get('/manpower/export/pdf', [ManpowerController::class, 'exportPdf'])->name('manpower.export.pdf');
 
 Route::get('news/detail/{id}', [NewsController::class, 'detail'])->name('news.detail');
 Route::get('news-all', [NewsController::class, 'newsAll'])->name('news.newsAll');
@@ -91,6 +72,16 @@ Route::post('/recruitment/apply/{slug}', [App\Http\Controllers\Frontend\Recruitm
 Route::get('/recruitment/success/{slug}', [App\Http\Controllers\Frontend\RecruitmentController::class, 'success'])->name('recruitment.success');
 
 Route::middleware('auth')->group(function () {
+
+    // welcomeSystem
+    Route::get('/welcome-system', [SystemController::class, 'welcomeSystem'])->name('welcome.system');
+    Route::get('/requestHR/dashboard', [RequestHRController::class, 'dashboard'])->name('requesthr.dashboard');
+    Route::get('/requestHR/dashboard/filter', [RequestHRController::class, 'dashboardFilter'])->name('requesthr.dashboard.filter');
+
+    Route::get('/manpower/dashboard', [ManpowerController::class, 'dashboard'])->name('manpower.dashboard');
+    Route::get('/manpower/index', [ManpowerController::class, 'index'])->name('manpower.index');
+    Route::get('/manpower/export/excel', [ManpowerController::class, 'exportExcel'])->name('manpower.export.excel');
+    Route::get('/manpower/export/pdf', [ManpowerController::class, 'exportPdf'])->name('manpower.export.pdf');
 
     Route::get('/welcomehrrequest', [RequestHRController::class, 'welcomeRequest'])->name('request.hr');
     Route::get('/request-data', [RequestDataController::class, 'welcomeData'])->name('request.data');
@@ -123,30 +114,35 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    Route::resource('sections', SectionController::class);
-    Route::resource('divisions', DivisionController::class);
-    Route::resource('departments', DepartmentController::class);
-    Route::resource('users', UserController::class);
+    Route::middleware('hr.admin')->group(function () {
+        Route::get('/api/departments', [DepartmentController::class, 'apiDepartments']);
+        Route::get('/api/sections', [SectionController::class, 'apiSections']);
+        Route::get('/api/divisions', [DivisionController::class, 'apiDivisions']);
+        Route::get('/api/users', [UserController::class, 'apiUsers']);
+
+        Route::resource('sections', SectionController::class);
+        Route::resource('divisions', DivisionController::class);
+        Route::resource('departments', DepartmentController::class);
+        Route::resource('users', UserController::class);
+        Route::delete('users/destroy/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::resource('usertypes', UserTypeController::class);
+
+        Route::resource('request-categories', RequestCategoriesController::class);
+        Route::get('request-types', [RequestTypeController::class, 'index'])->name('request-types.index');
+        Route::post('request-types', [RequestTypeController::class, 'store'])->name('request-types.store');
+        Route::put('request-types/{id}', [RequestTypeController::class, 'update'])->name('request-types.update');
+        Route::delete('request-types/{id}', [RequestTypeController::class, 'destroy'])->name('request-types.destroy');
+
+        Route::get('request-subtypes', [RequestSubtypeController::class, 'index'])->name('request-subtypes.index');
+        Route::post('request-subtypes', [RequestSubtypeController::class, 'store'])->name('request-subtypes.store');
+        Route::put('request-subtypes/{id}', [RequestSubtypeController::class, 'update'])->name('request-subtypes.update');
+        Route::delete('request-subtypes/{id}', [RequestSubtypeController::class, 'destroy'])->name('request-subtypes.destroy');
+
+        //News
+        Route::resource('news', NewsController::class);
+    });
+
     Route::post('users/profile/avatar', [UserController::class, 'updateAvatar'])->name('users.update_avatar');
-    Route::delete('users/destroy/{id}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::resource('usertypes', UserTypeController::class);
-    // Route::post('users/storeUser', [UserController::class, 'store'])->name('users.storeUser');
-
-
-    Route::resource('request-categories', RequestCategoriesController::class);
-    Route::get('request-types', [RequestTypeController::class, 'index'])->name('request-types.index');
-    Route::post('request-types', [RequestTypeController::class, 'store'])->name('request-types.store');
-    Route::put('request-types/{id}', [RequestTypeController::class, 'update'])->name('request-types.update');
-    Route::delete('request-types/{id}', [RequestTypeController::class, 'destroy'])->name('request-types.destroy');
-
-    Route::get('request-subtypes', [RequestSubtypeController::class, 'index'])->name('request-subtypes.index');
-    Route::post('request-subtypes', [RequestSubtypeController::class, 'store'])->name('request-subtypes.store');
-    Route::put('request-subtypes/{id}', [RequestSubtypeController::class, 'update'])->name('request-subtypes.update');
-    Route::delete('request-subtypes/{id}', [RequestSubtypeController::class, 'destroy'])->name('request-subtypes.destroy');
-
-    //News
-    Route::resource('news', NewsController::class);
-
     //profile user
     Route::get('users/profile/{id}', [UserController::class, 'profileUser'])->name('users.profile');
 
