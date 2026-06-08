@@ -48,7 +48,7 @@
 
 <body class="bg-gray-50 dark:bg-kumwell-dark text-gray-800 dark:text-gray-200 antialiased">
 
-    @if(request()->routeIs('welcome') || request()->routeIs('news.newsAll') || request()->routeIs('news.detail'))
+    @if(request()->routeIs('welcome') || request()->routeIs('news.newsAll') || request()->routeIs('news.detail') || request()->routeIs('users.profile'))
         <div class="min-h-screen">
             @yield('content')
         </div>

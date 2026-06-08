@@ -194,13 +194,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/requests/{recruitmentRequest}/reject', [App\Http\Controllers\Backend\Recruitment\RequestController::class, 'reject'])->name('requests.reject');
         Route::post('/requests/{recruitmentRequest}/update-approver', [App\Http\Controllers\Backend\Recruitment\RequestController::class, 'updateApprover'])->name('requests.update-approver');
 
-        // Job Posts
-        Route::get('/posts', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'index'])->name('posts.index');
-        Route::get('/posts/create', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'create'])->name('posts.create');
-        Route::post('/posts', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'store'])->name('posts.store');
-        Route::get('/posts/{jobPost}/edit', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'edit'])->name('posts.edit');
-        Route::put('/posts/{jobPost}', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'update'])->name('posts.update');
-        Route::delete('/posts/{jobPost}', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'destroy'])->name('posts.destroy');
+        // // Job Posts
+        // Route::get('/posts', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'index'])->name('posts.index');
+        // Route::get('/posts/create', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'create'])->name('posts.create');
+        // Route::post('/posts', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'store'])->name('posts.store');
+        // Route::get('/posts/{jobPost}/edit', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'edit'])->name('posts.edit');
+        // Route::put('/posts/{jobPost}', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'update'])->name('posts.update');
+        // Route::delete('/posts/{jobPost}', [App\Http\Controllers\Backend\Recruitment\JobPostController::class, 'destroy'])->name('posts.destroy');
 
         // Applicant Management
 

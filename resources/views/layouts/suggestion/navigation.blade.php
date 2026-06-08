@@ -166,6 +166,7 @@
                             <a class="navbar-link shadow transition"
                                 href="{{ route('suggestion.index') }}">หน้าร้องเรียน</a>
                         </li>
+                        @if(Auth::check() && Auth::user()->isHrOrAdmin())
                         <li>
                             @if(request()->routeIs('training.*'))
                                 <a class="navbar-link shadow transition"
@@ -175,6 +176,7 @@
                                     href="{{ route('suggestion.dashboard') }}">Dashboard</a>
                             @endif
                         </li>
+                        @endif
                     </ul>
                 </div>
 
@@ -205,7 +207,7 @@
                             </div>
                         </button>
                         <div id="profile-menu"
-                            class="absolute right-0 z-50 mt-3 w-64 origin-top-right rounded-2xl bg-white/95 dark:bg-[#1E2129]/95 backdrop-blur-xl py-2 shadow-2xl ring-1 ring-black/5 focus:outline-none hidden-custom border border-gray-100 dark:border-white/5 animate-fade-in">
+                            class="absolute right-0 z-50 mt-3 w-64 origin-top-right rounded-xl bg-white dark:bg-[#1E2129] py-2 shadow-xl ring-1 ring-black/5 focus:outline-none hidden-custom border border-slate-200/80 dark:border-slate-700/85 animate-fade-in">
                             <!-- Header Section -->
                             <div class="px-4 py-4 border-b border-gray-100 dark:border-white/5 mb-2">
                                 <div class="flex items-center gap-3">
@@ -342,7 +344,7 @@
     </div>
 
     <div id="mobile-menu"
-        class="hidden-custom lg:hidden absolute top-full left-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 shadow-2xl animate-fade-in shadow-xl overflow-y-auto max-h-[85vh]">
+        class="hidden-custom lg:hidden absolute top-full left-0 w-full bg-white dark:bg-gray-900 border-b border-slate-200/80 dark:border-slate-800 shadow-xl animate-fade-in shadow-xl overflow-y-auto max-h-[85vh]">
         <div class="pt-4 pb-6 px-4 space-y-2">
             <!-- Main Links -->
             <a href="{{ route('welcome') }}"
@@ -363,6 +365,7 @@
                 <span>หน้าร้องเรียน</span>
             </a>
 
+            @if(Auth::check() && Auth::user()->isHrOrAdmin())
             @if(request()->routeIs('training.*'))
                 <a href="{{ route('training.dashboard') }}"
                     class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 transition-all duration-200 group">
@@ -381,6 +384,7 @@
                     </div>
                     <span>Dashboard</span>
                 </a>
+            @endif
             @endif
         </div>
 

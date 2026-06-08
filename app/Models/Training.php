@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Training extends Model
 {
+    protected $connection = 'mysql';
+
     protected $fillable = [
         'branch',
         'hours',

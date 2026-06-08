@@ -150,7 +150,7 @@
                             <div class="flex flex-col gap-2">
                                 @foreach($hrrequest->timeEdits as $timeEdit)
                                     @if($timeEdit->timefile)
-                                        <a href="{{ asset($timeEdit->timefile) }}" target="_blank" class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 transition-colors bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg w-fit">
+                                        <a href="{{ asset($timeEdit->timefile) }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 transition-colors bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg w-fit">
                                             <i class="fas fa-paperclip text-gray-400"></i>
                                             {{ basename($timeEdit->timefile) }}
                                         </a>

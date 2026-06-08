@@ -64,7 +64,7 @@
                 <span class="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 py-1 px-3 rounded-full text-xs font-bold">
                     {{ $hrrequests->count() }} รายการ
                 </span>
-                <a href="{{ route('approve.approvehrlistall.pdf', request()->all()) }}" target="_blank" class="btn btn-sm bg-red-50 text-red-600 hover:bg-red-100 border-none transition-colors">
+                <a href="{{ route('approve.approvehrlistall.pdf', request()->all()) }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm bg-red-50 text-red-600 hover:bg-red-100 border-none transition-colors">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>

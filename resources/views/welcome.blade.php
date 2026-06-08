@@ -81,8 +81,8 @@
     </style>
 
     <!-- ==================== HERO ==================== -->
-    <div class="max-w-7xl mx-auto px-6 pt-24 pb-4">
-        <div class="relative w-full h-[340px] md:h-[440px] rounded-2xl overflow-hidden shadow-lg bg-slate-900">
+    <div class="max-w-7xl mx-auto px-0 md:px-6 pt-16 md:pt-24 pb-0 md:pb-4">
+        <div class="relative w-full h-[calc(100dvh-64px)] md:h-[450px] rounded-none md:rounded-2xl overflow-hidden shadow-lg bg-slate-900">
             <!-- Slides -->
             <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-100 z-10">
                 <img src="{{ asset('images/welcome/hero_industrial.png') }}" alt="Kumwell Plant" class="w-full h-full object-cover">
@@ -108,7 +108,7 @@
                     เพื่อขับเคลื่อนองค์กรสู่อนาคต
                 </p>
                 <div class="opacity-0 translate-y-8 transition-all duration-700 delay-300 reveal">
-                    <a href="#services-grid" class="inline-flex items-center gap-2 bg-white text-kumwell-red font-semibold text-xs px-6 py-2.5 rounded-full hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900">
+                    <a href="#services-grid" class="inline-flex items-center gap-2 bg-white text-kumwell-red font-semibold text-xs px-6 py-2.5 rounded-xl hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900">
                         View More <i class="fas fa-arrow-down ml-1"></i>
                     </a>
                 </div>
@@ -127,9 +127,9 @@
     <div class="relative z-40 max-w-6xl mx-auto px-6 pt-16 pb-8 mb-12">
         <!-- Title & Subtitle Section -->
         <div class="text-center mb-10 reveal opacity-0 translate-y-8 transition-all duration-700">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200/30 dark:border-red-800/30 mb-3">
+            {{-- <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200/30 dark:border-red-800/30 mb-3">
                 KUMWELL IDENTITY
-            </span>
+            </span> --}}
             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-3">
                 คุณค่าร่วมองค์กร <span class="text-kumwell-red">(CCSV)</span>
             </h2>
@@ -178,18 +178,22 @@
     </div>
 
     <!-- ==================== ABOUT US ==================== -->
-    <div class="relative bg-white dark:bg-[#0B0F17] overflow-hidden border-b border-slate-200 dark:border-slate-800 lg:min-h-[600px] flex items-center">
+    <div class="relative bg-white dark:bg-[#0B0F17] overflow-hidden border-b border-slate-200 dark:border-slate-800 md:min-h-[500px] lg:min-h-[600px] md:flex md:items-center">
         <!-- Background decorative grid / glow -->
         <div class="absolute inset-0 z-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
         <div class="absolute left-1/4 top-1/4 w-96 h-96 bg-red-600/10 dark:bg-red-600/5 rounded-full blur-[128px] pointer-events-none z-0"></div>
 
         <div class="max-w-7xl mx-auto px-6 w-full relative z-10">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 lg:gap-16 items-center">
                 <!-- Left: Content -->
-                <div class="lg:col-span-6 py-20 lg:py-24 reveal opacity-0 -translate-x-8 transition-all duration-700">
-                    <!-- Premium Badge -->
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200/50 dark:border-red-800/30 mb-5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-600 dark:bg-red-400 animate-pulse"></span>
+                <div class="md:col-span-7 lg:col-span-6 py-12 md:py-16 lg:py-24 lg:pl-16 xl:pl-24 reveal opacity-0 -translate-x-8 transition-all duration-700">
+                    
+                    <!-- Peeking Mascot -->
+            <div class="absolute left-[-150px] xl:left-[-120px] top-[140px] w-[200px] z-20 pointer-events-none hidden lg:block select-none reveal opacity-0 -translate-x-8 transition-all duration-700">
+                <img src="{{ asset('images/welcome/mascot_peeking_cropped.png') }}" alt="Mascot" class="w-full h-auto">
+            </div>
+                    <!-- Eyebrow text -->
+                    <span class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-3">
                         ABOUT US
                     </span>
                     
@@ -203,8 +207,8 @@
                     </p>
 
                     <!-- Stats/Highlights Grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 max-w-2xl border-t border-gray-100 dark:border-gray-800 pt-8">
-                        <div>
+                    <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-8 max-w-2xl border-t border-gray-100 dark:border-gray-800 pt-8">
+                        {{-- <div>
                             <div class="text-3xl font-black text-red-600 dark:text-red-500">25+</div>
                             <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">ปีแห่งประสบการณ์</div>
                         </div>
@@ -215,13 +219,13 @@
                         <div>
                             <div class="text-3xl font-black text-gray-900 dark:text-white">100%</div>
                             <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">มาตรฐานสากล</div>
-                        </div>
+                        </div> --}}
                     </div>
 
                     <div class="flex flex-wrap gap-4">
                         <a href="https://www.kumwell.com/" target="_blank" rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 dark:bg-red-600 dark:hover:bg-red-700 text-white font-bold text-sm px-6 py-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5 shadow-md shadow-gray-950/10 focus:outline-none focus:ring-2 focus:ring-red-500">
-                            View Website <i class="fas fa-arrow-right text-xs"></i>
+                            class="inline-flex items-center justify-center border border-gray-900 dark:border-white text-gray-900 dark:text-white hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 text-sm font-medium px-8 py-3 transition-colors duration-300 rounded-none">
+                            View Website
                         </a>
                     </div>
                 </div>
@@ -229,11 +233,11 @@
         </div>
 
         <!-- Right: Full-bleed Image (Absolute on large screens, block on mobile) -->
-        <div class="w-full lg:absolute lg:top-0 lg:right-0 lg:bottom-0 lg:w-1/2 h-[350px] lg:h-auto overflow-hidden group reveal opacity-0 translate-x-8 transition-all duration-700">
+        <div class="w-full md:absolute md:top-0 md:right-0 md:bottom-0 md:w-[38%] lg:w-[46%] h-[250px] sm:h-[350px] md:h-auto overflow-hidden group reveal opacity-0 translate-x-8 transition-all duration-700">
             <img src="{{ asset('images/welcome/kmlhq.jpg') }}" alt="About Kumwell" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
             <!-- Floating trust card overlay -->
-            <div class="absolute bottom-6 left-6 right-6 backdrop-blur-md bg-white/95 dark:bg-[#1E2129]/95 border border-white/20 dark:border-white/5 shadow-xl rounded-xl p-4 flex items-center gap-4 transition-transform duration-300 group-hover:-translate-y-1">
+            {{-- <div class="absolute bottom-6 left-6 right-6 backdrop-blur-md bg-white/95 dark:bg-[#1E2129]/95 border border-white/20 dark:border-white/5 shadow-xl rounded-xl p-4 flex items-center gap-4 transition-transform duration-300 group-hover:-translate-y-1">
                 <div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center text-red-600 dark:text-red-500">
                     <i class="fa-solid fa-shield-halved text-lg"></i>
                 </div>
@@ -241,7 +245,7 @@
                     <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider">KUMWELL HQ</span>
                     <span class="block text-sm font-bold text-gray-900 dark:text-white">ผู้นำระบบป้องกันฟ้าผ่าและต่อลงดิน</span>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 
@@ -254,9 +258,6 @@
 
         <div class="max-w-6xl mx-auto px-6 relative z-10">
             <div class="text-center mb-16 reveal opacity-0 translate-y-8 transition-all duration-700">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200/30 dark:border-red-800/30 mb-3">
-                    OUR PORTALS
-                </span>
                 <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
                     ระบบบริการ <span class="text-red-600 dark:text-red-500">HR</span>
                 </h2>
@@ -271,10 +272,10 @@
 
             @if ($isHrOrAdmin)
                 <!-- Bento Grid for Admin / HR -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     
                     <!-- Card 1: HR Request -->
-                    <div class="lg:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
+                    <div class="md:col-span-2 lg:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
                         @auth
                             <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-6 relative overflow-hidden h-full w-full">
                         @else
@@ -303,23 +304,23 @@
                                 <div class="w-full md:w-56 shrink-0 flex flex-col gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-6 md:pt-0 md:pl-6">
                                     <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">เมนูด่วน / Quick Links</span>
                                     @auth
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
                                         </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
                                         </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </a>
                                     @else
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
                                         </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
                                         </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </button>
                                     @endauth
@@ -328,7 +329,7 @@
                     </div>
 
                     <!-- Card 2: Manpower -->
-                    <div class="lg:col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-75">
+                    <div class="md:col-span-1 lg:col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-75">
                         <a href="{{ route('manpower.dashboard') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px]">
                             <div>
                                 <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
@@ -344,7 +345,7 @@
                     </div>
 
                     <!-- Card 3: Training -->
-                    <div class="lg:col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
+                    <div class="md:col-span-1 lg:col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
                         @auth
                             <a href="{{ route('training.index') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px]">
                         @else
@@ -374,7 +375,7 @@
                     </div>
 
                     <!-- Card 4: Data Management -->
-                    <div class="lg:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-150">
+                    <div class="md:col-span-2 lg:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-150">
                         <a href="{{ route('request.data') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-6 relative overflow-hidden h-full">
                             <div class="flex-1 flex flex-col justify-between">
                                 <div>
@@ -440,26 +441,26 @@
                                 </div>
                                 
                                 <!-- Quick Actions Section inside the card -->
-                                <div class="w-full sm:w-48 shrink-0 flex flex-col gap-2.5 border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800/80 pt-6 sm:pt-0 sm:pl-6">
+                                <div class="w-full md:w-56 shrink-0 flex flex-col gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-6 md:pt-0 md:pl-6">
                                     <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">เมนูด่วน / Quick Links</span>
                                     @auth
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
                                         </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
                                         </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </a>
                                     @else
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
                                         </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
                                         </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-red-50/50 dark:bg-slate-900/40 dark:hover:bg-red-950/20 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </button>
                                     @endauth
@@ -503,8 +504,17 @@
     </div>
 
     <!-- ==================== BLOG / NEWS ==================== -->
-    <div id="news-grid" class="py-24 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80">
-        <div class="max-w-5xl mx-auto px-6">
+    <div id="news-grid" class="py-24 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 relative overflow-hidden">
+        <!-- Mascot Watermark (Right Side) -->
+        <div class="hidden md:block absolute md:right-[-45px] lg:right-[-30px] xl:right-12 2xl:right-24 bottom-0 md:w-[220px] lg:w-[280px] xl:w-[340px] z-0 pointer-events-none select-none opacity-10 dark:opacity-[0.06]">
+            <img src="{{ asset('images/welcome/mascot_pointing.png') }}" alt="Mascot Watermark" class="w-full h-auto">
+        </div>
+
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            {{-- <!-- Peeking Mascot -->
+            <div class="absolute left-[-200px] top-[140px] w-[200px] z-20 pointer-events-none hidden lg:block select-none reveal opacity-0 -translate-x-8 transition-all duration-700">
+                <img src="{{ asset('images/welcome/mascot_peeking_cropped.png') }}" alt="Mascot" class="w-full h-auto">
+            </div> --}}
             <!-- Header matching the screenshot -->
             <div class="flex items-center mb-12 reveal opacity-0 translate-y-8 transition-all duration-700">
                 <div class="bg-[#F5A623] text-white px-5 py-3 font-bold text-sm md:text-base flex items-center gap-2.5 shadow-sm shrink-0">
@@ -518,10 +528,10 @@
             @if (isset($newsItems) && $newsItems->count() > 0)
                 <div class="flex flex-col reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
                     @foreach ($newsItems->take(5) as $item)
-                        <div class="pt-8 pb-3 first:pt-0 border-b border-dotted border-slate-350 dark:border-slate-700/80">
+                        <div class="pt-8 pb-3 first:pt-0 border-b border-slate-100 dark:border-slate-800/60">
                             <div class="flex flex-col md:flex-row gap-6 items-start">
                                 <!-- Left column: Image & Date/Views -->
-                                <div class="w-full md:w-72 shrink-0">
+                                <div class="w-full md:w-64 lg:w-72 shrink-0">
                                     <a href="{{ route('news.detail', $item->news_id) }}" class="group/img block relative aspect-[16/10] w-full rounded-none overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
                                         <img src="{{ $item->image_path ? asset(is_array($item->image_path) ? $item->image_path[0] : $item->image_path) : 'https://placehold.co/600x400/e2e8f0/FFF?text=News' }}"
                                              alt="{{ $item->title }}"
@@ -529,8 +539,6 @@
                                              class="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500 ease-out">
                                         <div class="absolute inset-0 bg-black/5 opacity-0 group-hover/img:opacity-100 transition-opacity"></div>
                                     </a>
-                                    <!-- Thick grey bar under the image -->
-                                    <div class="h-[5px] bg-slate-500 dark:bg-slate-650 w-full"></div>
                                     
                                     @php
                                         $thai_months = [
@@ -543,11 +551,11 @@
                                         if ($raw_date) {
                                             $date = \Carbon\Carbon::parse($raw_date);
                                         }
-                                        // Stable simulated views based on news_id
-                                        $views = ($item->news_id * 37) % 450 + 88;
+                                        // Real views count from database
+                                        $views = $item->views ?? 0;
                                     @endphp
                                     
-                                    <div class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-normal mt-6">
+                                    <div class="text-xs md:text-sm text-slate-600 dark:text-slate-400 font-normal mt-3">
                                         @if($date)
                                             {{ $date->day }} {{ $thai_months[$date->month] }} {{ $date->year + 543 }}
                                         @else
@@ -574,9 +582,9 @@
                 </div>
 
                 <div class="mt-6 flex justify-end reveal opacity-0 translate-y-8 transition-all duration-700 delay-150">
-                    <a href="{{ route('news.newsAll') }}" class="inline-flex items-center gap-2 text-xs md:text-sm font-normal text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-500 transition-colors group">
+                    <a href="{{ route('news.newsAll') }}" class="inline-flex items-center gap-2 text-xs md:text-sm font-normal text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-500 transition-colors group">
                         ดูทั้งหมด 
-                        <span class="w-6 h-6 rounded-full border border-slate-350 dark:border-slate-700 flex items-center justify-center text-[10px] group-hover:border-red-600 group-hover:bg-red-600 group-hover:text-white transition-all text-slate-500 dark:text-slate-400 group-hover:text-white">
+                        <span class="w-6 h-6 rounded-full border border-slate-350 dark:border-slate-700 flex items-center justify-center text-[10px] group-hover:border-red-600 group-hover:bg-red-600 transition-all text-inherit group-hover:text-white">
                             <i class="fa-solid fa-arrow-right text-[8px]"></i>
                         </span>
                     </a>

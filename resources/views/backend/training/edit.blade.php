@@ -117,7 +117,7 @@
                                 </label>
                                 @if($training->document)
                                     <div class="mb-2">
-                                        <a href="{{ asset('storage/' . $training->document) }}" target="_blank"
+                                        <a href="{{ asset('storage/' . $training->document) }}" target="_blank" rel="noopener noreferrer"
                                             class="text-blue-500 hover:underline text-sm"><i class="fa-solid fa-file-pdf"></i>
                                             เอกสารปัจจุบัน</a>
                                     </div>

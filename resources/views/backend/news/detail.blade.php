@@ -62,7 +62,7 @@
         if ($raw_date) {
             $date = \Carbon\Carbon::parse($raw_date);
         }
-        $views = ($news->news_id * 37) % 450 + 88;
+        $views = $news->views ?? 0;
 
         // ==========================================
         // ส่วนที่ 4: จัดการข้อมูลใน Sidebar
@@ -113,7 +113,13 @@
                         $mainImage = count($galleryImages) > 0 ? $galleryImages[0] : 'https://placehold.co/600x400/e2e8f0/FFF?text=News';
                     @endphp
                     <div class="relative max-w-lg mx-auto w-full overflow-hidden aspect-[16/10]">
-                        <img src="{{ $mainImage }}" alt="{{ $news->title }}" class="w-full h-full object-cover">
+                        @if (count($galleryImages) > 0)
+                            <a href="{{ $mainImage }}" onclick="event.preventDefault(); if(window.openLightbox) window.openLightbox(0);" class="block w-full h-full cursor-zoom-in">
+                                <img src="{{ $mainImage }}" alt="{{ $news->title }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 ease-out">
+                            </a>
+                        @else
+                            <img src="{{ $mainImage }}" alt="{{ $news->title }}" class="w-full h-full object-cover">
+                        @endif
                     </div>
                     <div class="max-w-lg mx-auto w-full h-[5px] bg-[#c4c4c4] dark:bg-[#c4c4c4] mb-1"></div>
                 <div class="lg:col-span-9 flex flex-col bg-[#fafafa] dark:bg-slate-800/30 p-6 md:p-8">
@@ -140,11 +146,59 @@
                             <span>คัดลอกลิงค์ข่าวนี้</span>
                         </button> --}}
                     </div>
-
+                    
                     <!-- Article Body Content -->
                     <div class="text-xs md:text-sm text-slate-700 dark:text-slate-350 leading-relaxed space-y-4 font-normal mb-8">
                         {!! nl2br(e($news->content)) !!}
                     </div>
+                    
+                    <!-- Attachments -->
+                    @if (count($attachmentFiles))
+                        <div class="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800/80">
+                            <h3 class="text-xs md:text-sm font-bold text-slate-800 dark:text-white mb-3">เอกสารแนบที่เกี่ยวข้อง</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                @foreach ($attachmentFiles as $file)
+                                    @php
+                                        $fileLabel = basename($file);
+                                        // Clean up upload prefix / hash
+                                        $displayName = preg_replace('/^\d+_file_[a-f0-9]+_/', '', $fileLabel);
+                                        if ($displayName === $fileLabel) {
+                                            $displayName = preg_replace('/^\d+_/', '', $fileLabel);
+                                        }
+                                        $fileUrl = Str::startsWith($file, ['http://', 'https://']) ? $file : asset($file);
+                                        
+                                        $ext = strtolower(pathinfo($fileLabel, PATHINFO_EXTENSION));
+                                        $icon = 'fa-regular fa-file';
+                                        if ($ext === 'pdf') {
+                                            $icon = 'fa-regular fa-file-pdf text-red-500';
+                                        } elseif (in_array($ext, ['doc', 'docx'])) {
+                                            $icon = 'fa-regular fa-file-word text-blue-500';
+                                        } elseif (in_array($ext, ['xls', 'xlsx'])) {
+                                            $icon = 'fa-regular fa-file-excel text-green-600';
+                                        } elseif (in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'svg'])) {
+                                            $icon = 'fa-regular fa-file-image text-purple-500';
+                                        } elseif (in_array($ext, ['zip', 'rar', '7z'])) {
+                                            $icon = 'fa-regular fa-file-zipper text-amber-600';
+                                        }
+                                    @endphp
+                                    <a href="{{ $fileUrl }}" target="_blank" rel="noopener noreferrer" class="group flex items-center justify-between p-3 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl transition-all duration-300 hover:shadow-sm">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800/60 flex items-center justify-center text-sm shrink-0">
+                                                <i class="{{ $icon }}"></i>
+                                            </div>
+                                            <span class="text-xs font-medium text-slate-700 dark:text-slate-350 truncate pr-2" title="{{ $displayName }}">
+                                                {{ $displayName }}
+                                            </span>
+                                        </div>
+                                        <div class="w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0">
+                                            <i class="fa-solid fa-arrow-down"></i>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
 
                     <!-- Share Link Box -->
                     <div class="bg-blue-50/30 dark:bg-blue-950/10 border border-dotted border-blue-400 dark:border-blue-800/80 rounded-xl p-8 text-center my-8">
@@ -160,7 +214,7 @@
                         <div class="mt-4">
                             <div class="grid grid-cols-3 gap-2 md:gap-3">
                                 @foreach ($galleryImages as $img)
-                                    <a href="{{ $img }}" target="_blank" class="block overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm aspect-[16/10] relative group">
+                                    <a href="{{ $img }}" class="gallery-item block overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm aspect-[16/10] relative group">
                                         <img src="{{ $img }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" loading="lazy">
                                         <!-- Hover Overlay matching the screenshot -->
                                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
@@ -174,24 +228,6 @@
                         </div>
                     @endif
 
-                    <!-- Attachments -->
-                    @if (count($attachmentFiles))
-                        <div class="mt-8 border-t border-slate-100 dark:border-slate-800/80 pt-6">
-                            <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-4">เอกสารแนบที่เกี่ยวข้อง</h3>
-                            <div class="flex flex-col gap-2">
-                                @foreach ($attachmentFiles as $file)
-                                    @php
-                                        $fileLabel = basename($file);
-                                        $fileUrl = Str::startsWith($file, ['http://', 'https://']) ? $file : asset($file);
-                                    @endphp
-                                    <a href="{{ $fileUrl }}" target="_blank" class="flex items-center gap-2 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                                        <i class="fa-solid fa-file-arrow-down"></i>
-                                        <span>{{ $fileLabel }}</span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
 
@@ -251,6 +287,35 @@
             </div>
         </div>
     </div>
+
+    <!-- Lightbox Modal Popup (Borderless) -->
+    <div id="imageLightbox" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md hidden items-center justify-center z-[9999] transition-opacity duration-300 opacity-0 select-none" style="top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; height: 100vh !important; width: 100vw !important;">
+        <!-- Close Button (Top Right) -->
+        <button type="button" id="closeLightbox" class="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 text-3xl focus:outline-none z-50 p-2 cursor-pointer transition-all duration-300" aria-label="Close Gallery">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <!-- Prev Button -->
+        <button type="button" id="prevLightbox" class="absolute left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl focus:outline-none z-50 p-4 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-all duration-300 select-none" aria-label="Previous Image">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <!-- Next Button -->
+        <button type="button" id="nextLightbox" class="absolute right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl focus:outline-none z-50 p-4 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-all duration-300 select-none" aria-label="Next Image">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <!-- Main Image Container -->
+        <div class="relative max-w-[85vw] max-h-[80vh] flex items-center justify-center">
+            <img id="lightboxImage" src="" alt="Gallery Image" class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl transition-all duration-300 transform scale-95 opacity-0">
+        </div>
+
+        <!-- Image Indicator (Bottom Center) -->
+        <div id="lightboxIndicator" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/90 text-xs font-semibold tracking-wider bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+            รูปภาพที่ 1 / 1
+        </div>
+    </div>
+
     @include('layouts.footer')
 
     <script>
@@ -272,5 +337,108 @@
             }, 2000);
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const galleryImages = @json($galleryImages);
+        let currentIndex = 0;
+
+        const lightbox = document.getElementById('imageLightbox');
+        const lightboxImg = document.getElementById('lightboxImage');
+        const indicator = document.getElementById('lightboxIndicator');
+        const closeBtn = document.getElementById('closeLightbox');
+        const prevBtn = document.getElementById('prevLightbox');
+        const nextBtn = document.getElementById('nextLightbox');
+
+        if (!lightbox || galleryImages.length === 0) return;
+
+        // Open Lightbox
+        document.querySelectorAll('.gallery-item').forEach((item, index) => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                openLightbox(index);
+            });
+        });
+
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightboxImage();
+            
+            // Show lightbox overlay
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+            
+            // Trigger animation
+            setTimeout(() => {
+                lightbox.classList.remove('opacity-0');
+                lightbox.classList.add('opacity-100');
+                if (lightboxImg) {
+                    lightboxImg.classList.remove('scale-95', 'opacity-0');
+                    lightboxImg.classList.add('scale-100', 'opacity-100');
+                }
+            }, 10);
+        }
+
+        // Expose to window so the main featured image link can call it
+        window.openLightbox = openLightbox;
+
+        function closeLightbox() {
+            lightbox.classList.remove('opacity-100');
+            lightbox.classList.add('opacity-0');
+            if (lightboxImg) {
+                lightboxImg.classList.remove('scale-100', 'opacity-100');
+                lightboxImg.classList.add('scale-95', 'opacity-0');
+            }
+            
+            setTimeout(() => {
+                lightbox.classList.remove('flex');
+                lightbox.classList.add('hidden');
+            }, 300);
+        }
+
+        function updateLightboxImage() {
+            // Fade out current image slightly
+            lightboxImg.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                lightboxImg.src = galleryImages[currentIndex];
+                indicator.textContent = `รูปภาพที่ ${currentIndex + 1} / ${galleryImages.length}`;
+                lightboxImg.classList.remove('opacity-0');
+            }, 150);
+        }
+
+        function showNext() {
+            currentIndex = (currentIndex + 1) % galleryImages.length;
+            updateLightboxImage();
+        }
+
+        // Event listeners
+        closeBtn.addEventListener('click', closeLightbox);
+        nextBtn.addEventListener('click', showNext);
+        prevBtn.addEventListener('click', function() {
+            currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+            updateLightboxImage();
+        });
+
+        // Click outside modal content (on the overlay backdrop) to close
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        // Key listeners
+        document.addEventListener('keydown', function(e) {
+            if (lightbox.classList.contains('hidden')) return;
+
+            if (e.key === 'Escape') {
+                closeLightbox();
+            } else if (e.key === 'ArrowRight') {
+                showNext();
+            } else if (e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+                updateLightboxImage();
+            }
+        });
+    });
     </script>
 @endsection

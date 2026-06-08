@@ -110,7 +110,7 @@
                                 <label class="label font-medium">แนบไฟล์หลักฐาน</label>
                                 @if(isset($hrrequest->timeEdit->timefile))
                                     <div class="mb-2">
-                                        <a href="{{ asset($hrrequest->timeEdit->timefile) }}" target="_blank" class="link link-primary text-sm">
+                                        <a href="{{ asset($hrrequest->timeEdit->timefile) }}" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm">
                                             <i class="fa-solid fa-paperclip"></i> ไฟล์แนบเดิม
                                         </a>
                                     </div>

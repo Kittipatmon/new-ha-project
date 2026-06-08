@@ -160,7 +160,7 @@
                         const name = f.split('/').pop();
                         fileHtml += `
                             <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md group">
-                                <a href="/${f}" target="_blank" class="text-blue-500 hover:text-blue-600 underline truncate flex-grow mr-2 text-xs" title="${name}">${name}</a>
+                                <a href="/${f}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:text-blue-600 underline truncate flex-grow mr-2 text-xs" title="${name}">${name}</a>
                                 <button type="button" class="remove-old-file text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity" data-path="${f}">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>

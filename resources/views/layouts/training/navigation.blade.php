@@ -166,10 +166,12 @@
                             <a class="navbar-link shadow transition"
                                 href="{{ route('training.index') }}">ลงทะเบียน</a>
                         </li>
+                        @if(Auth::check() && Auth::user()->isHrOrAdmin())
                         <li>
                             <a class="navbar-link shadow transition"
                                 href="{{ route('training.dashboard') }}">Dashboard</a>
                         </li>
+                        @endif
                     </ul>
                 </div>
 
@@ -358,6 +360,7 @@
                 <span>ลงทะเบียน</span>
             </a>
 
+            @if(Auth::check() && Auth::user()->isHrOrAdmin())
             <a href="{{ route('training.dashboard') }}"
                 class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 transition-all duration-200 group">
                 <div
@@ -366,6 +369,7 @@
                 </div>
                 <span>Dashboard</span>
             </a>
+            @endif
         </div>
 
         @auth

@@ -9,6 +9,8 @@ class TrainingApply extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mysql';
+
     protected $fillable = [
         'training_id',
         'employee_code',

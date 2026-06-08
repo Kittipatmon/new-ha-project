@@ -180,6 +180,7 @@ class NewsController extends Controller
     public function detail($id)
     {
         $news = News::findOrFail($id);
+        $news->increment('views');
         return view('backend.news.detail', compact('news'));
     }
 }

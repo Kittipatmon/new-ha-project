@@ -19,6 +19,7 @@ class News extends Model
         'published_date',
         'is_active',
         'image_path',
+        'views',
     ];
 
     protected $casts = [
@@ -26,6 +27,7 @@ class News extends Model
         'is_active' => 'boolean',
         'image_path' => 'array',
         'file_news' => 'array',
+        'views' => 'integer',
     ];
 
 }

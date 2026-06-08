@@ -33,11 +33,19 @@ class User extends Authenticatable
         'resign_date',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'signature',
+    ];
+
     protected $casts = [
         'id' => 'integer',
         'created_at' => 'datetime',
         'resign_date' => 'datetime',
+        'password' => 'hashed',
     ];
+
 
     protected $appends = [
         'fullname',

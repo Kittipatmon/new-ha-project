@@ -135,7 +135,7 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @foreach($application->documents as $doc)
-                            <a @if($doc->file_path) href="{{ asset('files/recruitment_applicant_documents/' . $doc->file_path) }}" target="_blank" @else href="javascript:void(0)" @endif
+                            <a @if($doc->file_path) href="{{ asset('files/recruitment_applicant_documents/' . $doc->file_path) }}" target="_blank" rel="noopener noreferrer" @else href="javascript:void(0)" @endif
                                 class="flex items-center justify-between p-4 bg-gray-50 dark:bg-kumwell-dark rounded-xl border border-gray-100 dark:border-gray-700 hover:border-kumwell-red transition-all group">
                                 <div class="flex items-center gap-3">
                                     <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
@@ -296,7 +296,7 @@
                                         @if($interview->location) - {{ $interview->location }} @endif
                                     </p>
                                     @if($interview->meeting_link)
-                                        <a href="{{ $interview->meeting_link }}" target="_blank" class="text-blue-500 hover:underline"><i class="fa-solid fa-video mr-1"></i> ลิงก์ประชุมออนไลน์</a>
+                                        <a href="{{ $interview->meeting_link }}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline"><i class="fa-solid fa-video mr-1"></i> ลิงก์ประชุมออนไลน์</a>
                                     @endif
                                 </div>
 

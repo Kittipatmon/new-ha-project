@@ -233,7 +233,7 @@
                             @if(is_array($suggestion->attachments) && count($suggestion->attachments) > 0)
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     @foreach($suggestion->attachments as $index => $attachment)
-                                        <a href="{{ Storage::url($attachment) }}" target="_blank"
+                                        <a href="{{ Storage::url($attachment) }}" target="_blank" rel="noopener noreferrer"
                                             class="flex items-center gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group">
                                             <div
                                                 class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors shrink-0">

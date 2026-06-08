@@ -221,7 +221,7 @@
             <i class="fas fa-file-excel mr-1"></i>
             Excel
         </a>
-        <a href="{{ route('approve.approvehrlistall.pdf', request()->query()) }}" target="_blank"
+        <a href="{{ route('approve.approvehrlistall.pdf', request()->query()) }}" target="_blank" rel="noopener noreferrer"
             class="btn btn-error btn-outline">
             <i class="fas fa-file-pdf mr-1"></i>
             PDF

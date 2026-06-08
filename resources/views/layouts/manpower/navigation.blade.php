@@ -158,10 +158,12 @@
                         <!-- <li>
                             <a class="navbar-link px-6 py-2 text-base text-black rounded-xl shadow transition" href="{{ route('manpower.index') }}">จัดการข้อมูล</a>
                         </li> -->
+                        @if(Auth::check() && Auth::user()->isHrOrAdmin())
                         <li>
                             <a class="navbar-link px-6 py-2 text-base text-black rounded-xl shadow transition"
                                 href="{{ route('manpower.dashboard') }}">Dashboard</a>
                         </li>
+                        @endif
                     </ul>
                 </div>
 
@@ -331,10 +333,12 @@
     <div id="mobile-menu"
         class="hidden-custom lg:hidden absolute top-full left-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 shadow-2xl animate-fade-in shadow-xl overflow-y-auto max-h-[85vh]">
         <div class="pt-2 pb-3 space-y-1">
+            @if(Auth::check() && Auth::user()->isHrOrAdmin())
             <a href="{{ route('dashboard') }}"
                 class="block pl-3 pr-4 py-2 border-l-4 border-indigo-400 text-base font-medium text-indigo-700 bg-indigo-50 focus:outline-none focus:text-indigo-800 focus:bg-indigo-100 focus:border-indigo-700 transition duration-150 ease-in-out">
                 {{ __('Dashboard') }}
             </a>
+            @endif
         </div>
 
         @auth
