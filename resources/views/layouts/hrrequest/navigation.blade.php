@@ -1,4 +1,4 @@
-﻿<style>
+<style>
     .navbar-link {
         display: flex;
         align-items: center;
@@ -82,42 +82,133 @@
 </style>
 <!-- bg-white dark:bg-gray-800 -->
 <nav class="border-b border-gray-100 dark:border-gray-700 shadow-xl bg-white/90 dark:bg-[#1E2129]/90 backdrop-blur-md fixed w-full top-0 z-[9990] transition-all duration-300">
-    <div class="px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center h-full">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('welcome') }}">
-                        <span class="text-red-600 font-bold text-lg sm:text-xl lg:text-3xl ml-2">Kumwell</span>
+                <div class="shrink-0 flex items-center gap-3">
+                    <a href="{{ route('welcome') }}" class="flex items-center gap-2 group">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
+                            H
+                        </div>
+                        <span
+                            class="text-red-500 dark:text-white font-bold text-2xl tracking-tight group-hover:text-red-600 transition-colors duration-300">Kumwell</span>
                     </a>
                 </div>
             </div>
 
-            <div class="hidden lg:flex lg:items-center lg:ms-6">
-
-                <div class="hidden space-x-2 lg:-my-px lg:ms-10 lg:flex">
-                    
-
-                    <ul class="hidden lg:flex space-x-1 items-center">
+            <div class="hidden lg:flex lg:items-center gap-2">
+                <div class="hidden lg:flex items-center">
+                    <ul class="hidden lg:flex gap-2 items-center">
                         <li>
-                            <a class="navbar-link shadow transition"
-                                href="{{ route('welcome') }}">หน้าหลัก</a>
+                            <a class="navbar-link shadow transition" href="{{ route('welcome') }}">หน้าหลัก</a>
                         </li>
                         <li>
-                            <a class="navbar-link shadow transition"
-                                href="{{ route('request.hr') }}">Request HR</a>
+                            @auth
+                                <section id="HAService">
+                                    <a class="navbar-link shadow transition" href="{{ route('welcome') }}#services-grid">HA Service</a>
+                                </section>
+                            @else
+                                <section id="HAService">
+                                    <button type="button" class="login-open-btn navbar-link shadow transition">HA
+                                        Service</button>
+                                </section>
+                            @endauth
                         </li>
-                        @if(Auth::check() && Auth::user()->isHrOrAdmin())
                         <li>
-                            <a class="navbar-link shadow transition"
-                                href="{{ route('requesthr.dashboard') }}">Dashboard</a>
+                            @auth
+                                <section id="news">
+                                    <a class="navbar-link shadow transition" href="{{ route('welcome') }}#news-grid">ประชาสัมพันธ์</a>
+                                </section>
+                            @else
+                                <section id="news">
+                                    <button type="button"
+                                        class="login-open-btn navbar-link shadow transition">ประชาสัมพันธ์</button>
+                                </section>
+                            @endauth
                         </li>
-                        @endif
-                    
-                        {{-- @if(Auth::check() && Auth::user()->isHrOrAdmin())
-                        <li>
-                            <a class="navbar-link px-6 py-2 text-base text-black rounded-xl shadow transition" href="{{ route('backend.training.index') }}">ระบบฝึกอบรม</a>
+                        <!-- Dropdown แบบฟอร์ม HR -->
+                        <li class="relative group">
+                            <button type="button" id="forms-btn"
+                                class="navbar-link shadow transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-file-signature text-sm"></i>
+                                <span>แบบฟอร์ม</span>
+                                <svg class="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div id="forms-menu"
+                                class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700/80 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out transform group-hover:scale-100 scale-95 group-hover:translate-y-0 translate-y-2 origin-top-right">
+                                <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
+                                    <span class="text-[11px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider">ระบบแบบฟอร์ม HR</span>
+                                    <span class="text-[10px] font-semibold text-red-500 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full">HR Forms</span>
+                                </div>
+                                @auth
+                                    <a href="{{ route('manpower-request.create') }}"
+                                        class="flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item">
+                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                            <i class="fa-solid fa-user-plus text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
+                                                <span>ใบขออนุมัติกำลังคน</span>
+                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-13</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบฟอร์มขออนุมัติจ้าง/โอนย้ายพนักงานใหม่</p>
+                                        </div>
+                                    </a>
+                                    <a href="{{ route('probation-evaluation.create') }}"
+                                        class="flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item border-t border-gray-50 dark:border-gray-700/40">
+                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                            <i class="fa-solid fa-clipboard-check text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
+                                                <span>แบบประเมินทดลองงาน</span>
+                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-18</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบประเมินผลการปฏิบัติงานทดลองงาน</p>
+                                        </div>
+                                    </a>
+                                    <a href="{{ route('interview-evaluation.create') }}"
+                                        class="flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item border-t border-gray-50 dark:border-gray-700/40">
+                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                            <i class="fa-solid fa-id-card-clip text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
+                                                <span>แบบประเมินผลสัมภาษณ์</span>
+                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-25</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบประเมินผลการสัมภาษณ์ผู้สมัครงาน</p>
+                                        </div>
+                                    </a>
+                                    <div class="px-2 pt-2 border-t border-gray-100 dark:border-gray-700/60 mt-1">
+                                        <a href="{{ route('manpower-request.index') }}"
+                                            class="flex items-center justify-between px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors">
+                                            <span class="flex items-center gap-1.5">
+                                                <i class="fa-solid fa-list-check"></i>
+                                                ติดตามสถานะแบบฟอร์ม
+                                            </span>
+                                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    <button type="button" id="login-open-btn-form1" class="login-open-btn w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item">
+                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
+                                            <i class="fa-solid fa-user-plus text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
+                                                <span>ใบขออนุมัติกำลังคน</span>
+                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-13</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบฟอร์มขออนุมัติจ้าง/โอนย้ายพนักงานใหม่ (กรุณาเข้าสู่ระบบก่อน)</p>
+                                        </div>
+                                    </button>
+                                @endauth
+                            </div>
                         </li>
-                        @endif --}}
                     </ul>
                 </div>
 

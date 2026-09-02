@@ -1,4 +1,4 @@
-﻿<style>
+<style>
     .navbar-link {
         display: flex;
         align-items: center;
@@ -82,12 +82,17 @@
 </style>
 <!-- bg-white dark:bg-gray-800 -->
 <nav class="border-b border-gray-100 dark:border-gray-700 shadow-xl bg-white/90 dark:bg-[#1E2129]/90 backdrop-blur-md fixed w-full top-0 z-[9990] transition-all duration-300">
-    <div class="px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center h-full">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('welcome') }}">
-                        <span class="text-red-600 font-bold text-lg sm:text-xl lg:text-3xl ml-2">Kumwell</span>
+                <div class="shrink-0 flex items-center gap-3">
+                    <a href="{{ route('welcome') }}" class="flex items-center gap-2 group">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
+                            H
+                        </div>
+                        <span
+                            class="text-red-500 dark:text-white font-bold text-2xl tracking-tight group-hover:text-red-600 transition-colors duration-300">Kumwell</span>
                     </a>
                 </div>
             </div>
