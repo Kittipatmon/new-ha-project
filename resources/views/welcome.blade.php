@@ -124,13 +124,10 @@
     </div>
 
     <!-- ==================== SERVICES STRIP ==================== -->
-    <div class="relative z-40 max-w-6xl mx-auto px-6 pt-16 pb-8 mb-12">
+    <div class="relative z-40 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-16 pb-4 sm:pb-8 mb-6 sm:mb-12">
         <!-- Title & Subtitle Section -->
-        <div class="text-center mb-10 reveal opacity-0 translate-y-8 transition-all duration-700">
-            {{-- <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200/30 dark:border-red-800/30 mb-3">
-                KUMWELL IDENTITY
-            </span> --}}
-            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-3">
+        <div class="text-center mb-5 sm:mb-10 reveal opacity-0 translate-y-8 transition-all duration-700">
+            <h2 class="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-1.5 sm:mb-3">
                 คุณค่าร่วมองค์กร <span class="text-kumwell-red">(CCSV)</span>
             </h2>
             <p class="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-xs md:text-sm leading-relaxed">
@@ -138,40 +135,40 @@
             </p>
         </div>
 
-        <!-- Red Container with White Cards -->
-        <div class="bg-kumwell-red p-4 md:p-5 shadow-xl reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <!-- Red Container with White Cards (2 Columns on Mobile, 4 Columns on Desktop) -->
+        <div class="bg-kumwell-red p-2.5 sm:p-5 rounded-xl sm:rounded-2xl shadow-xl reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5">
                 <!-- Card 1 -->
-                <div class="group bg-white p-8 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <div class="w-20 h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-3xl mb-6 group-hover:scale-105 transition-transform">
+                <div class="group bg-white p-3.5 sm:p-8 rounded-lg flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="w-10 h-10 sm:w-20 sm:h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-lg sm:text-3xl mb-2 sm:mb-6 group-hover:scale-105 transition-transform shrink-0">
                         <i class="fa-solid fa-handshake"></i>
                     </div>
-                    <h3 class="text-kumwell-red font-extrabold text-base mb-3 uppercase tracking-wider">C (Corporation)</h3>
-                    <p class="text-slate-600 text-xs md:text-sm leading-relaxed">ร่วมมือกับผู้มีส่วนได้เสีย บูรณาการการส่งมอบผลิตภัณฑ์และบริการอย่างมืออาชีพ</p>
+                    <h3 class="text-kumwell-red font-extrabold text-xs sm:text-base mb-1 sm:mb-3 uppercase tracking-wider">C (Corporation)</h3>
+                    <p class="text-slate-600 text-[10px] sm:text-xs md:text-sm leading-tight sm:leading-relaxed">ร่วมมือกับผู้มีส่วนได้เสีย บูรณาการการส่งมอบผลิตภัณฑ์และบริการอย่างมืออาชีพ</p>
                 </div>
                 <!-- Card 2 -->
-                <div class="group bg-white p-8 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <div class="w-20 h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-3xl mb-6 group-hover:scale-105 transition-transform">
+                <div class="group bg-white p-3.5 sm:p-8 rounded-lg flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="w-10 h-10 sm:w-20 sm:h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-lg sm:text-3xl mb-2 sm:mb-6 group-hover:scale-105 transition-transform shrink-0">
                         <i class="fa-solid fa-network-wired"></i>
                     </div>
-                    <h3 class="text-kumwell-red font-extrabold text-base mb-3 uppercase tracking-wider">C (Creating)</h3>
-                    <p class="text-slate-600 text-xs md:text-sm leading-relaxed">สร้างสรรค์งานวิจัยและพัฒนาร่วมกับพันธมิตร เพื่อส่งมอบนวัตกรรมความปลอดภัย</p>
+                    <h3 class="text-kumwell-red font-extrabold text-xs sm:text-base mb-1 sm:mb-3 uppercase tracking-wider">C (Creating)</h3>
+                    <p class="text-slate-600 text-[10px] sm:text-xs md:text-sm leading-tight sm:leading-relaxed">สร้างสรรค์งานวิจัยและพัฒนาร่วมกับพันธมิตร เพื่อส่งมอบนวัตกรรมความปลอดภัย</p>
                 </div>
                 <!-- Card 3 -->
-                <div class="group bg-white p-8 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <div class="w-20 h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-3xl mb-6 group-hover:scale-105 transition-transform">
+                <div class="group bg-white p-3.5 sm:p-8 rounded-lg flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="w-10 h-10 sm:w-20 sm:h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-lg sm:text-3xl mb-2 sm:mb-6 group-hover:scale-105 transition-transform shrink-0">
                         <i class="fa-solid fa-chalkboard-teacher"></i>
                     </div>
-                    <h3 class="text-kumwell-red font-extrabold text-base mb-3 uppercase tracking-wider">S (Shared)</h3>
-                    <p class="text-slate-600 text-xs md:text-sm leading-relaxed">แบ่งปันและเพิ่มคุณค่าร่วมกับทุกภาคส่วน มุ่งเน้นการส่งต่อความปลอดภัยสู่สังคม</p>
+                    <h3 class="text-kumwell-red font-extrabold text-xs sm:text-base mb-1 sm:mb-3 uppercase tracking-wider">S (Shared)</h3>
+                    <p class="text-slate-600 text-[10px] sm:text-xs md:text-sm leading-tight sm:leading-relaxed">แบ่งปันและเพิ่มคุณค่าร่วมกับทุกภาคส่วน มุ่งเน้นการส่งต่อความปลอดภัยสู่สังคม</p>
                 </div>
                 <!-- Card 4 -->
-                <div class="group bg-white p-8 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <div class="w-20 h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-3xl mb-6 group-hover:scale-105 transition-transform">
+                <div class="group bg-white p-3.5 sm:p-8 rounded-lg flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="w-10 h-10 sm:w-20 sm:h-20 rounded-full bg-kumwell-red text-white flex items-center justify-center text-lg sm:text-3xl mb-2 sm:mb-6 group-hover:scale-105 transition-transform shrink-0">
                         <i class="fa-solid fa-people-carry-box"></i>
                     </div>
-                    <h3 class="text-kumwell-red font-extrabold text-base mb-3 uppercase tracking-wider">V (Value)</h3>
-                    <p class="text-slate-600 text-xs md:text-sm leading-relaxed">เพิ่มคุณค่าและพัฒนาศักยภาพทุนมนุษย์ ก้าวสู่องค์กรนวัตกรรมระดับสากลสู่ความยั่งยืน</p>
+                    <h3 class="text-kumwell-red font-extrabold text-xs sm:text-base mb-1 sm:mb-3 uppercase tracking-wider">V (Value)</h3>
+                    <p class="text-slate-600 text-[10px] sm:text-xs md:text-sm leading-tight sm:leading-relaxed">เพิ่มคุณค่าและพัฒนาศักยภาพทุนมนุษย์ ก้าวสู่องค์กรนวัตกรรมระดับสากลสู่ความยั่งยืน</p>
                 </div>
             </div>
         </div>
@@ -271,101 +268,88 @@
             @endphp
 
             @if ($isHrOrAdmin)
-                <!-- Bento Grid for Admin / HR -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Bento Grid for Admin / HR (2 Columns on Mobile, 3 Columns on Desktop) -->
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
                     
                     <!-- Card 1: HR Request -->
-                    <div class="md:col-span-2 lg:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
+                    <div class="col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
                         @auth
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-6 relative overflow-hidden h-full w-full">
+                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 relative overflow-hidden h-full w-full">
                         @else
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-6 w-full login-open-btn cursor-pointer relative overflow-hidden h-full">
+                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 w-full login-open-btn cursor-pointer relative overflow-hidden h-full">
                         @endauth
                                 <div class="flex-1 flex flex-col justify-between">
                                     <div>
-                                        <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
+                                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
                                             <i class="fa-regular fa-file-lines"></i>
                                         </div>
-                                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการคำร้อง</h3>
-                                        <p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-6">ดำเนินการยื่นขอเอกสาร การลางาน และการปรับแก้ไขเวลาทำงาน พร้อมติดตามความคืบหน้าอย่างรวดเร็ว</p>
+                                        <h3 class="text-sm sm:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการคำร้อง</h3>
+                                        <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-2 sm:mb-6 line-clamp-2 sm:line-clamp-none">ดำเนินการยื่นขอเอกสาร การลางาน และการปรับแก้ไขเวลาทำงาน พร้อมติดตามความคืบหน้าอย่างรวดเร็ว</p>
                                     </div>
                                     @auth
-                                        <a href="{{ route('request.hr') }}" class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform focus:outline-none">
+                                        <a href="{{ route('request.hr') }}" class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform focus:outline-none">
                                             เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
                                         </a>
                                     @else
-                                        <span class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform">
+                                        <span class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform">
                                             เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
                                         </span>
                                     @endauth
                                 </div>
                                 
                                 <!-- Quick Actions Section inside the card -->
-                                <div class="w-full md:w-56 shrink-0 flex flex-col gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-6 md:pt-0 md:pl-6">
-                                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">เมนูด่วน / Quick Links</span>
+                                <div class="w-full md:w-56 shrink-0 flex flex-col gap-1 sm:gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-2.5 md:pt-0 md:pl-6">
+                                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">เมนูด่วน / Quick Links</span>
                                     @auth
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
-                                            <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
-                                        </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
-                                            <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </a>
                                     @else
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
-                                            <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
-                                        </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
-                                            <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </button>
                                     @endauth
                                 </div>
                             </div>
                     </div>
 
-                    <!-- Card 2: Manpower -->
-                    <div class="md:col-span-1 lg:col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-75">
-                        <a href="{{ route('manpower.dashboard') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px]">
+                    <!-- Card 2: Manpower (Col 1 on Mobile 2-col Grid) -->
+                    <div class="col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-75">
+                        <a href="{{ route('manpower.dashboard') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[150px] sm:min-h-[250px]">
                             <div>
-                                <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
+                                <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
                                     <i class="fa-solid fa-users-gear"></i>
                                 </div>
-                                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบอัตรากำลังพล</h3>
-                                <p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">วิเคราะห์แผนกำลังพล ความต้องการของแผนกต่างๆ และการอนุมัติสิทธิ์อัตรากำลัง</p>
+                                <h3 class="text-xs sm:text-lg font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบอัตรากำลังพล</h3>
+                                <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-tight sm:leading-relaxed line-clamp-2 sm:line-clamp-none">วิเคราะห์แผนกำลังพล ความต้องการของแผนกต่างๆ และการอนุมัติสิทธิ์อัตรากำลัง</p>
                             </div>
-                            <span class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-4">
-                                ดูข้อมูลวิเคราะห์ <i class="fas fa-arrow-right ml-1.5"></i>
+                            <span class="inline-flex items-center text-[10px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-2 sm:mt-4">
+                                ดูข้อมูลวิเคราะห์ <i class="fas fa-arrow-right ml-1"></i>
                             </span>
                         </a>
                     </div>
 
-                    <!-- Card 3: Training -->
-                    <div class="md:col-span-1 lg:col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
+                    <!-- Card 3: Training (Col 2 on Mobile 2-col Grid) -->
+                    <div class="col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
                         @auth
-                            <a href="{{ route('training.index') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px]">
+                            <a href="{{ route('training.index') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[150px] sm:min-h-[250px]">
                         @else
-                            <button type="button" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 text-left transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px] login-open-btn w-full">
+                            <button type="button" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3 sm:p-8 text-left transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[150px] sm:min-h-[250px] login-open-btn w-full">
                         @endauth
                                 <div>
-                                    <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
+                                    <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
                                         <i class="fa-solid fa-chalkboard-user"></i>
                                     </div>
-                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบฝึกอบรม</h3>
-                                    <p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-4">พัฒนาศักยภาพการปฏิบัติงานผ่านหลักสูตรและการฝึกอบรมในองค์กรอย่างต่อเนื่อง</p>
+                                    <h3 class="text-xs sm:text-lg font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบฝึกอบรม</h3>
+                                    <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-tight sm:leading-relaxed mb-2 sm:mb-4 line-clamp-2 sm:line-clamp-none">พัฒนาศักยภาพการปฏิบัติงานผ่านหลักสูตรและการฝึกอบรมในองค์กรอย่างต่อเนื่อง</p>
                                     <!-- Course tag badges -->
-                                    <div class="flex flex-wrap gap-1.5 mb-2">
-                                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Safety</span>
-                                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Skills</span>
-                                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Learning</span>
+                                    <div class="flex flex-wrap gap-1 mb-1 sm:mb-2">
+                                        <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 rounded">#Safety</span>
+                                        <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 rounded">#Skills</span>
                                     </div>
                                 </div>
-                                <span class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-4">
-                                    เข้าชมหลักสูตร <i class="fas fa-arrow-right ml-1.5"></i>
+                                <span class="inline-flex items-center text-[10px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-2 sm:mt-4">
+                                    เข้าชมหลักสูตร <i class="fas fa-arrow-right ml-1"></i>
                                 </span>
                         @auth
                             </a>
@@ -375,11 +359,11 @@
                     </div>
 
                     <!-- Card 4: Data Management -->
-                    <div class="md:col-span-2 lg:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-150">
-                        <a href="{{ route('request.data') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-6 relative overflow-hidden h-full">
+                    <div class="col-span-2 lg:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-150">
+                        <a href="{{ route('request.data') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 relative overflow-hidden h-full">
                             <div class="flex-1 flex flex-col justify-between">
                                 <div>
-                                    <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
+                                    <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
                                         <i class="fa-solid fa-database"></i>
                                     </div>
                                     <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการข้อมูล</h3>
@@ -411,57 +395,45 @@
 
                 </div>
             @else
-                <!-- Normal User / Staff Layout (Asymmetric 3-Column Bento Grid) -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Normal User / Staff Layout (2 Columns on Mobile, 3 Columns on Desktop) -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-8 max-w-5xl mx-auto">
                     
                     <!-- Card 1: HR Request -->
-                    <div class="md:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
+                    <div class="col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
                         @auth
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col sm:flex-row justify-between gap-6 relative overflow-hidden h-full w-full">
+                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col sm:flex-row justify-between gap-3 sm:gap-6 relative overflow-hidden h-full w-full">
                         @else
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col sm:flex-row justify-between gap-6 w-full login-open-btn cursor-pointer relative overflow-hidden h-full">
+                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col sm:flex-row justify-between gap-3 sm:gap-6 w-full login-open-btn cursor-pointer relative overflow-hidden h-full">
                         @endauth
                                 <div class="flex-1 flex flex-col justify-between">
                                     <div>
-                                        <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
+                                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
                                             <i class="fa-regular fa-file-lines"></i>
                                         </div>
-                                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการคำร้อง</h3>
-                                        <p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-6">ดำเนินการยื่นขอเอกสาร การลางาน และการปรับแก้ไขเวลาทำงาน พร้อมติดตามความคืบหน้าการอนุมัติได้ง่ายๆ</p>
+                                        <h3 class="text-sm sm:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการคำร้อง</h3>
+                                        <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-2 sm:mb-6 line-clamp-2 sm:line-clamp-none">ดำเนินการยื่นขอเอกสาร การลางาน และการปรับแก้ไขเวลาทำงาน พร้อมติดตามความคืบหน้าการอนุมัติได้ง่ายๆ</p>
                                     </div>
                                     @auth
-                                        <a href="{{ route('request.hr') }}" class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform focus:outline-none">
+                                        <a href="{{ route('request.hr') }}" class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform focus:outline-none">
                                             เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
                                         </a>
                                     @else
-                                        <span class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform">
+                                        <span class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform">
                                             เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
                                         </span>
                                     @endauth
                                 </div>
                                 
                                 <!-- Quick Actions Section inside the card -->
-                                <div class="w-full md:w-56 shrink-0 flex flex-col gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-6 md:pt-0 md:pl-6">
-                                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">เมนูด่วน / Quick Links</span>
+                                <div class="w-full md:w-56 shrink-0 flex flex-col gap-1 sm:gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-2.5 md:pt-0 md:pl-6">
+                                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">เมนูด่วน / Quick Links</span>
                                     @auth
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
-                                            <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
-                                        </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
+                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </a>
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
-                                            <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </a>
                                     @else
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
-                                            <i class="fa-solid fa-umbrella-beach text-[10px] opacity-75"></i> ยื่นใบลาออนไลน์
-                                        </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
+                                        <button type="button" class="login-open-btn flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
                                             <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </button>
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
-                                            <i class="fa-solid fa-clock-rotate-left text-[10px] opacity-75"></i> ปรับปรุงเวลาสแกน
                                         </button>
                                     @endauth
                                 </div>
@@ -504,25 +476,21 @@
     </div>
 
     <!-- ==================== BLOG / NEWS ==================== -->
-    <div id="news-grid" class="py-24 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 relative overflow-hidden">
+    <div id="news-grid" class="py-8 sm:py-16 md:py-24 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 relative overflow-hidden">
         <!-- Mascot Watermark (Right Side) -->
         <div class="hidden md:block absolute md:right-[-45px] lg:right-[-30px] xl:right-12 2xl:right-24 bottom-0 md:w-[220px] lg:w-[280px] xl:w-[340px] z-0 pointer-events-none select-none opacity-10 dark:opacity-[0.06]">
             <img src="{{ asset('images/welcome/mascot_pointing.png') }}" alt="Mascot Watermark" class="w-full h-auto">
         </div>
 
-        <div class="max-w-4xl mx-auto px-6 relative z-10">
-            {{-- <!-- Peeking Mascot -->
-            <div class="absolute left-[-200px] top-[140px] w-[200px] z-20 pointer-events-none hidden lg:block select-none reveal opacity-0 -translate-x-8 transition-all duration-700">
-                <img src="{{ asset('images/welcome/mascot_peeking_cropped.png') }}" alt="Mascot" class="w-full h-auto">
-            </div> --}}
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
             <!-- Header matching the screenshot -->
-            <div class="flex items-center mb-12 reveal opacity-0 translate-y-8 transition-all duration-700">
-                <div class="bg-[#F5A623] text-white px-5 py-3 font-bold text-sm md:text-base flex items-center gap-2.5 shadow-sm shrink-0">
-                    <i class="fa-solid fa-bullhorn text-sm"></i>
+            <div class="flex items-center mb-6 sm:mb-12 reveal opacity-0 translate-y-8 transition-all duration-700">
+                <div class="bg-[#F5A623] text-white px-3.5 sm:px-5 py-2 sm:py-3 font-bold text-xs sm:text-base flex items-center gap-2 sm:gap-2.5 shadow-sm shrink-0">
+                    <i class="fa-solid fa-bullhorn text-xs sm:text-sm"></i>
                     ข่าวประชาสัมพันธ์
                 </div>
                 <!-- Decorative repeating dot grid pattern -->
-                <div class="flex-1 h-11 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] dark:bg-[radial-gradient(#475569_1px,transparent_1px)] [background-size:5px_5px] opacity-90 ml-3 pointer-events-none"></div>
+                <div class="flex-1 h-8 sm:h-11 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] dark:bg-[radial-gradient(#475569_1px,transparent_1px)] [background-size:5px_5px] opacity-90 ml-3 pointer-events-none"></div>
             </div>
 
             @if (isset($newsItems) && $newsItems->count() > 0)

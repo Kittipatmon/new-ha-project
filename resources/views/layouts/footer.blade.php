@@ -8,16 +8,14 @@
 
 <!-- ==================== TOPBAR (FOOTER ALIGNED) ==================== -->
 <div class="bg-slate-900 text-slate-400 text-xs py-2 border-t border-slate-800">
-    <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex flex-wrap justify-center md:justify-start gap-4 md:gap-6">
             <span><i class="fas fa-phone mr-1.5 opacity-70"></i> +66 2 123 4567</span>
             <span><i class="fas fa-envelope mr-1.5 opacity-70"></i> info@kumwell.com</span>
             <span><i class="fas fa-clock mr-1.5 opacity-70"></i> 08:00 – 17:30 น.</span>
         </div>
         <div class="flex items-center gap-6">
-            <button aria-label="Toggle dark mode" onclick="toggleTheme()" class="hover:text-white transition-colors flex items-center gap-1.5 px-2 py-1 -ml-2 rounded focus:outline-none focus:ring-2 focus:ring-slate-500">
-                <i class="fas fa-circle-half-stroke"></i> Theme
-            </button>
+
             @auth
                 <span class="text-slate-300">สวัสดี, {{ Auth::user()->name }}</span>
             @else
@@ -28,7 +26,7 @@
 </div>
 
 <footer class=" text-[#333333] border-t border-gray-100/20 ">
-    <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             

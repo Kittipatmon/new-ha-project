@@ -48,19 +48,13 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
-Route::get('/dashboard', function () {
-    if (!(auth()->check() && auth()->user()->isHrOrAdmin())) {
-        abort(403);
-    }
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [RequestDataController::class, 'welcomeData'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
 
 Route::get('news/detail/{id}', [NewsController::class, 'detail'])->name('news.detail');
 Route::get('news-all', [NewsController::class, 'newsAll'])->name('news.newsAll');
 
-Route::get('news-all', [NewsController::class, 'newsAll'])->name('news.newsAll');
 
 // Public Recruitment Routes
 Route::get('/recruitment', [App\Http\Controllers\Frontend\RecruitmentController::class, 'index'])->name('recruitment.index');
@@ -82,6 +76,42 @@ Route::middleware('auth')->group(function () {
     Route::get('/manpower/index', [ManpowerController::class, 'index'])->name('manpower.index');
     Route::get('/manpower/export/excel', [ManpowerController::class, 'exportExcel'])->name('manpower.export.excel');
     Route::get('/manpower/export/pdf', [ManpowerController::class, 'exportPdf'])->name('manpower.export.pdf');
+
+    // HR Forms: Manpower Request (QF-HR-13)
+    Route::get('/manpower-request', [App\Http\Controllers\ManpowerRequestController::class, 'index'])->name('manpower-request.index');
+    Route::get('/manpower-request/create', [App\Http\Controllers\ManpowerRequestController::class, 'create'])->name('manpower-request.create');
+    Route::post('/manpower-request/store', [App\Http\Controllers\ManpowerRequestController::class, 'store'])->name('manpower-request.store');
+    Route::get('/manpower-request/show/{id}', [App\Http\Controllers\ManpowerRequestController::class, 'show'])->name('manpower-request.show');
+    Route::get('/manpower-request/pdf/{id}', [App\Http\Controllers\ManpowerRequestController::class, 'exportPdf'])->name('manpower-request.pdf');
+    Route::get('/manpower-request/data/requests', [App\Http\Controllers\ManpowerRequestController::class, 'dataTableRequests'])->name('manpower-request.data.requests');
+    Route::get('/manpower-request/data/requests-alias', [App\Http\Controllers\ManpowerRequestController::class, 'dataTableRequests'])->name('manpower-request.data');
+    Route::get('/manpower-request/data/probations', [App\Http\Controllers\ManpowerRequestController::class, 'dataTableProbations'])->name('manpower-request.data.probations');
+    Route::get('/manpower-request/data/probations-alias', [App\Http\Controllers\ManpowerRequestController::class, 'dataTableProbations'])->name('manpower-request.probations-data');
+
+    // HR Forms: Probation Evaluation (QF-HR-18)
+    Route::get('/probation-evaluation/create', [App\Http\Controllers\ProbationEvaluationController::class, 'create'])->name('probation-evaluation.create');
+    Route::post('/probation-evaluation/store', [App\Http\Controllers\ProbationEvaluationController::class, 'store'])->name('probation-evaluation.store');
+    Route::get('/probation-evaluation/show/{id}', [App\Http\Controllers\ProbationEvaluationController::class, 'show'])->name('probation-evaluation.show');
+    Route::post('/probation-evaluation/{id}/sign', [App\Http\Controllers\ProbationEvaluationController::class, 'sign'])->name('admin.probation-evaluations.sign');
+    Route::get('/probation-evaluation/pdf/{id}', [App\Http\Controllers\ProbationEvaluationController::class, 'exportPdf'])->name('probation-evaluation.pdf');
+
+    // HR Forms: Interview Evaluation (QF-HR-25)
+    Route::get('/interview-evaluation/create', [App\Http\Controllers\InterviewEvaluationController::class, 'create'])->name('interview-evaluation.create');
+    Route::post('/interview-evaluation/store', [App\Http\Controllers\InterviewEvaluationController::class, 'store'])->name('interview-evaluation.store');
+    Route::get('/interview-evaluation/show/{id}', [App\Http\Controllers\InterviewEvaluationController::class, 'show'])->name('interview-evaluation.show');
+    Route::post('/interview-evaluation/{id}/sign', [App\Http\Controllers\InterviewEvaluationController::class, 'sign'])->name('admin.interview-evaluations.sign');
+    Route::get('/interview-evaluation/pdf/{id}', [App\Http\Controllers\InterviewEvaluationController::class, 'exportPdf'])->name('interview-evaluation.pdf');
+
+    // Admin HR Consideration routes
+    Route::get('/admin/manpower-requests', [App\Http\Controllers\Admin\ManpowerRequestController::class, 'index'])->name('admin.manpower-requests.index');
+    Route::get('/admin/manpower-requests/data', [App\Http\Controllers\Admin\ManpowerRequestController::class, 'dataTable'])->name('admin.manpower-requests.data');
+    Route::get('/admin/manpower-requests/{id}', [App\Http\Controllers\Admin\ManpowerRequestController::class, 'show'])->name('admin.manpower-requests.show');
+    Route::post('/admin/manpower-requests/{manpowerRequest}/approve', [App\Http\Controllers\Admin\ManpowerRequestController::class, 'approve'])->name('admin.manpower-requests.approve');
+    Route::post('/admin/manpower-requests/{manpowerRequest}/reject', [App\Http\Controllers\Admin\ManpowerRequestController::class, 'reject'])->name('admin.manpower-requests.reject');
+    Route::get('/admin/probation-evaluations', [App\Http\Controllers\Admin\ProbationEvaluationController::class, 'index'])->name('admin.probation-evaluations.index');
+    Route::get('/admin/probation-evaluations/data', [App\Http\Controllers\Admin\ProbationEvaluationController::class, 'dataTable'])->name('admin.probation-evaluations.data');
+    Route::get('/admin/interview-evaluations', [App\Http\Controllers\Admin\InterviewEvaluationController::class, 'index'])->name('admin.interview-evaluations.index');
+    Route::get('/admin/interview-evaluations/data', [App\Http\Controllers\Admin\InterviewEvaluationController::class, 'dataTable'])->name('admin.interview-evaluations.data');
 
     Route::get('/welcomehrrequest', [RequestHRController::class, 'welcomeRequest'])->name('request.hr');
     Route::get('/request-data', [RequestDataController::class, 'welcomeData'])->name('request.data');
@@ -124,7 +154,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('divisions', DivisionController::class);
         Route::resource('departments', DepartmentController::class);
         Route::resource('users', UserController::class);
-        Route::delete('users/destroy/{id}', [UserController::class, 'destroy'])->name('users.destroy');
         Route::resource('usertypes', UserTypeController::class);
 
         Route::resource('request-categories', RequestCategoriesController::class);
@@ -177,6 +206,7 @@ Route::middleware('auth')->group(function () {
     // Training Frontend
     Route::get('/training/dashboard', [\App\Http\Controllers\TrainingController::class, 'dashboard'])->name('training.dashboard');
     Route::get('/training', [App\Http\Controllers\TrainingController::class, 'index'])->name('training.index');
+    Route::get('/training/guide', [App\Http\Controllers\TrainingController::class, 'guide'])->name('training.guide');
     Route::get('/training/apply/{id?}', [App\Http\Controllers\TrainingController::class, 'apply'])->name('training.apply');
     Route::post('/training/store', [App\Http\Controllers\TrainingController::class, 'store'])->name('training.store');
 

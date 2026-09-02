@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -14,26 +16,21 @@
             font-family: 'Prompt', sans-serif;
         }
 
-        /* Custom Scrollbar */
+        /* Hide Scrollbar */
         .sidebar-scroll::-webkit-scrollbar {
-            width: 5px;
+            display: none;
+            width: 0px;
+            height: 0px;
         }
 
-        .sidebar-scroll::-webkit-scrollbar-track {
-            background: #121418;
-        }
-
-        .sidebar-scroll::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-
-        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-            background: #D71920;
+        .sidebar-scroll {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
 
         /* Helper class to hide elements via JS */
-        .hidden-force {
+        .hidden-force,
+        .sidebar-text.hidden {
             display: none !important;
         }
 
@@ -51,6 +48,25 @@
     @if(request()->routeIs('welcome') || request()->routeIs('news.newsAll') || request()->routeIs('news.detail') || request()->routeIs('users.profile'))
         <div class="min-h-screen">
             @yield('content')
+            {{ $slot ?? '' }}
+        </div>
+    @elseif(request()->routeIs('manpower-request.*') || request()->routeIs('probation-evaluation.*') || request()->routeIs('interview-evaluation.*'))
+        {{-- HR Forms layout: top navigation bar (no sidebar) using layouts.m_p --}}
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+            @include('layouts.m_p.navigation')
+
+            @isset($header)
+                <header class="bg-white dark:bg-gray-800 shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
+
+            <main>
+                @yield('content')
+                {{ $slot ?? '' }}
+            </main>
         </div>
     @else
         <div class="flex h-screen overflow-hidden">
@@ -59,26 +75,32 @@
 
             <main class="flex-1 bg-gray-50 dark:bg-kumwell-dark text-gray-900 dark:text-gray-100 overflow-y-auto relative w-full overflow-x-hidden">
                 <div class="p-4 sm:p-6">
-                    <div
-                        class="flex flex-col md:flex-row md:items-center justify-between mb-4 border-b border-gray-300/30 pb-3 gap-4">
-                        <div class="flex items-center gap-3 md:gap-4">
-                            <button id="mobile-sidebar-open" class="md:hidden p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <div class="flex items-center justify-between mb-4 border-b border-gray-300/30 pb-3 gap-3">
+                        <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+                            <button id="mobile-sidebar-open" class="lg:hidden p-2 -ml-1 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors shrink-0">
                                 <i class="fa-solid fa-bars text-lg"></i>
                             </button>
-                            <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">
+                            <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 dark:text-white truncate">
                                 @yield('title', 'Dashboard')
                             </h1>
                             @hasSection('header_actions')
-                                <div class="w-full sm:w-auto">
+                                <div class="hidden sm:block shrink-0">
                                     @yield('header_actions')
                                 </div>
                             @endif
                         </div>
-                        <div class="text-sm text-red-500 shrink-0">
-                            <span id="current-date"></span>
+                        <div class="text-sm shrink-0 flex items-center gap-3">
+                            <span id="current-date" class="hidden sm:inline-block text-xs font-semibold text-red-500"></span>
+                            @include('layouts.partials.notification-bell')
                         </div>
                     </div>
+                    @isset($header)
+                        <div class="mb-4 border-b border-gray-300/30 pb-3">
+                            {{ $header }}
+                        </div>
+                    @endisset
                     @yield('content')
+                    {{ $slot ?? '' }}
                 </div>
             </main>
         </div>
@@ -88,8 +110,7 @@
         // === 1. Sidebar Logic ===
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebar-toggle-btn');
-        const iconBars = document.getElementById('icon-bars');
-        const iconChevron = document.getElementById('icon-chevron');
+        const toggleIcon = document.getElementById('sidebar-toggle-icon');
         const sidebarTexts = document.querySelectorAll('.sidebar-text');
         const sidebarLogo = document.getElementById('sidebar-logo');
         const tooltips = document.querySelectorAll('.tooltip');
@@ -117,16 +138,18 @@
             // Restore Sidebar Width
             updateSidebarState();
 
-            // Restore Dropdown States
-            const savedDropdowns = JSON.parse(localStorage.getItem('sidebar-dropdowns') || '{}');
-            Object.keys(savedDropdowns).forEach(id => {
-                if (savedDropdowns[id]) {
-                    const content = document.getElementById(id);
-                    if (content) {
-                        performToggle(id, true);
+            // Restore Dropdown States ONLY if sidebar is expanded
+            if (isSidebarOpen) {
+                const savedDropdowns = JSON.parse(localStorage.getItem('sidebar-dropdowns') || '{}');
+                Object.keys(savedDropdowns).forEach(id => {
+                    if (savedDropdowns[id]) {
+                        const content = document.getElementById(id);
+                        if (content) {
+                            performToggle(id, true);
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // Restore Scroll Position (Do this after dropdowns to ensure height is correct)
             const sidebarNav = document.querySelector('.sidebar-scroll');
@@ -148,29 +171,31 @@
 
         function updateSidebarState() {
             if (!sidebar) return;
+            const sidebarNav = document.querySelector('.sidebar-scroll');
             if (isSidebarOpen) {
                 // Expand Sidebar
-                sidebar.classList.remove('w-20');
-                sidebar.classList.add('w-68');
+                sidebar.classList.remove('w-20', 'lg:w-20', 'sm:w-20');
+                sidebar.classList.add('w-[280px]', 'sm:w-[320px]', 'lg:w-68');
 
-                iconBars.classList.add('hidden');
-                iconChevron.classList.remove('hidden');
+                if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-left text-sm';
 
-                sidebarLogo.classList.remove('opacity-0', 'w-0');
+                sidebarLogo.classList.remove('opacity-0', 'w-0', 'hidden');
                 sidebarLogo.classList.add('opacity-100');
 
                 sidebarTexts.forEach(el => el.classList.remove('hidden'));
 
-                tooltips.forEach(t => t.classList.add('hidden'));
-
                 userProfile.classList.remove('justify-center');
 
-            } else {
-                sidebar.classList.remove('w-68');
-                sidebar.classList.add('w-20');
+                if (sidebarNav) {
+                    sidebarNav.classList.remove('overflow-visible');
+                    sidebarNav.classList.add('overflow-y-auto');
+                }
 
-                iconBars.classList.remove('hidden');
-                iconChevron.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('w-68', 'lg:w-68', 'w-[280px]', 'sm:w-[320px]');
+                sidebar.classList.add('w-20', 'lg:w-20', 'sm:w-20');
+
+                if (toggleIcon) toggleIcon.className = 'fa-solid fa-bars-staggered text-sm';
 
                 sidebarLogo.classList.remove('opacity-100');
                 sidebarLogo.classList.add('opacity-0', 'w-0');
@@ -180,9 +205,12 @@
                 dropdownSubmenus.forEach(d => d.classList.add('hidden'));
                 document.querySelectorAll('.fa-chevron-down').forEach(i => i.classList.remove('rotate-180'));
 
-                tooltips.forEach(t => t.classList.remove('hidden'));
-
                 userProfile.classList.add('justify-center');
+
+                if (sidebarNav) {
+                    sidebarNav.classList.remove('overflow-y-auto');
+                    sidebarNav.classList.add('overflow-visible');
+                }
             }
         }
 

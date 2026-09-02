@@ -32,10 +32,10 @@
         }
     </style>
 
-    <div class="min-h-screen p-6 pt-10 pb-20 bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-gray-200">
-        <div class="max-w-8xl mx-auto px-4">
+    <div class="min-h-screen px-0 sm:px-6 pt-4 sm:pt-10 pb-20 bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-gray-200">
+        <div class="w-full max-w-7xl mx-auto px-0 sm:px-4">
             <!-- Breadcrumbs -->
-            <div class="flex items-center text-sm mb-4 space-x-2">
+            <div class="flex items-center text-xs sm:text-sm mb-4 space-x-2">
                 <a href="{{ route('welcome') }}"
                     class="text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Home</a>
                 <i class="fas fa-chevron-right text-[10px] text-gray-500"></i>
@@ -43,16 +43,16 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto">
+        <div class="w-full max-w-7xl mx-auto px-0 sm:px-4">
             <!-- Header -->
-            <div class="mb-10 text-center">
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">กำหนดการฝึกอบรม</h1>
+            <div class="mb-6 sm:mb-10 text-center">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">กำหนดการฝึกอบรม</h1>
                 <div class="flex items-center justify-center">
-                    <div class="h-[2px] bg-gray-300 dark:bg-gray-600 w-16"></div>
+                    <div class="h-[2px] bg-gray-300 dark:bg-gray-600 w-12 sm:w-16"></div>
                     <div class="h-2 w-2 rounded-full bg-red-600 mx-3 shadow-sm shadow-red-500/50"></div>
-                    <div class="h-[2px] bg-gray-300 dark:bg-gray-600 w-16"></div>
+                    <div class="h-[2px] bg-gray-300 dark:bg-gray-600 w-12 sm:w-16"></div>
                 </div>
-                <p class="text-slate-500 dark:text-slate-400 mt-4">ตรวจสอบกำหนดการและสมัครเข้าร่วมฝึกอบรมเพื่อพัฒนาทักษะของคุณ</p>
+                <p class="text-xs sm:text-base text-slate-500 dark:text-slate-400 mt-3 sm:mt-4">ตรวจสอบกำหนดการและสมัครเข้าร่วมฝึกอบรมเพื่อพัฒนาทักษะของคุณ</p>
             </div>
 
             @if(session('success'))
@@ -65,10 +65,10 @@
             @endif
 
             <!-- Filter Form Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 mb-8 relative overflow-hidden">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-md sm:shadow-xl border border-slate-200/60 dark:border-white/5 p-3.5 sm:p-6 mb-6 sm:mb-8 relative overflow-hidden">
                 <div class="absolute top-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600 left-0"></div>
 
-                <form id="searchForm" action="{{ route('training.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 relative">
+                <form id="searchForm" action="{{ route('training.index') }}" method="GET" class="flex flex-col md:flex-row gap-3 sm:gap-4 relative">
                     <div class="flex-1 relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
@@ -107,8 +107,8 @@
                 </form>
             </div>
 
-            <div class="flex justify-end mb-4">
-                <a href="#" class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold flex items-center gap-2 group">
+            <div class="flex justify-center mb-5">
+                <a href="{{ route('training.guide') }}" class="text-xs sm:text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold flex items-center gap-2 group bg-red-50/80 dark:bg-red-900/20 px-4 py-2.5 rounded-xl border border-red-100 dark:border-red-900/30 transition-all hover:shadow-sm">
                     <i class="fa-solid fa-book-open text-red-500 group-hover:scale-110 transition-transform"></i> คู่มือระบบสมัครฝึกอบรม
                 </a>
             </div>
@@ -219,56 +219,52 @@
                     </div>
                 </div>
 
-                <!-- Mobile Card View -->
-                <div class="md:hidden space-y-6" id="mobileCardContainer">
+                <!-- Mobile Card View (2 Columns Grid) -->
+                <div class="md:hidden grid grid-cols-2 gap-2 sm:gap-4" id="mobileCardContainer">
                     @forelse($courses as $course)
-                        <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col h-full group">
+                        <div class="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200/70 dark:border-white/5 overflow-hidden flex flex-col h-full group p-2 sm:p-4">
                             @if($course['image'])
-                                <div class="relative h-48 overflow-hidden">
-                                    <img src="{{ asset('images/training/' . $course['image']) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="{{ $course['branch'] }}" loading="lazy">
+                                <div class="relative h-28 sm:h-36 rounded-lg sm:rounded-xl overflow-hidden mb-2">
+                                    <img src="{{ asset('images/training/' . $course['image']) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="{{ $course['branch'] }}" loading="lazy">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                                    <div class="absolute bottom-4 left-6">
-                                        <span class="text-xs font-bold text-white bg-red-600 px-3 py-1 rounded-full shadow-lg">ลำดับที่ {{ $courses->firstItem() + $loop->index }}</span>
+                                    <div class="absolute bottom-2 left-2">
+                                        <span class="text-[9px] sm:text-xs font-bold text-white bg-red-600 px-2 py-0.5 rounded-md shadow-sm">ลำดับที่ {{ $courses->firstItem() + $loop->index }}</span>
                                     </div>
                                 </div>
                             @else
-                                <div class="relative h-32 bg-gradient-to-br from-red-50 to-gray-100 dark:from-red-900/20 dark:to-gray-800 flex items-center justify-center">
-                                    <i class="fa-solid fa-image text-gray-300 dark:text-gray-600 text-4xl"></i>
-                                    <div class="absolute bottom-4 left-6">
-                                        <span class="text-xs font-bold text-white bg-red-600 px-3 py-1 rounded-full shadow-lg">ลำดับที่ {{ $courses->firstItem() + $loop->index }}</span>
+                                <div class="relative h-24 sm:h-32 bg-gradient-to-br from-red-50 to-gray-100 dark:from-red-900/20 dark:to-gray-800 flex items-center justify-center rounded-lg sm:rounded-xl mb-2">
+                                    <i class="fa-solid fa-image text-gray-300 dark:text-gray-600 text-2xl sm:text-3xl"></i>
+                                    <div class="absolute bottom-2 left-2">
+                                        <span class="text-[9px] sm:text-xs font-bold text-white bg-red-600 px-2 py-0.5 rounded-md shadow-sm">ลำดับที่ {{ $courses->firstItem() + $loop->index }}</span>
                                     </div>
                                 </div>
                             @endif
 
-                            <div class="p-6">
-                                <h3 class="font-bold text-slate-800 dark:text-white text-xl mb-3 leading-tight">{{ $course['branch'] }}</h3>
+                            <div class="flex flex-col flex-1">
+                                <h3 class="font-bold text-slate-800 dark:text-white text-xs sm:text-base mb-1.5 leading-tight line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">{{ $course['branch'] }}</h3>
 
                                 <button type="button"
                                     onclick="showDetails('{{ addslashes($course['branch']) }}', '{{ addslashes($course['details']) }}', '{{ $course['image'] ? asset('images/training/' . $course['image']) : '' }}')"
-                                    class="text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl w-fit transition-colors mb-5">
-                                    <i class="fa-solid fa-circle-info"></i> ดูรายละเอียดหลักสูตร
+                                    class="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md w-fit transition-colors mb-2">
+                                    <i class="fa-solid fa-circle-info"></i> รายละเอียด
                                 </button>
 
-                                <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50/50 dark:bg-black/20 p-5 rounded-3xl border border-gray-100 dark:border-white/5 mb-6">
-                                    <div class="flex flex-col">
-                                        <span class="text-slate-500 dark:text-slate-400 text-xs mb-1 uppercase tracking-wider font-semibold">ระยะเวลา</span>
-                                        <span class="font-bold text-slate-800 dark:text-gray-200">{{ $course['hours'] }} ชั่งโมง</span>
+                                <div class="text-[10px] sm:text-xs bg-gray-50/70 dark:bg-black/20 p-2 sm:p-3 rounded-lg sm:rounded-xl border border-gray-100 dark:border-white/5 mb-3 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-500 dark:text-slate-400">ระยะเวลา:</span>
+                                        <span class="font-bold text-slate-800 dark:text-gray-200">{{ $course['hours'] }} ชม.</span>
                                     </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-slate-500 dark:text-slate-400 text-xs mb-1 uppercase tracking-wider font-semibold">รูปแบบ</span>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-500 dark:text-slate-400">รูปแบบ:</span>
                                         <span class="{{ $course['format'] == 'ออนไลน์' ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400' }} font-bold">{{ $course['format'] }}</span>
                                     </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-slate-500 dark:text-slate-400 text-xs mb-1 uppercase tracking-wider font-semibold">วันเริ่มอบรม</span>
-                                        <span class="font-bold text-slate-800 dark:text-gray-200">{{ $course['start_date'] }}</span>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-slate-500 dark:text-slate-400 text-xs mb-1 uppercase tracking-wider font-semibold">วันสิ้นสุด</span>
-                                        <span class="font-bold text-slate-800 dark:text-gray-200">{{ $course['end_date'] }}</span>
-                                    </div>
-                                    <div class="col-span-2 pt-3 border-t border-gray-200 dark:border-gray-700/50">
-                                        <span class="text-slate-500 dark:text-slate-400 text-xs mb-1 uppercase tracking-wider font-semibold block">หน่วยงานที่รับผิดชอบ</span>
-                                        <span class="font-bold text-slate-800 dark:text-gray-200 text-xs">{{ $course['department'] }}</span>
+                                    <div class="pt-1 border-t border-gray-200/60 dark:border-gray-700/50 flex flex-col gap-0.5">
+                                        <div class="text-[9px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                                            เริ่ม: <span class="font-bold text-slate-800 dark:text-gray-200">{{ $course['start_date'] }}</span>
+                                        </div>
+                                        <div class="text-[9px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                                            สิ้นสุด: <span class="font-bold text-slate-800 dark:text-gray-200">{{ $course['end_date'] }}</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -279,27 +275,27 @@
                                         @endphp
                                         @if($isApplied)
                                             <button type="button" onclick="showDocument('{{ $course['document'] ? asset('storage/' . $course['document']) : '' }}', '{{ $course['document_link'] ?? '' }}')"
-                                                class="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-blue-600/30 transition-all hover:-translate-y-1">
+                                                class="w-full flex justify-center items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 sm:py-2.5 px-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs shadow-sm transition-all">
                                                 <i class="fa-solid fa-file-pdf"></i> เข้าสู่หน้าการอบรม
                                             </button>
                                         @else
                                             <a href="{{ route('training.apply', $course['id']) }}"
-                                                class="block w-full text-center bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-red-600/30 transition-all hover:-translate-y-1">
+                                                class="block w-full text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 sm:py-2.5 px-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs shadow-sm transition-all">
                                                 สมัครอบรมตอนนี้
                                             </a>
                                         @endif
                                     @else
-                                        <button disabled class="w-full text-center bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-bold py-4 px-6 rounded-2xl cursor-not-allowed">
-                                            หลักสูตรเต็มแล้ว
+                                        <button disabled class="w-full text-center bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-bold py-2 sm:py-2.5 px-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs cursor-not-allowed">
+                                            เต็มแล้ว
                                         </button>
                                     @endif
                                 </div>
                             </div>
                         </div>
                     @empty
-                        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-12 text-center">
-                            <i class="fa-solid fa-calendar-xmark text-5xl mb-4 text-gray-200 dark:text-gray-700"></i>
-                            <p class="text-slate-500 dark:text-slate-400 font-medium">ไม่พบรายการฝึกอบรมที่เปิดรับสมัคร</p>
+                        <div class="col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 text-center">
+                            <i class="fa-solid fa-calendar-xmark text-4xl mb-3 text-gray-300 dark:text-gray-700"></i>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">ไม่พบรายการฝึกอบรมที่เปิดรับสมัคร</p>
                         </div>
                     @endforelse
                 </div>
@@ -315,42 +311,43 @@
         </div>
     </div>
 
-    <!-- Details Modal (Native Dialog) -->
-    <dialog id="detailsModal" class="bg-transparent m-auto p-0 backdrop:bg-slate-900/60 backdrop:dark:bg-black/80 backdrop:backdrop-blur-sm w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] max-w-2xl overflow-hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] border border-slate-100 dark:border-white/10 relative overflow-hidden w-full mx-auto" id="modalContent">
-            <!-- Decoration -->
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 to-red-600"></div>
+    <!-- Details Modal (Native Dialog - Compact & Clean) -->
+    <dialog id="detailsModal" class="bg-transparent m-auto p-0 backdrop:bg-slate-900/50 backdrop:dark:bg-black/70 backdrop:backdrop-blur-sm w-[calc(100%-1.5rem)] sm:w-[calc(100%-3rem)] max-w-lg overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[85vh] border border-slate-200 dark:border-white/10 relative overflow-hidden w-full mx-auto" id="modalContent">
+            <!-- Decoration Top Bar -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
 
-            <div class="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-start pt-8">
-                <div class="flex items-start gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0 mt-1">
-                        <i class="fa-solid fa-circle-info text-2xl"></i>
+            <!-- Compact Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center gap-3 pt-5">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-circle-info text-base"></i>
                     </div>
-                    <div>
-                        <h3 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white" id="modalTitle">รายละเอียดหลักสูตร</h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">ข้อมูลประกอบการพิจารณาสมัครฝึกอบรม</p>
+                    <div class="min-w-0">
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white truncate" id="modalTitle">รายละเอียดหลักสูตร</h3>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">ข้อมูลรายละเอียดคอร์สอบรม</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeDetails()" aria-label="ปิดหน้าต่างรายละเอียด" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button type="button" onclick="closeDetails()" aria-label="ปิดหน้าต่างรายละเอียด" class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-red-600 transition-colors shrink-0">
+                    <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
 
-            <div class="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50 dark:bg-slate-900/50">
-                <div id="modalImageContainer" class="hidden mb-6">
-                    <img id="modalImage" src="" class="w-full h-auto max-h-64 object-cover rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md" alt="Course Image">
+            <!-- Modal Content Body -->
+            <div class="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50 dark:bg-slate-900/50 space-y-3">
+                <div id="modalImageContainer" class="hidden mb-3">
+                    <img id="modalImage" src="" class="w-full h-auto max-h-40 sm:max-h-48 object-cover rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm" alt="Course Image">
                 </div>
-                <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-5 sm:p-6 border border-gray-100 dark:border-gray-700/50 shadow-sm">
-                    <div class="prose dark:prose-invert max-w-none">
-                        <h4 class="text-lg font-bold text-red-600 dark:text-red-400 mb-3 border-b border-gray-100 dark:border-gray-700 pb-2">คำอธิบายเพิ่มเติม</h4>
-                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed font-light whitespace-pre-line" id="modalText"></p>
-                    </div>
+                <div class="bg-white dark:bg-gray-800/80 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50 shadow-sm">
+                    <div class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">รายละเอียดข้อมูลหลักสูตร</div>
+                    <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal whitespace-pre-line" id="modalText"></p>
                 </div>
             </div>
 
-            <div class="p-6 sm:px-8 sm:py-5 border-t border-gray-100 dark:border-gray-800 flex justify-end bg-white dark:bg-slate-800 rounded-b-3xl">
+            <!-- Compact Modal Footer -->
+            <div class="p-3 sm:px-5 border-t border-gray-100 dark:border-gray-800 flex justify-end bg-white dark:bg-slate-800 rounded-b-2xl">
                 <button type="button" onclick="closeDetails()"
-                    class="px-8 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-slate-700 dark:text-gray-200 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-800 transition-all shadow-sm">
+                    class="px-5 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-slate-700 dark:text-gray-200 text-xs font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm">
                     ปิดหน้าต่าง
                 </button>
             </div>

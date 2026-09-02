@@ -62,7 +62,7 @@ class HrRequests extends Model
 
     public function subtype()
     {
-        return $this->belongsTo(RequestSubTypes::class, 'subtype_id', 'id');
+        return $this->belongsTo(RequestSubtypes::class, 'subtype_id', 'id');
     }
 
     public function approverManager()

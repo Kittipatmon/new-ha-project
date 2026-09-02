@@ -5,6 +5,23 @@
 
     RewriteEngine On
 
+    # ======================================================
+    # Force HTTPS detection for shared hosting
+    # (SSL/TLS termination at load balancer or proxy)
+    # ======================================================
+
+    # จาก X-Forwarded-Proto header (วิธีมาตรฐาน)
+    RewriteCond %{HTTP:X-Forwarded-Proto} ^https$ [NC]
+    RewriteRule .* - [E=HTTPS:on,E=HTTP_X_FORWARDED_PROTO:https]
+
+    # จาก X-Forwarded-SSL header
+    RewriteCond %{HTTP:X-Forwarded-SSL} ^on$ [NC]
+    RewriteRule .* - [E=HTTPS:on]
+
+    # จาก X-Arr-Ssl (Azure / บาง hosting)
+    RewriteCond %{HTTP:X-Arr-Ssl} . [NC]
+    RewriteRule .* - [E=HTTPS:on]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

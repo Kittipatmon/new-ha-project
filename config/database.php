@@ -84,6 +84,27 @@ return [
             ]) : [],
         ],
 
+        'appkum_user' => [
+            'driver' => env('USERKMLNEW_DB_CONNECTION', 'mysql'),
+            'url' => env('USERKMLNEW_DB_URL'),
+            'host' => env('USERKMLNEW_DB_HOST', '127.0.0.1'),
+            'port' => env('USERKMLNEW_DB_PORT', '3306'),
+            'database' => env('USERKMLNEW_DB_DATABASE', 'userkmlsystem'),
+            'username' => env('USERKMLNEW_DB_USERNAME', 'root'),
+            'password' => env('USERKMLNEW_DB_PASSWORD', 'KTPPUz2546#11PCRU64'),
+            'unix_socket' => env('USERKMLNEW_DB_SOCKET', ''),
+            'charset' => env('USERKMLNEW_DB_CHARSET', 'utf8mb4'),
+            'collation' => env('USERKMLNEW_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('USERKML_MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_TIMEOUT => 3,
+            ]) : [],
+        ],
+
         // 'pgsql' => [
         //     'driver' => 'pgsql',
         //     'url' => env('DB_URL'),

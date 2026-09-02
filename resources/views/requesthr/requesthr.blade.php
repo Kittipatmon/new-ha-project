@@ -1,46 +1,50 @@
 @extends('layouts.hrrequest.app')
 @section('content')
     <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 font-prompt">
-        <div class="breadcrumbs text-sm mb-4">
-            <ul>
-                <li><a href="{{ route('welcome') }}" class="hover:text-red-500 transition-colors">Home</a></li>
-                <li><a href="{{ route('request.hr') }}" class="hover:text-red-500 transition-colors">Request HR</a></li>
-                <li>
-                    <span class="font-semibold text-red-600">
-                        Request HR Form
-                    </span>
+        <nav class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+            <ol class="list-none p-0 flex flex-wrap items-center gap-2">
+                <li class="flex items-center whitespace-nowrap">
+                    <a href="{{ route('welcome') }}" class="hover:text-red-600 transition-colors">Home</a>
                 </li>
-            </ul>
-        </div>
+                <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+                <li class="flex items-center whitespace-nowrap">
+                    <a href="{{ route('request.hr') }}" class="hover:text-red-600 transition-colors">Request HR</a>
+                </li>
+                <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+                <li class="text-red-600 font-semibold">
+                    Request HR Form
+                </li>
+            </ol>
+        </nav>
 
-        <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden transition-all">
+        <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden transition-all">
             <!-- Header -->
-            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div class="flex items-center gap-3">
                     <div class="bg-red-100 dark:bg-red-500/20 p-2 rounded-lg text-red-600 dark:text-red-500">
-                        <i class="fa-solid fa-clipboard-list text-lg"></i>
+                        <i class="fa-solid fa-clipboard-list text-base sm:text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Request HR Form</h1>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แจ้งร้องขอดำเนินการเอกสารฝ่ายทรัพยากรบุคคล</p>
+                        <h1 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">Request HR Form</h1>
+                        <p class="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">แจ้งร้องขอดำเนินการเอกสารฝ่ายทรัพยากรบุคคล</p>
                     </div>
                 </div>
-                <div class="text-xs bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-3 py-1.5 rounded-full font-medium border border-red-100 dark:border-red-500/20">
+                <div class="text-[11px] sm:text-xs bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-3 py-1.5 rounded-full font-medium border border-red-100 dark:border-red-500/20 w-full sm:w-auto text-center sm:text-left">
                     <i class="far fa-calendar-alt mr-1"></i> วันที่ร้องขอ: {{ date('d/m/Y') }}
                 </div>
             </div>
 
-            <div class="p-6 md:p-8">
+            <div class="p-4 sm:p-6 md:p-8">
                 <form id="hrRequestForm" enctype="multipart/form-data">
-                    <div class="flex items-center gap-2 px-4 py-3 mb-6 text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-lg dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
-                        <i class="fa-solid fa-circle-info"></i>
+                    <div class="flex items-start gap-2 px-3 sm:px-4 py-3 mb-5 sm:mb-6 text-xs sm:text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-lg dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
+                        <i class="fa-solid fa-circle-info mt-0.5"></i>
                         <span>กรุณากรอกข้อมูลให้ครบถ้วนในช่องที่มีเครื่องหมาย <span class="text-red-500 font-bold">*</span></span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                         <div class="form-control w-full">
-                            <label class="label font-medium mb-1 px-1">
-                                <span class="label-text text-gray-700 dark:text-gray-300">หมวดคำร้อง (Request Category) <span class="text-red-500">*</span></span>
+                            <label class="label font-medium mb-1 px-1 py-0.5">
+                                <span class="label-text text-xs sm:text-sm text-gray-700 dark:text-gray-300">หมวดคำร้อง (Request Category) <span class="text-red-500">*</span></span>
                             </label>
                             <select id="categorySelect" name="category_id"
                                 class="select select-bordered w-full bg-white dark:bg-gray-800 transition-colors focus:ring-2 focus:ring-red-500/20 focus:border-red-500">
@@ -52,8 +56,8 @@
                         </div>
 
                         <div class="form-control w-full">
-                            <label class="label font-medium mb-1 px-1">
-                                <span class="label-text text-gray-700 dark:text-gray-300">ประเภทคำร้อง (Request Type) <span class="text-red-500">*</span></span>
+                            <label class="label font-medium mb-1 px-1 py-0.5">
+                                <span class="label-text text-xs sm:text-sm text-gray-700 dark:text-gray-300">ประเภทคำร้อง (Request Type) <span class="text-red-500">*</span></span>
                             </label>
                             <select id="typeSelect" name="type_id"
                                 class="select select-bordered w-full bg-white dark:bg-gray-800 transition-colors disabled:bg-gray-50 dark:disabled:bg-gray-900 focus:ring-2 focus:ring-red-500/20 focus:border-red-500" disabled>
@@ -61,9 +65,9 @@
                             </select>
                         </div>
 
-                        <div class="form-control w-full">
-                            <label class="label font-medium mb-1 px-1">
-                                <span class="label-text text-gray-700 dark:text-gray-300">ตัวเลือกรายละเอียด (Request Subtype) <span class="text-red-500">*</span></span>
+                        <div class="form-control w-full sm:col-span-2 md:col-span-1">
+                            <label class="label font-medium mb-1 px-1 py-0.5">
+                                <span class="label-text text-xs sm:text-sm text-gray-700 dark:text-gray-300">ตัวเลือกรายละเอียด (Request Subtype) <span class="text-red-500">*</span></span>
                             </label>
                             <select id="subtypeSelect" name="subtype_id"
                                 class="select select-bordered w-full bg-white dark:bg-gray-800 transition-colors disabled:bg-gray-50 dark:disabled:bg-gray-900 focus:ring-2 focus:ring-red-500/20 focus:border-red-500" disabled>
@@ -73,145 +77,138 @@
                     </div>
 
                     <!-- พื้นที่ฟอร์มส่วน Dynamic -->
-                    <div id="dynamicContent" class="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-6 border border-gray-100 dark:border-gray-700/50 mt-4">
+                    <div id="dynamicContent" class="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 sm:p-6 border border-gray-100 dark:border-gray-700/50 mt-4">
                         <!-- การแจ้งแก้ไขเวลา -->
-                        <div id="sectionTimeEdit" class="hidden space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="md:col-span-2">
-                                        <label class="label font-medium">เหตุผลที่ขอดำเนินการ</label>
-                                        <textarea name="edit_reason" class="textarea textarea-bordered w-full h-24"
-                                            placeholder="ระบุสาเหตุ..."></textarea>
-                                    </div>
-
-                                    <div class="form-control">
-                                        <label class="label">วันที่เริ่มต้น</label>
-                                        <input type="date" name="edit_start_date" class="input input-bordered" />
-                                    </div>
-                                    <div class="form-control">
-                                        <label class="label">เวลาเริ่มต้น</label>
-                                        <input type="time" name="edit_start_time" id="edit_start_time"
-                                            class="input input-bordered" />
-                                    </div>
-
-                                    <div class="form-control">
-                                        <label class="label">วันที่สิ้นสุด</label>
-                                        <input type="date" name="edit_end_date" class="input input-bordered" />
-                                    </div>
-                                    <div class="form-control">
-                                        <label class="label">เวลาสิ้นสุด</label>
-                                        <input type="time" name="edit_end_time" id="edit_end_time"
-                                            class="input input-bordered" />
-                                    </div>
+                        <div id="sectionTimeEdit" class="hidden space-y-5 sm:space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="sm:col-span-2">
+                                    <label class="label font-medium text-xs sm:text-sm">เหตุผลที่ขอดำเนินการ</label>
+                                    <textarea name="edit_reason" class="textarea textarea-bordered w-full h-24"
+                                        placeholder="ระบุสาเหตุ..."></textarea>
                                 </div>
 
-                                <div class="form-control mt-4">
-                                    <label class="label font-medium">แนบไฟล์หลักฐาน</label>
-                                    <div class="flex items-center gap-4">
-                                        <input type="file" id="fileInput" name="timefile"
-                                            class="file-input file-input-bordered file-input-primary w-full max-w-md"
-                                            accept="image/*,application/pdf" />
-                                    </div>
-                                    <div id="filePreviewContainer" class="mt-3 hidden p-4 border rounded-lg ">
-                                        <div class="flex items-center gap-3">
-                                            <div id="fileIcon" class="text-2xl"></div>
-                                            <div class="flex-1 overflow-hidden">
-                                                <p id="fileName" class="text-sm font-semibold truncate"></p>
-                                                <button type="button" id="btnPreviewFile"
-                                                    class="btn btn-xs btn-outline btn-info mt-1">ดูตัวอย่าง</button>
-                                            </div>
-                                            <button type="button" id="btnClearFile"
-                                                class="btn btn-square btn-ghost btn-sm text-error">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
+                                <div class="form-control">
+                                    <label class="label text-xs sm:text-sm">วันที่เริ่มต้น</label>
+                                    <input type="date" name="edit_start_date" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label text-xs sm:text-sm">เวลาเริ่มต้น</label>
+                                    <input type="time" name="edit_start_time" id="edit_start_time"
+                                        class="input input-bordered w-full" />
+                                </div>
+
+                                <div class="form-control">
+                                    <label class="label text-xs sm:text-sm">วันที่สิ้นสุด</label>
+                                    <input type="date" name="edit_end_date" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label text-xs sm:text-sm">เวลาสิ้นสุด</label>
+                                    <input type="time" name="edit_end_time" id="edit_end_time"
+                                        class="input input-bordered w-full" />
+                                </div>
+                            </div>
+
+                            <div class="form-control mt-4">
+                                <label class="label font-medium text-xs sm:text-sm">แนบไฟล์หลักฐาน</label>
+                                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                    <input type="file" id="fileInput" name="timefile"
+                                        class="file-input file-input-bordered file-input-primary w-full max-w-full sm:max-w-md"
+                                        accept="image/*,application/pdf" />
+                                </div>
+                                <div id="filePreviewContainer" class="mt-3 hidden p-4 border rounded-lg bg-white dark:bg-gray-800">
+                                    <div class="flex items-center gap-3">
+                                        <div id="fileIcon" class="text-xl sm:text-2xl"></div>
+                                        <div class="flex-1 overflow-hidden">
+                                            <p id="fileName" class="text-xs sm:text-sm font-semibold truncate"></p>
+                                            <button type="button" id="btnPreviewFile"
+                                                class="btn btn-xs btn-outline btn-info mt-1">ดูตัวอย่าง</button>
                                         </div>
+                                        <button type="button" id="btnClearFile"
+                                            class="btn btn-square btn-ghost btn-sm text-error">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- ร้องขอชุดยูนิฟอร์ม -->
-                            <div id="sectionUniform" class="hidden space-y-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="form-control">
-                                        <label class="label">เพศ</label>
-                                        <select name="uniform_gender" class="select select-bordered w-full">
-                                            <option disabled selected value="">เลือกเพศ</option>
-                                            <option value="ชาย">ชาย</option>
-                                            <option value="หญิง">หญิง</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-control">
-                                        <label class="label">ขนาดชุด</label>
-                                        <select name="uniform_size" class="select select-bordered w-full">
-                                            <option disabled selected value="">เลือกขนาด</option>
-                                            <option value="S">S</option>
-                                            <option value="M">M</option>
-                                            <option value="L">L</option>
-                                            <option value="XL">XL</option>
-                                            <option value="XXL">XXL</option>
-                                        </select>
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <label class="label">เหตุผลที่ขอชุด</label>
-                                        <textarea name="uniform_reason" class="textarea textarea-bordered w-full"
-                                            placeholder="ระบุเหตุผล..."></textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <!-- ร้องขอเอกสาร Safety Equipment -->
-                            <div id="sectionSafetyEquip" class="hidden space-y-4">
-                                <label class="label font-medium">รายการอุปกรณ์ที่ร้องขอ</label>
-
-                                <div id="safetyListContainer" class="space-y-3">
-                                </div>
-
-                                <button type="button" id="btnAddSafety" class="btn btn-outline btn-info btn-sm">
-                                    <i class="fa-solid fa-plus"></i> เพิ่มรายการ
-                                </button>
-                            </div>
-
-                            <!-- เหตุผลที่ขอใบรับรอง Certificate -->
-                            <div id="sectionCertificateReason" class="hidden space-y-4 mt-4">
-                                <div class="form-control">
-                                    <label class="label font-medium">เหตุผลที่ขอเอกสาร Certificate</label>
-                                    <textarea name="certificate_reason" class="textarea textarea-bordered w-full h-24"
-                                        placeholder="ระบุเหตุผล..."></textarea>
-                                </div>
-                            </div>
-
-                            <!-- เหตุผลที่ขอใบรับรอ Welfare Request -->
-                            <div id="sectionWelfareReason" class="hidden space-y-4 mt-4">
-                                <div class="form-control">
-                                    <label class="label font-medium">เหตุผลที่ขอเอกสาร Welfare Request</label>
-                                    <textarea name="welfare_reason" class="textarea textarea-bordered w-full h-24"
-                                        placeholder="ระบุเหตุผล..."></textarea>
-                                </div>
-                            </div>
-
-                            <!-- เหตุผลที่ขอใบรับรอง Safety Document -->
-                            <div id="sectionSafetyReason" class="hidden space-y-4 mt-4">
-                                <div class="form-control">
-                                    <label class="label font-medium">เหตุผลที่ขอเอกสาร Safety</label>
-                                    <textarea name="safety_reason" class="textarea textarea-bordered w-full h-24"
-                                        placeholder="ระบุเหตุผล..."></textarea>
-                                </div>
-                            </div>
-
                         </div>
 
-                        </div> <!-- ปิด dynamicContent -->
+                        <!-- ร้องขอชุดยูนิฟอร์ม -->
+                        <div id="sectionUniform" class="hidden space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="form-control">
+                                    <label class="label text-xs sm:text-sm">เพศ</label>
+                                    <select name="uniform_gender" class="select select-bordered w-full">
+                                        <option disabled selected value="">เลือกเพศ</option>
+                                        <option value="ชาย">ชาย</option>
+                                        <option value="หญิง">หญิง</option>
+                                    </select>
+                                </div>
+                                <div class="form-control">
+                                    <label class="label text-xs sm:text-sm">ขนาดชุด</label>
+                                    <select name="uniform_size" class="select select-bordered w-full">
+                                        <option disabled selected value="">เลือกขนาด</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                        <option value="XXL">XXL</option>
+                                    </select>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="label text-xs sm:text-sm">เหตุผลที่ขอชุด</label>
+                                    <textarea name="uniform_reason" class="textarea textarea-bordered w-full"
+                                        placeholder="ระบุเหตุผล..."></textarea>
+                                </div>
+                            </div>
+                        </div>
 
-                        <div class="flex flex-col sm:flex-row items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
-                            <a href="{{ route('request.hr') }}" class="btn btn-ghost hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 w-full sm:w-auto">
-                                <i class="fa-solid fa-xmark mr-1"></i> ยกเลิก
-                            </a>
-                            <button type="button" class="btn bg-red-600 hover:bg-red-700 text-white border-none shadow-md hover:shadow-lg transition-all px-8 w-full sm:w-auto"
-                                onclick="submitForm()">
-                                <i class="fa-solid fa-save mr-1"></i> บันทึกข้อมูล
+                        <!-- ร้องขอเอกสาร Safety Equipment -->
+                        <div id="sectionSafetyEquip" class="hidden space-y-4">
+                            <label class="label font-medium text-xs sm:text-sm">รายการอุปกรณ์ที่ร้องขอ</label>
+                            <div id="safetyListContainer" class="space-y-3"></div>
+                            <button type="button" id="btnAddSafety" class="btn btn-outline btn-info btn-sm w-full sm:w-auto">
+                                <i class="fa-solid fa-plus mr-1"></i> เพิ่มรายการ
                             </button>
                         </div>
-                    </form>
+
+                        <!-- เหตุผลที่ขอใบรับรอง Certificate -->
+                        <div id="sectionCertificateReason" class="hidden space-y-4 mt-4">
+                            <div class="form-control">
+                                <label class="label font-medium text-xs sm:text-sm">เหตุผลที่ขอเอกสาร Certificate</label>
+                                <textarea name="certificate_reason" class="textarea textarea-bordered w-full h-24"
+                                    placeholder="ระบุเหตุผล..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- เหตุผลที่ขอใบรับรอ Welfare Request -->
+                        <div id="sectionWelfareReason" class="hidden space-y-4 mt-4">
+                            <div class="form-control">
+                                <label class="label font-medium text-xs sm:text-sm">เหตุผลที่ขอเอกสาร Welfare Request</label>
+                                <textarea name="welfare_reason" class="textarea textarea-bordered w-full h-24"
+                                    placeholder="ระบุเหตุผล..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- เหตุผลที่ขอใบรับรอง Safety Document -->
+                        <div id="sectionSafetyReason" class="hidden space-y-4 mt-4">
+                            <div class="form-control">
+                                <label class="label font-medium text-xs sm:text-sm">เหตุผลที่ขอเอกสาร Safety</label>
+                                <textarea name="safety_reason" class="textarea textarea-bordered w-full h-24"
+                                    placeholder="ระบุเหตุผล..."></textarea>
+                            </div>
+                        </div>
+                    </div> <!-- ปิด dynamicContent -->
+
+                    <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 mt-6 sm:mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                        <a href="{{ route('request.hr') }}" class="btn btn-ghost hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 w-full sm:w-auto text-center justify-center">
+                            <i class="fa-solid fa-xmark mr-1"></i> ยกเลิก
+                        </a>
+                        <button type="button" class="btn bg-red-600 hover:bg-red-700 text-white border-none shadow-md hover:shadow-lg transition-all px-8 w-full sm:w-auto justify-center"
+                            onclick="submitForm()">
+                            <i class="fa-solid fa-save mr-1"></i> บันทึกข้อมูล
+                        </button>
+                    </div>
+                </form>
                 </div> <!-- ปิด p-6 -->
             </div> <!-- ปิด bg-white wrapper -->
         </div> <!-- ปิด w-full container -->

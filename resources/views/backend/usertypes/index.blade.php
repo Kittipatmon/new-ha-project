@@ -24,38 +24,13 @@
                             </th>
                             <th class="px-6 py-4 text-left">คำอธิบาย</th>
                             <th class="px-6 py-4 text-center">สถานะ</th>
-                            <th class="px-6 py-4 text-center rounded-tr-lg">จัดการ</th>
+                            
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($userTypes as $index => $userType)
                             <tr class="hover:bg-red-50/40 dark:hover:bg-gray-700/40 transition-colors group border-b border-gray-100 dark:border-gray-800/50">
-                                <td class="px-6 py-4 font-mono text-sm font-semibold text-blue-600 dark:text-blue-400">
-                                    {{ $userType->type_name }}
-                                </td>
-                                <td class="px-6 py-4 text-gray-500 dark:text-gray-400 truncate max-w-xs"
-                                    title="{{ $userType->description }}">
-                                    {{ $userType->description ?? '-' }}
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    @if($userType->status == '0')
-                                        <x-status-badge color="success" label="ใช้งาน" />
-                                    @else
-                                        <x-status-badge color="error" label="ไม่ใช้งาน" />
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex justify-center gap-1">
-                                        <x-action-button class="editBtn" data-id="{{ $userType->id }}" data-type_name="{{ $userType->type_name }}"
-                                            data-description="{{ $userType->description }}" data-status="{{ $userType->status }}"
-                                            action="แก้ไข" icon="pen-to-square" color="warning" />
-                                        <form action="{{ url('usertypes', $userType->id) }}" method="POST" class="inline form-delete">
-                                            @csrf
-                                            @method('DELETE')
-                                            <x-action-button type="submit" action="ลบ" icon="trash" color="error" />
-                                        </form>
-                                    </div>
-                                </td>
+                                
                             </tr>
                         @empty
                             <tr>

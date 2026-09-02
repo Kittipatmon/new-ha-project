@@ -1,18 +1,25 @@
 @extends('layouts.hrrequest.app')
 @section('content')
 <div class="max-w-8xl mx-auto px-4 py-6 font-prompt">
-    <div class="breadcrumbs text-sm">
-        <ul>
-            <li><a href="{{ route('welcome') }}">Home</a></li>
-            <li><a href="{{ route('request.hr') }}">Request HR</a></li>
-            <li><a href="{{ route('requesthr.list') }}">รายการรอดำเนินการ</a></li>
-            <li>
-                <a class="font-semibold text-gray-800 dark:text-red-500">
-                    แก้ไขคำร้องขอ HR เลขที่ {{ $hrrequest->request_code }}
-                </a>
+    <nav class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+        <ol class="list-none p-0 flex flex-wrap items-center gap-2">
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('welcome') }}" class="hover:text-red-600 transition-colors">Home</a>
             </li>
-        </ul>
-    </div>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('request.hr') }}" class="hover:text-red-600 transition-colors">Request HR</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('requesthr.list') }}" class="hover:text-red-600 transition-colors">รายการรอดำเนินการ</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="text-red-600 font-semibold">
+                แก้ไขคำร้องขอ HR เลขที่ {{ $hrrequest->request_code }}
+            </li>
+        </ol>
+    </nav>
     <div class="border border-gray-300/60 dark:border-gray-200/40 p-4 rounded-lg shadow-xl">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>

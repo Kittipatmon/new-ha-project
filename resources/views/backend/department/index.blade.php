@@ -26,33 +26,13 @@
                             <th class="px-6 py-2 text-left">ชื่อ(ย่อ)</th>
                             <th class="px-6 py-2 text-left">ชื่อเต็ม</th>
                             <th class="px-6 py-2 text-left">สถานะ</th>
-                            <th class="px-6 py-2 text-left">จัดการ</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($departments as $department)
                             <tr class="hover:bg-red-50/30 dark:hover:bg-gray-700/50 transition-colors group">
-                                <td class="px-4 py-2">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-2">
-                                    {{ $department->division->division_fullname ?? '-' }}
-                                </td>
-                                <td class="px-4 py-2">{{ $department->department_name }}</td>
-                                <td class="px-4 py-2">{{ $department->department_fullname }}</td>
-                                <td class="px-4 py-2">
-                                    @if ($department->department_status === 0)
-                                        <x-status-badge color="success" label="ใช้งาน" />
-                                    @else
-                                        <x-status-badge color="error" label="ไม่ใช้งาน" />
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2">
-                                    <x-action-button class="editBtn" data-id="{{ $department->department_id }}" data-division_id="{{ $department->division_id }}" data-name="{{ $department->department_name }}" data-fullname="{{ $department->department_fullname }}" data-status="{{ $department->department_status }}" action="แก้ไข" icon="edit" color="warning" />
-                                    <form action="{{ url('departments', $department->department_id) }}" method="POST" class="inline form-delete">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-action-button type="submit" action="ลบ" icon="trash" color="error" />
-                                    </form>
-                                </td>
+                                
                             </tr>
                         @empty
                             <tr>

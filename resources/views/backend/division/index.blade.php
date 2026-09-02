@@ -23,31 +23,13 @@
                             <th class="px-6 py-2 text-left">ชื่อ(ย่อ)</th>
                             <th class="px-6 py-2 text-left">ชื่อเต็ม</th>
                             <th class="px-6 py-2 text-left">สถานะ</th>
-                            <th class="px-6 py-2 text-left">จัดการ</th>
+                            
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse ($divisions as $division)
                             <tr class="hover:bg-red-50/30 dark:hover:bg-gray-700/50 transition-colors group">
-                                <td class="px-6 py-2">{{ $loop->iteration }}</td>
-                                <td class="px-6 py-2">{{ $division->section->section_code ?? '-' }}</td>
-                                <td class="px-6 py-2">{{ $division->division_name }}</td>
-                                <td class="px-6 py-2">{{ $division->division_fullname }}</td>
-                                <td class="px-6 py-2">
-                                    @if ($division->division_status === 0)
-                                        <x-status-badge color="success" label="ใช้งาน" />
-                                    @else
-                                        <x-status-badge color="error" label="ไม่ใช้งาน" />
-                                    @endif
-                                </td>
-                                <td class="px-6 py-2">
-                                    <x-action-button class="editBtn" data-id="{{ $division->division_id }}" data-section_id="{{ $division->section_id }}" data-name="{{ $division->division_name }}" data-fullname="{{ $division->division_fullname }}" data-status="{{ $division->division_status }}" action="แก้ไข" icon="edit" color="warning" />
-                                    <form action="{{ url('divisions', $division->division_id) }}" method="POST" class="inline form-delete">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-action-button type="submit" action="ลบ" icon="trash" color="error" />
-                                    </form>
-                                </td>
+                                
                             </tr>
                         @empty
                             <tr>

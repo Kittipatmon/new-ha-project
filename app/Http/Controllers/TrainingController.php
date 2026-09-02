@@ -44,6 +44,11 @@ class TrainingController extends Controller
         return view('training.index', compact('courses', 'appliedTrainings'));
     }
 
+    public function guide()
+    {
+        return view('training.guide');
+    }
+
     public function apply($id)
     {
         $training = Training::findOrFail($id);

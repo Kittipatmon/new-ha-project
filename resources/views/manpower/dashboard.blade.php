@@ -5,19 +5,20 @@
         <div class="max-w-8xl mx-auto space-y-10">
             
             <!-- Top Navigation & Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
                 <div>
-                    <h1 class="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
-                            <i class="fa-solid fa-users-gear text-xl"></i>
+                    <h1 class="text-base sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-2.5 sm:gap-4">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md sm:shadow-xl shadow-blue-500/20 shrink-0">
+                            <i class="fa-solid fa-users-gear text-sm sm:text-xl"></i>
                         </div>
-                        ฝ่ายบริหารทรัพยากรบุคคล (Manpower Dashboard)
+                        <span class="truncate">ฝ่ายบริหารทรัพยากรบุคคล (Manpower)</span>
                     </h1>
-                    <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm font-medium">
-                        ภาพรวมทรัพยากรบุคคล สถิติ และข้อมูลเชิงลึกขององค์กรรายบุคคลและสาขา
+                    <p class="text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 text-xs sm:text-sm font-medium">
+                        ภาพรวมทรัพยากรบุคคล สถิติ และข้อมูลเชิงลึกขององค์กร
                     </p>
                 </div>
 
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                     {{-- Custom Period Filter --}}
                     <div x-data="{ 
                         open: false, 
@@ -34,13 +35,13 @@
                             this.open = false;
                             $nextTick(() => { $refs.filterForm.submit(); });
                         }
-                    }" class="relative">
+                    }" class="relative flex-1 sm:flex-none">
                         <form x-ref="filterForm" action="{{ route('manpower.dashboard') }}" method="GET">
                             <input type="hidden" name="period" :value="value">
                         </form>
                         
                         <button @click="open = !open" type="button" aria-haspopup="true" :aria-expanded="open.toString()"
-                            class="flex items-center justify-between gap-3 px-5 py-2.5 bg-white dark:bg-slate-800 border-0 ring-1 ring-slate-200 dark:ring-white/10 rounded-2xl text-sm font-bold shadow-sm transition-all hover:ring-blue-500 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            class="w-full sm:w-auto flex items-center justify-between gap-2.5 px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white dark:bg-slate-800 border-0 ring-1 ring-slate-200 dark:ring-white/10 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold shadow-sm transition-all hover:ring-blue-500 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <span class="text-slate-700 dark:text-slate-200" x-text="selected"></span>
                             <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform" :class="{'rotate-180': open}"></i>
                         </button>
@@ -48,10 +49,10 @@
                         <div x-show="open" @click.away="open = false" 
                             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
-                            class="absolute right-0 z-50 mt-3 w-44 origin-top-right rounded-2xl bg-white dark:bg-slate-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/5 overflow-hidden py-1.5" style="display: none;" role="menu">
+                            class="absolute right-0 z-50 mt-2 w-44 origin-top-right rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 shadow-2xl ring-1 ring-black/5 dark:ring-white/5 overflow-hidden py-1" style="display: none;" role="menu">
                             <template x-for="option in options" :key="option.value">
                                 <button @click="select(option)" type="button" role="menuitem"
-                                    class="flex items-center w-full px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus:bg-slate-50 dark:focus:bg-white/5 transition-colors">
+                                    class="flex items-center w-full px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none transition-colors">
                                     <span x-text="option.label"></span>
                                     <i x-show="value === option.value" class="fa-solid fa-check ml-auto text-blue-500 text-xs"></i>
                                 </button>
@@ -59,29 +60,29 @@
                         </div>
                     </div>
 
-                    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <div class="relative flex-1 sm:flex-none" x-data="{ open: false }" @click.away="open = false">
                         <button @click="open = !open" aria-haspopup="true" :aria-expanded="open.toString()"
-                            class="inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-2xl text-sm shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all">
-                            <i class="fa-solid fa-file-export text-blue-200"></i>
-                            Export Report
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 dark:bg-blue-600 text-white font-bold py-2 sm:py-2.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm shadow-md sm:shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+                            <i class="fa-solid fa-file-export text-blue-200 text-xs"></i>
+                            <span>Export Report</span>
                             <i class="fa-solid fa-chevron-down text-[8px] ml-1 transition-transform" :class="{'rotate-180': open}"></i>
                         </button>
                         
                         <div x-show="open" 
                             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
                             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
-                            class="absolute right-0 z-50 mt-3 w-60 origin-top-right rounded-3xl bg-white dark:bg-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden py-2" style="display: none;" role="menu">
+                            class="absolute right-0 z-50 mt-2 w-52 sm:w-60 origin-top-right rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-white/5 overflow-hidden py-1.5" style="display: none;" role="menu">
                             <a href="{{ route('manpower.export.excel', ['period' => $currentFilter ?? 'month']) }}" role="menuitem"
-                                class="flex items-center px-5 py-4 text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 focus:outline-none focus:bg-slate-50 dark:focus:bg-white/5 transition-colors">
-                                <div class="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 mr-4">
-                                    <i class="fa-solid fa-file-excel text-lg"></i>
+                                class="flex items-center px-4 py-3 text-xs sm:text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 mr-3 shrink-0">
+                                    <i class="fa-solid fa-file-excel text-sm"></i>
                                 </div>
                                 Export to Excel
                             </a>
                             <a href="{{ route('manpower.export.pdf', ['period' => $currentFilter ?? 'month']) }}" role="menuitem"
-                                class="flex items-center px-5 py-4 text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 focus:outline-none focus:bg-slate-50 dark:focus:bg-white/5 transition-colors">
-                                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 mr-4">
-                                    <i class="fa-solid fa-file-pdf text-lg"></i>
+                                class="flex items-center px-4 py-3 text-xs sm:text-sm font-bold text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 mr-3 shrink-0">
+                                    <i class="fa-solid fa-file-pdf text-sm"></i>
                                 </div>
                                 Export to PDF
                             </a>
@@ -91,72 +92,67 @@
             </div>
 
             {{-- Spacer --}}
-            <div class="h-2"></div>
+            <div class="h-1"></div>
 
-            <!-- Stats/Summary Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Stats/Summary Grid (2 Columns on Mobile, 4 Columns on Desktop) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
                 <!-- Card 1 -->
-                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
-                    <div class="absolute -top-6 -right-6 w-24 h-24 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
-                    <div class="flex items-center gap-5 relative z-10">
-                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-blue-500/30 shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-7 rounded-xl sm:rounded-[2rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5 hover:-translate-y-0.5 transition-all relative overflow-hidden group">
+                    <div class="flex items-center gap-3 sm:gap-5 relative z-10">
+                        <div class="w-10 h-10 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-3xl shadow-md shadow-blue-500/30 shrink-0">
                             <i class="fa-solid fa-users"></i>
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">พนักงานทั้งหมด</p>
-                            <p class="text-4xl font-black text-slate-800 dark:text-white">{{ number_format($totalEmployees) }}</p>
-                            <div class="flex items-center mt-2 text-[11px]">
-                                <span class="font-black flex items-center px-2 py-0.5 rounded-full {{ $growthRate >= 0 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'text-rose-500 bg-rose-50 dark:bg-rose-900/20' }}">
-                                    <i class="fa-solid {{ $growthRate >= 0 ? 'fa-caret-up' : 'fa-caret-down' }} mr-1"></i>
+                            <p class="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-tight truncate mb-0.5">พนักงานทั้งหมด</p>
+                            <p class="text-xl sm:text-4xl font-black text-slate-800 dark:text-white leading-tight">{{ number_format($totalEmployees) }}</p>
+                            <div class="flex items-center mt-1 text-[9px] sm:text-[11px]">
+                                <span class="font-black flex items-center px-1.5 py-0.2 rounded-full {{ $growthRate >= 0 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'text-rose-500 bg-rose-50 dark:bg-rose-900/20' }}">
+                                    <i class="fa-solid {{ $growthRate >= 0 ? 'fa-caret-up' : 'fa-caret-down' }} mr-0.5"></i>
                                     {{ number_format(abs($growthRate), 1) }}%
                                 </span>
-                                <span class="ml-2 text-slate-400 font-bold uppercase tracking-tighter">vs last month</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card 2 -->
-                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
-                    <div class="absolute -top-6 -right-6 w-24 h-24 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
-                    <div class="flex items-center gap-5 relative z-10">
-                        <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-emerald-500/30 shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-7 rounded-xl sm:rounded-[2rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5 hover:-translate-y-0.5 transition-all relative overflow-hidden group">
+                    <div class="flex items-center gap-3 sm:gap-5 relative z-10">
+                        <div class="w-10 h-10 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-3xl shadow-md shadow-emerald-500/30 shrink-0">
                             <i class="fa-solid fa-user-plus"></i>
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">พนักงานใหม่ ({{ $currentFilter == 'year' ? 'ปีนี้' : ($currentFilter == 'quarter' ? 'ไตรมาสนี้' : 'เดือนนี้') }})</p>
-                            <p class="text-4xl font-black text-slate-800 dark:text-white">{{ number_format($newHiresCount) }}</p>
-                            <p class="text-[11px] text-slate-400 mt-2 font-bold italic">Welcome to the team!</p>
+                            <p class="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-tight truncate mb-0.5">พนักงานใหม่</p>
+                            <p class="text-xl sm:text-4xl font-black text-slate-800 dark:text-white leading-tight">{{ number_format($newHiresCount) }}</p>
+                            <p class="text-[9px] sm:text-[11px] text-slate-400 mt-1 font-bold truncate">บรรจุใหม่</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card 3 -->
-                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
-                    <div class="absolute -top-6 -right-6 w-24 h-24 bg-rose-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
-                    <div class="flex items-center gap-5 relative z-10">
-                        <div class="w-16 h-16 bg-gradient-to-br from-rose-400 to-rose-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-rose-500/30 shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-7 rounded-xl sm:rounded-[2rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5 hover:-translate-y-0.5 transition-all relative overflow-hidden group">
+                    <div class="flex items-center gap-3 sm:gap-5 relative z-10">
+                        <div class="w-10 h-10 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-400 to-rose-600 text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-3xl shadow-md shadow-rose-500/30 shrink-0">
                             <i class="fa-solid fa-user-minus"></i>
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">อัตราการลาออก</p>
-                            <p class="text-4xl font-black text-slate-800 dark:text-white">{{ number_format($turnoverRate, 1) }}%</p>
-                            <p class="text-[11px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">{{ $resignationsCount }} resignations</p>
+                            <p class="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-tight truncate mb-0.5">อัตราการลาออก</p>
+                            <p class="text-xl sm:text-4xl font-black text-slate-800 dark:text-white leading-tight">{{ number_format($turnoverRate, 1) }}%</p>
+                            <p class="text-[9px] sm:text-[11px] text-slate-400 mt-1 font-bold truncate">{{ $resignationsCount }} คน</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card 4 -->
-                <div class="bg-white dark:bg-slate-800 p-7 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 hover:-translate-y-1 transition-all relative overflow-hidden group">
-                    <div class="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
-                    <div class="flex items-center gap-5 relative z-10">
-                        <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-amber-500/30 shrink-0">
+                <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-7 rounded-xl sm:rounded-[2rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5 hover:-translate-y-0.5 transition-all relative overflow-hidden group">
+                    <div class="flex items-center gap-3 sm:gap-5 relative z-10">
+                        <div class="w-10 h-10 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-3xl shadow-md shadow-amber-500/30 shrink-0">
                             <i class="fa-solid fa-business-time"></i>
                         </div>
                         <div class="overflow-hidden flex-1">
-                            <p class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">อายุงานเฉลี่ย</p>
-                            <p class="text-4xl font-black text-slate-800 dark:text-white">{{ number_format($avgTenureYears, 1) }} <span class="text-lg font-normal text-slate-400 ml-1">ปี</span></p>
-                            <p class="text-[11px] text-slate-400 mt-2 font-bold uppercase tracking-tighter">Retention rate</p>
+                            <p class="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-tight truncate mb-0.5">อายุงานเฉลี่ย</p>
+                            <p class="text-xl sm:text-4xl font-black text-slate-800 dark:text-white leading-tight">{{ number_format($avgTenureYears, 1) }} <span class="text-xs sm:text-lg font-normal text-slate-400">ปี</span></p>
+                            <p class="text-[9px] sm:text-[11px] text-slate-400 mt-1 font-bold truncate">Retention</p>
                         </div>
                     </div>
                 </div>
@@ -166,76 +162,76 @@
             <div class="h-2"></div>
 
             {{-- Charts Section --}}
-            <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:gap-8 lg:grid-cols-3">
                 
                 <!-- Main Charts Column -->
-                <div class="lg:col-span-2 space-y-8">
-                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 overflow-hidden">
-                        <div class="flex items-center justify-between mb-8">
+                <div class="lg:col-span-2 space-y-4 sm:space-y-8">
+                    <div class="bg-white dark:bg-slate-800 p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5 overflow-hidden">
+                        <div class="flex items-center justify-between mb-4 sm:mb-8">
                             <div>
-                                <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                                    <div class="w-2 h-8 bg-blue-500 rounded-full"></div>
+                                <h3 class="text-base sm:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2.5 sm:gap-3">
+                                    <div class="w-1.5 h-6 sm:w-2 sm:h-8 bg-blue-500 rounded-full"></div>
                                     พนักงานแยกตามฝ่าย (Division)
                                 </h3>
-                                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 ml-5">Distribution analysis</p>
+                                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5 ml-4 sm:ml-5">Distribution analysis</p>
                             </div>
                         </div>
-                        <div id="divisionChart" class="w-full" style="min-height: 350px;"></div>
+                        <div id="divisionChart" class="w-full" style="min-height: 280px;"></div>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
-                        <div class="flex items-center justify-between mb-8">
+                    <div class="bg-white dark:bg-slate-800 p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5">
+                        <div class="flex items-center justify-between mb-4 sm:mb-8">
                             <div>
-                                <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                                    <div class="w-2 h-8 bg-indigo-500 rounded-full"></div>
+                                <h3 class="text-base sm:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2.5 sm:gap-3">
+                                    <div class="w-1.5 h-6 sm:w-2 sm:h-8 bg-indigo-500 rounded-full"></div>
                                     พนักงานแยกตามสายงาน (Section)
                                 </h3>
-                                <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 ml-5">Detailed breakdown</p>
+                                <p class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5 ml-4 sm:ml-5">Detailed breakdown</p>
                             </div>
                         </div>
-                        <div id="sectionChart" class="w-full" style="min-height: 350px;"></div>
+                        <div id="sectionChart" class="w-full" style="min-height: 280px;"></div>
                     </div>
                 </div>
 
                 <!-- Workplace & Gender -->
-                <div class="space-y-8">
-                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
-                        <h3 class="mb-8 text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                            <i class="fa-solid fa-location-dot text-rose-500"></i>
+                <div class="space-y-4 sm:space-y-8">
+                    <div class="bg-white dark:bg-slate-800 p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5">
+                        <h3 class="mb-4 sm:mb-8 text-base sm:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2.5 sm:gap-3">
+                            <i class="fa-solid fa-location-dot text-rose-500 text-sm sm:text-base"></i>
                             สถานที่ทำงาน
                         </h3>
-                        <div id="workplaceChart" class="w-full" style="min-height: 300px;"></div>
+                        <div id="workplaceChart" class="w-full" style="min-height: 250px;"></div>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
-                        <h3 class="mb-8 text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-                            <i class="fa-solid fa-venus-mars text-indigo-500"></i>
+                    <div class="bg-white dark:bg-slate-800 p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5">
+                        <h3 class="mb-4 sm:mb-8 text-base sm:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2.5 sm:gap-3">
+                            <i class="fa-solid fa-venus-mars text-indigo-500 text-sm sm:text-base"></i>
                             สัดส่วนเพศ
                         </h3>
-                        <div id="genderChart" class="w-full" style="min-height: 280px;"></div>
+                        <div id="genderChart" class="w-full" style="min-height: 240px;"></div>
                     </div>
                 </div>
             </div>
 
             {{-- Spacer --}}
-            <div class="h-2"></div>
+            <div class="h-1"></div>
 
             <!-- Monthly Hiring Trend Chart (Full Width) -->
-            <div class="bg-white dark:bg-slate-800 p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <div class="bg-white dark:bg-slate-800 p-4 sm:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-sm sm:shadow-xl border border-slate-200/60 dark:border-white/5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-10">
                     <div>
-                        <h3 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-3">
-                            <i class="fa-solid fa-chart-line text-emerald-500"></i>
+                        <h3 class="text-base sm:text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2.5 sm:gap-3">
+                            <i class="fa-solid fa-chart-line text-emerald-500 text-sm sm:text-xl"></i>
                             เปรียบเทียบพนักงานใหม่แต่ละเดือน (รายปี)
                         </h3>
-                        <p class="text-slate-400 text-sm font-bold mt-2 flex items-center gap-2">
+                        <p class="text-slate-400 text-xs sm:text-sm font-bold mt-1 flex items-center gap-2">
                             <i class="fa-solid fa-circle-info italic text-[10px]"></i>
-                            ข้อมูลเปรียบเทียบจำนวนการจ้างานรายเดือนของแต่ละปีงบประมาณ
+                            ข้อมูลเปรียบเทียบจำนวนการจ้างงานรายเดือน
                         </p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3" id="comparisonLegend"></div>
+                    <div class="flex flex-wrap items-center gap-2" id="comparisonLegend"></div>
                 </div>
-                <div id="manpowerMonthlyComparisonChart" class="w-full" style="min-height: 420px;"></div>
+                <div id="manpowerMonthlyComparisonChart" class="w-full" style="min-height: 320px;"></div>
             </div>
 
             {{-- Spacer --}}

@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 
 class User extends Authenticatable
 {
-    use Notifiable, SoftDeletes;
+    use Notifiable;
 
     protected $connection = 'userkml2025';
     protected $table = 'employees';
@@ -57,6 +57,7 @@ class User extends Authenticatable
         'status_label',
         'status_color',
     ];
+    
 
     // Accessors/Mutators to dynamically map missing/changed columns
     public function getStartworkDateAttribute()
@@ -173,7 +174,19 @@ class User extends Authenticatable
 
     public function isHrOrAdmin()
     {
-        return $this->dept_id == 15 || $this->role === 'admin';
+        return $this->role === 'admin' || $this->dept_id == 15 || $this->hr_status == '0' || (int)$this->level_user >= 5;
+    }
+
+    public function hasRole($roles)
+    {
+        if (is_array($roles)) {
+            foreach ($roles as $role) {
+                if ($this->hasRole($role)) return true;
+            }
+            return false;
+        }
+        if ($this->isHrOrAdmin()) return true;
+        return $this->role === $roles;
     }
 
     public function getPhotoUserAttribute()

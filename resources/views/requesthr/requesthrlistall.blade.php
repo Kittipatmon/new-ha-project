@@ -2,13 +2,21 @@
 
 @section('content')
 <div class="w-full mx-auto px-4 py-6 sm:px-6 lg:px-8">
-    <div class="flex items-center space-x-2 text-sm text-gray-500 mb-6 font-medium">
-        <a href="/" class="hover:text-red-500 transition-colors">Home</a>
-        <span class="text-gray-400">&gt;</span>
-        <a href="{{ route('request.hr') }}" class="hover:text-red-500 transition-colors">Request HR</a>
-        <span class="text-gray-400">&gt;</span>
-        <span class="text-red-600">รายงานข้อมูลทั้งหมด</span>
-    </div>
+    <nav class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+        <ol class="list-none p-0 flex flex-wrap items-center gap-2">
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('welcome') }}" class="hover:text-red-600 transition-colors">Home</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('request.hr') }}" class="hover:text-red-600 transition-colors">Request HR</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="text-red-600 font-semibold">
+                รายงานคำร้องขอทั้งหมด
+            </li>
+        </ol>
+    </nav>
 
     <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden transition-all">
         <!-- Header -->

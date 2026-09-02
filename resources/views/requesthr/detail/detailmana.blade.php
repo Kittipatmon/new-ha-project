@@ -2,14 +2,25 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 font-prompt">
     <!-- Breadcrumbs -->
-    <div class="text-sm breadcrumbs text-gray-500 dark:text-gray-400 mb-6">
-        <ul>
-            <li><a href="{{ route('welcome') }}" class="hover:text-red-500 transition-colors">Home</a></li>
-            <li><a href="{{ route('request.hr') }}" class="hover:text-red-500 transition-colors">Request HR</a></li>
-            <li><a href="{{ route('approve.approvemanalist') }}" class="hover:text-red-500 transition-colors">รายการรอดำเนินการ</a></li>
-            <li class="font-medium text-red-600 dark:text-red-500">รายละเอียดคำร้อง</li>
-        </ul>
-    </div>
+    <nav class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+        <ol class="list-none p-0 flex flex-wrap items-center gap-2">
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('welcome') }}" class="hover:text-red-600 transition-colors">Home</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('request.hr') }}" class="hover:text-red-600 transition-colors">Request HR</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('approve.approvemanalist') }}" class="hover:text-red-600 transition-colors">รายการรอดำเนินการ</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="text-red-600 font-semibold">
+                รายละเอียดคำร้อง
+            </li>
+        </ol>
+    </nav>
 
     <!-- Header Block -->
     <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">

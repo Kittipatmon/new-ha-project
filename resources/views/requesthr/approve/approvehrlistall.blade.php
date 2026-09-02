@@ -1,13 +1,21 @@
 @extends('layouts.hrrequest.app')
 @section('content')
 <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-3">
-    <div class="breadcrumbs text-sm">
-        <ul>
-            <li><a>Home</a></li>
-            <li><a href="{{ route('request.hr') }}">Request HR</a></li>
-            <li class="text-red-600">รายงานคำร้องขอ (รอรับทราบ/อนุมัติ)</li>
-        </ul>
-    </div>
+    <nav class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
+        <ol class="list-none p-0 flex flex-wrap items-center gap-2">
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('welcome') }}" class="hover:text-red-600 transition-colors">Home</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="flex items-center whitespace-nowrap">
+                <a href="{{ route('request.hr') }}" class="hover:text-red-600 transition-colors">Request HR</a>
+            </li>
+            <li class="text-gray-400 dark:text-gray-600">&gt;</li>
+            <li class="text-red-600 font-semibold">
+                รายงานคำร้องขอ (รอรับทราบ/อนุมัติ)
+            </li>
+        </ol>
+    </nav>
 
     <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-md overflow-hidden mb-2">
         <div class="px-6 py-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex justify-between  gap-2">

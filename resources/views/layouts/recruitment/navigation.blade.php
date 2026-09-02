@@ -1,4 +1,4 @@
-<style>
+﻿<style>
     .navbar-link {
         display: flex;
         align-items: center;
@@ -81,7 +81,7 @@
     }
 </style>
 <!-- bg-white dark:bg-gray-800 -->
-<nav class="border-b border-gray-100 dark:border-gray-700 shadow-xl bg-white/90 dark:bg-[#1E2129]/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
+<nav class="border-b border-gray-100 dark:border-gray-700 shadow-xl bg-white/90 dark:bg-[#1E2129]/90 backdrop-blur-md fixed w-full top-0 z-[9990] transition-all duration-300">
     <div class="px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center h-full">
@@ -92,70 +92,10 @@
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden lg:flex lg:items-center lg:ms-6">
 
-                <div class="hidden space-x-2 sm:-my-px sm:ms-10 sm:flex">
-                    <div class="relative">
-                        <button id="theme-toggle-btn" type="button"
-                            class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
-                            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor"
-                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                            </svg>
-                            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor"
-                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"
-                                    fill-rule="evenodd" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-
-                        <!-- Dropdown menu -->
-                        <div id="theme-dropdown"
-                            class="z-50 hidden-custom absolute right-0 mt-2 w-32 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700">
-                            <ul class="py-2 text-sm text-gray-700 dark:text-gray-200"
-                                aria-labelledby="theme-toggle-btn">
-                                <li>
-                                    <button type="button"
-                                        class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        data-theme-value="light">
-                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"
-                                                fill-rule="evenodd" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Light
-                                    </button>
-                                </li>
-                                <li>
-                                    <button type="button"
-                                        class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        data-theme-value="dark">
-                                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z">
-                                            </path>
-                                        </svg>
-                                        Dark
-                                    </button>
-                                </li>
-                                <li>
-                                    <button type="button"
-                                        class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        data-theme-value="auto">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                                            </path>
-                                        </svg>
-                                        System
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                <div class="hidden space-x-2 lg:-my-px lg:ms-10 lg:flex">
+                    
 
                     <ul class="hidden lg:flex space-x-1 items-center">
                         <li>
@@ -189,7 +129,7 @@
                     </ul>
                 </div>
 
-                <div class="relative ml-1">
+                <div class="relative flex items-center gap-2 ms-3 sm:ms-4">
                     @guest
                         <button type="button" id="login-open-btn"
                             class="navbar-link px-4 py-2 text-base text-black rounded-xl shadow transition">
@@ -216,7 +156,7 @@
                             </div>
                         </button>
                         <div id="profile-menu"
-                            class="absolute right-0 z-50 mt-3 w-64 origin-top-right rounded-2xl bg-white/95 dark:bg-[#1E2129]/95 backdrop-blur-xl py-2 shadow-2xl ring-1 ring-black/5 focus:outline-none hidden-custom border border-gray-100 dark:border-white/5 animate-fade-in">
+                            class="absolute right-0 top-full mt-3 z-50 w-64 origin-top-right rounded-2xl bg-white/95 dark:bg-[#1E2129]/95 backdrop-blur-xl py-2 shadow-2xl ring-1 ring-black/5 focus:outline-none hidden-custom border border-gray-100 dark:border-white/5 animate-fade-in">
                             <!-- Header Section -->
                             <div class="px-4 py-4 border-b border-gray-100 dark:border-white/5 mb-2">
                                 <div class="flex items-center gap-3">
@@ -278,25 +218,14 @@
                             </div>
                         </div>
                     @endauth
+                    @include('layouts.partials.notification-bell')
                 </div>
             </div>
 
             <div class="-me-2 flex items-center lg:hidden gap-2">
                 <!-- Mobile Theme Toggle -->
                 <div class="relative">
-                    <button id="mobile-theme-toggle-btn" type="button"
-                        class="flex items-center justify-center w-10 h-10 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm hover:bg-slate-200 dark:hover:bg-slate-700">
-                        <svg id="mobile-theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor"
-                            viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                        </svg>
-                        <svg id="mobile-theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor"
-                            viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"
-                                fill-rule="evenodd" clip-rule="evenodd"></path>
-                        </svg>
-                    </button>
+                    
 
                     <div id="mobile-theme-dropdown"
                         class="z-[110] hidden-custom absolute right-0 mt-2 w-32 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 ring-1 ring-black/5">
@@ -335,6 +264,7 @@
                     </div>
                 </div>
 
+                @include('layouts.partials.notification-bell')
                 <button id="mobile-menu-btn"
                     class="flex items-center justify-center w-10 h-10 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm hover:bg-slate-200 dark:hover:bg-slate-700">
                     <svg id="icon-hamburger" class="h-6 w-6 block" stroke="currentColor" fill="none"
@@ -352,39 +282,42 @@
         </div>
     </div>
 
+</nav>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 bg-black/70 z-[9998] hidden opacity-0 transition-opacity duration-300"></div>
+
+    <!-- Mobile Menu Drawer — Dark Premium Style -->
     <div id="mobile-menu"
-        class="hidden-custom lg:hidden absolute top-full left-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 shadow-2xl animate-fade-in shadow-xl overflow-y-auto max-h-[85vh]">
-        <div class="pt-4 pb-6 px-4 space-y-2">
-            <!-- Main Links -->
+        class="fixed top-0 right-0 h-full w-[300px] bg-white dark:bg-[#0f1117] z-[9999] transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col hidden shadow-2xl">
+
+        <!-- Drawer Header: Logo + Close -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-white/10">
+            <div>
+                <span class="text-gray-900 dark:text-white font-bold text-xl tracking-tight">Kumwell</span>
+                <p class="text-gray-500 dark:text-white/40 text-[11px] tracking-widest mt-0.5">"Safety to Society"</p>
+            </div>
+            <button id="mobile-menu-close-btn" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/10 transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Nav Links -->
+        <nav class="flex-1 flex flex-col">
             <a href="{{ route('welcome') }}"
-                class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 transition-all duration-200 group">
-                <div
-                    class="w-10 h-10 rounded-xl bg-red-100/50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform shadow-sm">
-                    <i class="fa-solid fa-house text-lg"></i>
-                </div>
-                <span>หน้าหลัก</span>
+                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                หน้าหลัก
             </a>
-
             <a href="{{ route('recruitment.index') }}"
-                class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 transition-all duration-200 group">
-                <div
-                    class="w-10 h-10 rounded-xl bg-red-100/50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform shadow-sm">
-                    <i class="fa-solid fa-user-plus text-lg"></i>
-                </div>
-                <span>สมัครงาน</span>
+                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                สมัครงาน
             </a>
-
             @if(Auth::check() && Auth::user()->isHrOrAdmin())
             <a href="{{ route('backend.recruitment.dashboard') }}"
-                class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 transition-all duration-200 group">
-                <div
-                    class="w-10 h-10 rounded-xl bg-red-100/50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform shadow-sm">
-                    <i class="fa-solid fa-gauge-high text-lg"></i>
-                </div>
-                <span>Dashboard</span>
+                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                Dashboard
             </a>
             @endif
-
             @auth
                 @php
                     $isApprover = Auth::user()->isHrOrAdmin() ||
@@ -394,78 +327,50 @@
                 @endphp
                 @if($isApprover)
                     <a href="{{ route('recruitment.reports') }}"
-                        class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 transition-all duration-200 group">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-red-100/50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform shadow-sm">
-                            <i class="fa-solid fa-file-contract text-lg"></i>
-                        </div>
-                        <span>รายงานคำขอ</span>
+                        class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                        รายงานคำขอ
                     </a>
                 @endif
             @endauth
-        </div>
+        </nav>
 
-        @auth
-            <div class="mt-4 pt-6 pb-8 px-4 border-t border-gray-100 dark:border-gray-800">
-                <div class="flex items-center gap-4 px-2 mb-6">
-                    <div class="relative">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-red-500/20 rotate-3 overflow-hidden">
-                            @if(Auth::user()->photo_user)
-                                <img src="{{ asset(Auth::user()->photo_user) }}" alt="Avatar" class="w-full h-full object-cover">
-                            @else
-                                <i class="fa-solid fa-gear text-2xl"></i>
-                            @endif
-                        </div>
-                        <div
-                            class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full">
-                        </div>
+        <!-- Footer: Auth/Guest Actions -->
+        <div class="px-6 pb-8 pt-4 mt-auto space-y-3">
+            @auth
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center overflow-hidden text-white">
+                        @if(Auth::user()->photo_user)
+                            <img src="{{ asset(Auth::user()->photo_user) }}" alt="Avatar" class="w-full h-full object-cover">
+                        @else
+                            <i class="fa-solid fa-user text-base"></i>
+                        @endif
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-black text-lg text-slate-800 dark:text-white leading-tight truncate">
-                            {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
-                        </div>
-                        <div class="text-xs font-bold text-red-500 uppercase tracking-wider mt-0.5">Authorized User</div>
+                    <div class="min-w-0">
+                        <div class="text-gray-900 dark:text-white font-bold text-sm truncate">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</div>
+                        <div class="text-red-500 dark:text-red-400 text-[10px] uppercase tracking-wider font-bold">Authorized User</div>
                     </div>
                 </div>
-
-                <div class="space-y-1">
-                    <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
-                        class="flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-red-600 transition-all">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-500 dark:text-gray-400">
-                            <i class="fa-solid fa-gear text-lg"></i>
-                        </div>
-                        <span>Profile Settings</span>
+                <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gray-100 text-gray-700 text-sm font-semibold hover:bg-gray-200 hover:text-gray-900 dark:bg-white/10 dark:text-white/80 dark:hover:bg-white/15 dark:hover:text-white transition-all">
+                    <i class="fa-solid fa-user-gear"></i> Profile Settings
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <a href="{{ route('logout') }}"
+                        class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 dark:bg-red-600/20 dark:text-red-400 dark:hover:bg-red-600/30 dark:hover:text-red-300 transition-all"
+                        onclick="event.preventDefault(); this.closest('form').submit();">
+                        <i class="fa-solid fa-power-off"></i> Log Out
                     </a>
-
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <a href="{{ route('logout') }}"
-                            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-red-100/50 dark:bg-red-500/10 flex items-center justify-center text-red-600">
-                                <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
-                            </div>
-                            <span>Log Out</span>
-                        </a>
-                    </form>
-                </div>
-            </div>
-        @endauth
-
-        @guest
-            <div class="pt-4 pb-4 px-4 border-t border-gray-100 dark:border-gray-800">
+                </form>
+            @endauth
+            @guest
                 <button type="button" id="login-open-btn"
-                    class="w-full navbar-link flex items-center justify-center gap-2 px-4 py-3 text-base font-bold rounded-2xl shadow-lg transition-all active:scale-95">
-                    <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Login
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-red-600 text-white text-sm font-bold tracking-widest uppercase hover:bg-red-700 transition-all shadow-lg shadow-red-900/30">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> LOG IN
                 </button>
-            </div>
-        @endguest
+            @endguest
+        </div>
     </div>
-</nav>
-
 <!-- Login Modal -->
 @guest
     <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden-custom">
@@ -634,22 +539,46 @@
         // --- Mobile Menu Logic ---
         const mobileBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        const iconHamburger = document.getElementById('icon-hamburger');
-        const iconCloseMenu = document.getElementById('icon-close-menu');
+        const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+        const mobileMenuCloseBtn = document.getElementById('mobile-menu-close-btn');
 
-        mobileBtn.addEventListener('click', function () {
-            mobileMenu.classList.toggle('hidden-custom');
-            mobileMenu.classList.toggle('block'); // Ensure proper display type
-
-            // Toggle Icons
-            if (mobileMenu.classList.contains('hidden-custom')) {
-                iconHamburger.classList.remove('hidden-custom');
-                iconCloseMenu.classList.add('hidden-custom');
-            } else {
-                iconHamburger.classList.add('hidden-custom');
-                iconCloseMenu.classList.remove('hidden-custom');
+        function openMobileMenu() {
+            if (!mobileMenu) return;
+            mobileMenu.classList.remove('hidden');
+            setTimeout(() => {
+                mobileMenu.classList.remove('translate-x-full');
+            }, 10);
+            if (mobileMenuBackdrop) {
+                mobileMenuBackdrop.classList.remove('hidden');
+                setTimeout(() => mobileMenuBackdrop.classList.remove('opacity-0'), 10);
             }
-        });
+        }
+
+        function closeMobileMenu() {
+            if (!mobileMenu) return;
+            mobileMenu.classList.add('translate-x-full');
+            if (mobileMenuBackdrop) {
+                mobileMenuBackdrop.classList.add('opacity-0');
+                setTimeout(() => mobileMenuBackdrop.classList.add('hidden'), 300);
+            }
+            setTimeout(() => {
+                if (mobileMenu.classList.contains('translate-x-full')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            }, 300);
+        }
+
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', openMobileMenu);
+        }
+
+        if (mobileMenuCloseBtn) {
+            mobileMenuCloseBtn.addEventListener('click', closeMobileMenu);
+        }
+
+        if (mobileMenuBackdrop) {
+            mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+        }
 
         // --- Profile Dropdown Logic ---
         const profileBtn = document.getElementById('profile-btn');
