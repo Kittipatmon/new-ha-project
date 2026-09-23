@@ -14,37 +14,64 @@ class RequestController extends Controller
 {
     public function index()
     {
-        $requests = RecruitmentRequest::with(['department', 'jobPosition', 'requester'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        // Auto-sync approved ManpowerRequests to RecruitmentRequests
+        $approvedManpowers = \App\Models\ManpowerRequest::where('status', 'approved')->get();
+        foreach ($approvedManpowers as $mReq) {
+            $paddedNo = 'REQ-' . str_pad($mReq->id, 5, '0', STR_PAD_LEFT);
+            $dept = Department::where('department_name', 'like', "%{$mReq->department}%")
+                ->orWhere('department_fullname', 'like', "%{$mReq->department}%")
+                ->orWhere('department_description', 'like', "%{$mReq->department}%")
+                ->first();
+            $deptId = $dept ? $dept->department_id : 1;
 
-        return view('backend.recruitment.requests.index', compact('requests'));
+            $duties = array_filter([
+                $mReq->res_1, $mReq->res_2, $mReq->res_3, $mReq->res_4, $mReq->res_5, $mReq->res_6
+            ]);
+            $qual = array_filter([
+                $mReq->req_gender ? "เพศ: " . $mReq->req_gender : null,
+                $mReq->req_age ? "อายุ: " . $mReq->req_age : null,
+                $mReq->req_education ? "วุฒิการศึกษา: " . $mReq->req_education : null,
+                $mReq->req_major ? "สาขาวิชา: " . $mReq->req_major : null,
+                $mReq->req_experience ? "ประสบการณ์ทำงาน: " . $mReq->req_experience : null,
+                $mReq->req_special ? "คุณสมบัติพิเศษ: " . $mReq->req_special : null,
+                $mReq->req_other ? "อื่นๆ: " . $mReq->req_other : null,
+            ]);
+
+            RecruitmentRequest::firstOrCreate(
+                ['request_no' => $paddedNo],
+                [
+                    'department_id' => $deptId,
+                    'position_name' => $mReq->job_title_th ?: $mReq->job_title_en,
+                    'requested_by' => $mReq->user_id ?? 0,
+                    'headcount' => $mReq->headcount ?? 1,
+                    'reason' => 'ลักษณะการว่าจ้าง: ' . $mReq->hire_type,
+                    'job_description' => "ระดับ: " . ($mReq->job_level ?? '-') . "\nหน้าที่ความรับผิดชอบ:\n" . implode("\n", $duties),
+                    'qualification' => implode("\n", $qual),
+                    'required_start_date' => $mReq->expected_start_date,
+                    'status' => 'approved',
+                ]
+            );
+        }
+
+        $requests = RecruitmentRequest::with(['department', 'jobPosition', 'requester', 'jobPosts'])
+            ->withCount('jobPosts')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Count approved requests that do not have a JobPost yet
+        $pendingJobPostCount = $requests->where('status', 'approved')
+            ->where('job_posts_count', 0)
+            ->count();
+
+        $departments = Department::orderBy('department_fullname')->get();
+
+        return view('backend.recruitment.requests.index', compact('requests', 'pendingJobPostCount', 'departments'));
     }
 
     public function create()
     {
-        $departments = Department::where('department_status', '0')->get();
-        $positions = JobPosition::where('status', 'active')->get();
-
-        if (\Schema::connection('userkml2025')->hasColumn('employees', 'position')) {
-            $employeePositions = \App\Models\User::whereNotNull('position')
-                ->where('position', '!=', '')
-                ->distinct()
-                ->pluck('position');
-        } else {
-            $employeePositions = collect([]);
-        }
-
-        // Fetch potential approvers (Level 5 and above: Head Section, Dept Mgr, etc. or active admins as fallback)
-        if (\Schema::connection('userkml2025')->hasColumn('employees', 'level_user')) {
-            $approvers = \App\Models\User::where('level_user', '>=', '5')
-                ->where('status', '0')
-                ->get();
-        } else {
-            $approvers = \App\Models\User::active()->where('role', 'admin')->get();
-        }
-
-        return view('backend.recruitment.requests.create', compact('departments', 'positions', 'employeePositions', 'approvers'));
+        // คำขอเปิดรับสมัครพนักงานควรอ้างอิง/กรอกจากใบขออนุมัติกำลังคน (Manpower Request)
+        return redirect()->route('manpower-request.create');
     }
 
     public function store(Request $request)
@@ -76,7 +103,17 @@ class RequestController extends Controller
 
     public function show(RecruitmentRequest $recruitmentRequest)
     {
-        $recruitmentRequest->load(['department', 'jobPosition', 'requester', 'managerApprover', 'executiveApprover']);
+        $recruitmentRequest->load(['department', 'jobPosition', 'requester', 'managerApprover', 'executiveApprover', 'jobPosts']);
+        
+        // Find associated ManpowerRequest if applicable
+        $manpowerRequest = null;
+        if (str_starts_with($recruitmentRequest->request_no, 'REQ-')) {
+            $rawId = substr($recruitmentRequest->request_no, 4);
+            if (is_numeric($rawId)) {
+                $manpowerRequest = \App\Models\ManpowerRequest::with(['user', 'managerApprover', 'vpApprover', 'hrApprover', 'ceoApprover'])->find((int)$rawId);
+            }
+        }
+
         if (\Schema::connection('userkml2025')->hasColumn('employees', 'level_user')) {
             $approvers = \App\Models\User::where('level_user', '>=', '5')
                 ->where('status', '0')
@@ -84,7 +121,7 @@ class RequestController extends Controller
         } else {
             $approvers = \App\Models\User::active()->where('role', 'admin')->get();
         }
-        return view('backend.recruitment.requests.show', compact('recruitmentRequest', 'approvers'));
+        return view('backend.recruitment.requests.show', compact('recruitmentRequest', 'manpowerRequest', 'approvers'));
     }
 
     public function updateApprover(Request $request, RecruitmentRequest $recruitmentRequest)

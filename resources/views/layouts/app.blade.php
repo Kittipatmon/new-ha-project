@@ -9,11 +9,35 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>HR System</title>
 
+    <!-- Immediate Theme Restoration to prevent flash and keep state across pages -->
+    <script>
+        (function() {
+            try {
+                var storedTheme = localStorage.getItem('theme');
+                var isDark = storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            } catch(e) {}
+        })();
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap');
 
-        body {
-            font-family: 'Prompt', sans-serif;
+        body, button, input, select, textarea, .font-sans, h1, h2, h3, h4, h5, h6, label, span, div {
+            font-family: 'Prompt', 'Kanit', sans-serif !important;
+        }
+
+        /* Scale down entire UI for Notebooks (1024px - 1600px) */
+        @media (min-width: 1024px) and (max-width: 1600px) {
+            html {
+                font-size: 13.5px;
+            }
         }
 
         /* Hide Scrollbar */
@@ -38,6 +62,17 @@
         #sidebar {
             transition: width 0.3s ease;
         }
+
+        /* Ensure SweetAlert2 toast & popups stay on top of all headers/navbars across all pages */
+        .swal2-container,
+        .swal2-toast-container {
+            z-index: 9999999 !important;
+        }
+        .swal2-container.swal2-top-end,
+        .swal2-container.swal2-top-right {
+            top: 15px !important;
+            right: 15px !important;
+        }
     </style>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -57,7 +92,7 @@
 
             @isset($header)
                 <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-[1700px] mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-10">
                         {{ $header }}
                     </div>
                 </header>
@@ -73,32 +108,31 @@
 
             @include('layouts.partials.sidebar')
 
-            <main class="flex-1 bg-gray-50 dark:bg-kumwell-dark text-gray-900 dark:text-gray-100 overflow-y-auto relative w-full overflow-x-hidden">
-                <div class="p-4 sm:p-6">
-                    <div class="flex items-center justify-between mb-4 border-b border-gray-300/30 pb-3 gap-3">
-                        <div class="flex items-center gap-2 sm:gap-4 min-w-0">
-                            <button id="mobile-sidebar-open" class="lg:hidden p-2 -ml-1 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors shrink-0">
-                                <i class="fa-solid fa-bars text-lg"></i>
-                            </button>
-                            <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 dark:text-white truncate">
-                                @yield('title', 'Dashboard')
-                            </h1>
-                            @hasSection('header_actions')
-                                <div class="hidden sm:block shrink-0">
-                                    @yield('header_actions')
-                                </div>
-                            @endif
-                        </div>
-                        <div class="text-sm shrink-0 flex items-center gap-3">
-                            <span id="current-date" class="hidden sm:inline-block text-xs font-semibold text-red-500"></span>
-                            @include('layouts.partials.notification-bell')
-                        </div>
+            <main class="flex-1 bg-slate-100/70 dark:bg-kumwell-dark text-gray-900 dark:text-gray-100 overflow-y-auto relative w-full overflow-x-hidden">
+                <div class="p-2.5 sm:p-6">
+                    {{-- Floating Vuexy Top Navbar --}}
+                    @include('layouts.partials.top-navbar')
+
+                    {{-- Optional Page Title Bar if defined --}}
+                    @hasSection('title')
+                    <div class="flex items-center justify-between mb-4 gap-3">
+                        <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 dark:text-white truncate">
+                            @yield('title')
+                        </h1>
+                        @hasSection('header_actions')
+                            <div class="shrink-0">
+                                @yield('header_actions')
+                            </div>
+                        @endif
                     </div>
+                    @endif
+
                     @isset($header)
-                        <div class="mb-4 border-b border-gray-300/30 pb-3">
+                        <div class="mb-4 pb-2">
                             {{ $header }}
                         </div>
                     @endisset
+
                     @yield('content')
                     {{ $slot ?? '' }}
                 </div>
@@ -138,17 +172,16 @@
             // Restore Sidebar Width
             updateSidebarState();
 
-            // Restore Dropdown States ONLY if sidebar is expanded
+            // Restore dropdown states from localStorage
             if (isSidebarOpen) {
-                const savedDropdowns = JSON.parse(localStorage.getItem('sidebar-dropdowns') || '{}');
-                Object.keys(savedDropdowns).forEach(id => {
-                    if (savedDropdowns[id]) {
-                        const content = document.getElementById(id);
-                        if (content) {
+                try {
+                    const savedDropdowns = JSON.parse(localStorage.getItem('sidebar-dropdowns') || '{}');
+                    Object.keys(savedDropdowns).forEach(id => {
+                        if (savedDropdowns[id] === true) {
                             performToggle(id, true);
                         }
-                    }
-                });
+                    });
+                } catch(e) {}
             }
 
             // Restore Scroll Position (Do this after dropdowns to ensure height is correct)
@@ -174,10 +207,10 @@
             const sidebarNav = document.querySelector('.sidebar-scroll');
             if (isSidebarOpen) {
                 // Expand Sidebar
-                sidebar.classList.remove('w-20', 'lg:w-20', 'sm:w-20');
-                sidebar.classList.add('w-[280px]', 'sm:w-[320px]', 'lg:w-68');
+                sidebar.classList.remove('w-20', 'xl:w-20', 'sm:w-20');
+                sidebar.classList.add('w-[260px]', 'sm:w-[280px]', 'xl:w-68');
 
-                if (toggleIcon) toggleIcon.className = 'fa-solid fa-chevron-left text-sm';
+                if (toggleIcon) toggleIcon.className = 'fa-regular fa-circle-dot text-base';
 
                 sidebarLogo.classList.remove('opacity-0', 'w-0', 'hidden');
                 sidebarLogo.classList.add('opacity-100');
@@ -192,10 +225,10 @@
                 }
 
             } else {
-                sidebar.classList.remove('w-68', 'lg:w-68', 'w-[280px]', 'sm:w-[320px]');
-                sidebar.classList.add('w-20', 'lg:w-20', 'sm:w-20');
+                sidebar.classList.remove('w-68', 'xl:w-68', 'w-[260px]', 'sm:w-[280px]', 'w-[280px]', 'sm:w-[320px]');
+                sidebar.classList.add('w-20', 'xl:w-20', 'sm:w-20');
 
-                if (toggleIcon) toggleIcon.className = 'fa-solid fa-bars-staggered text-sm';
+                if (toggleIcon) toggleIcon.className = 'fa-regular fa-circle text-base';
 
                 sidebarLogo.classList.remove('opacity-100');
                 sidebarLogo.classList.add('opacity-0', 'w-0');
@@ -203,7 +236,7 @@
                 sidebarTexts.forEach(el => el.classList.add('hidden'));
 
                 dropdownSubmenus.forEach(d => d.classList.add('hidden'));
-                document.querySelectorAll('.fa-chevron-down').forEach(i => i.classList.remove('rotate-180'));
+                document.querySelectorAll('.fa-chevron-right, .fa-chevron-down').forEach(i => i.classList.remove('rotate-90', 'rotate-180'));
 
                 userProfile.classList.add('justify-center');
 
@@ -232,19 +265,19 @@
             if (!content) return;
 
             const btn = content.previousElementSibling;
-            const arrow = btn.querySelector('.fa-chevron-down');
+            const arrow = btn.querySelector('.fa-chevron-right, .fa-chevron-down');
 
             const currentDropdowns = JSON.parse(localStorage.getItem('sidebar-dropdowns') || '{}');
 
             if (content.classList.contains('hidden') || forceOpen) {
                 content.classList.remove('hidden');
-                if (arrow) arrow.classList.add('rotate-180');
-                btn.classList.add('bg-white/5', 'text-white');
+                if (arrow) arrow.classList.add('rotate-90');
+                btn.classList.add('bg-slate-100/90', 'dark:bg-slate-800/80', 'text-indigo-600', 'dark:text-indigo-400');
                 currentDropdowns[dropdownId] = true;
             } else {
                 content.classList.add('hidden');
-                if (arrow) arrow.classList.remove('rotate-180');
-                btn.classList.remove('bg-white/5', 'text-white');
+                if (arrow) arrow.classList.remove('rotate-90');
+                btn.classList.remove('bg-slate-100/90', 'dark:bg-slate-800/80', 'text-indigo-600', 'dark:text-indigo-400');
                 currentDropdowns[dropdownId] = false;
             }
 
@@ -319,6 +352,36 @@
                 text: @json(session('success')),
                 timer: 2500,
                 showConfirmButton: false
+            });
+        @endif
+
+        @if(session('error') || session('swal_error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'ไม่มีสิทธิ์เข้าถึง',
+                text: @json(session('swal_error') ?? session('error')),
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'ตกลง'
+            });
+        @endif
+
+        @if(session('warning'))
+            Swal.fire({
+                icon: 'warning',
+                title: 'แจ้งเตือน',
+                text: @json(session('warning')),
+                confirmButtonColor: '#f59e0b',
+                confirmButtonText: 'รับทราบ'
+            });
+        @endif
+
+        @if(session('info'))
+            Swal.fire({
+                icon: 'info',
+                title: 'ข้อมูล',
+                text: @json(session('info')),
+                confirmButtonColor: '#3b82f6',
+                confirmButtonText: 'ตกลง'
             });
         @endif
     </script>

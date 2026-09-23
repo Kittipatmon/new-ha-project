@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backend\Recruitment;
 use App\Http\Controllers\Controller;
 use App\Models\Recruitment\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DirectEmail;
 
@@ -30,16 +31,26 @@ class EmailController extends Controller
 
         try {
             $attachments = $request->file('attachments') ?? [];
-            Mail::to($application->applicant->email)->send(new DirectEmail(
+            $mailable = new DirectEmail(
                 $validated['subject'],
                 $validated['content'],
                 $application->applicant->full_name,
-                $attachments
-            ));
+                $attachments,
+                Auth::user()
+            );
+
+            \App\Services\RecruitmentMailService::queueMailable(
+                $mailable,
+                $application->applicant->email,
+                $application->applicant->full_name,
+                'direct_email',
+                ['application_id' => $application->id],
+                Auth::user()
+            );
 
             return response()->json([
                 'success' => true,
-                'message' => 'ส่งอีเมลเรียบร้อยแล้ว'
+                'message' => 'ส่งอีเมลเข้าคิวเรียบร้อยแล้ว ระบบกำลังดำเนินการส่งออก'
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Direct email failed: ' . $e->getMessage());

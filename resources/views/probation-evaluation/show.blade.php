@@ -12,23 +12,65 @@
                     {{ __('รายละเอียดแบบประเมินผลการปฏิบัติงานระหว่างทดลองงาน') }}
                 </h2>
             </div>
-            <a href="{{ route('probation-evaluation.pdf', $probationEvaluation->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-900 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-black focus:bg-black active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                พิมพ์ (Print)
-            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('probation-evaluation.pdf', $probationEvaluation->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-gray-900 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-black focus:bg-black active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    พิมพ์ (Print)
+                </a>
+                @if(auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->isHrOrAdmin()))
+                    <button type="button" onclick="openShareModal('probation_evaluation', {{ $probationEvaluation->id }}, 'แบบประเมินทดลองงาน #{{ $probationEvaluation->id }}')" class="inline-flex items-center px-4 py-2 bg-sky-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-sky-700 active:bg-sky-900 transition ease-in-out duration-150 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                        </svg>
+                        แชร์เอกสาร
+                    </button>
+                @endif
+            </div>
         </div>
     </x-slot>
+
+    <style>
+        body, button, input, select, textarea, .font-sans, h1, h2, h3, h4, h5, h6, label, span, div {
+            font-family: 'Prompt', 'Kanit', sans-serif !important;
+        }
+    </style>
 
     <div class="py-12 bg-gray-100 dark:bg-gray-900 min-h-screen relative overflow-x-hidden">
         
 
 
         <!-- All Pages Wrapper -->
-        <div class="w-full overflow-x-auto pb-4">
+        <div class="hr-form-container">
+            @if(!empty($activeShare))
+                @php
+                    $sharedByName = $activeShare->sender 
+                        ? ($activeShare->sender->fullname ?? trim(($activeShare->sender->firstname ?? '') . ' ' . ($activeShare->sender->lastname ?? '')))
+                        : 'ผู้ดูแลระบบ';
+                    $sharedTime = $activeShare->created_at ? \Carbon\Carbon::parse($activeShare->created_at)->format('d/m/Y H:i น.') : '-';
+                @endphp
+                <div class="mb-4 flex items-center gap-3 p-4 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl text-sky-800 dark:text-sky-200 text-sm shadow-sm print:hidden">
+                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-sky-500 text-white shrink-0 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-sky-900 dark:text-sky-100 flex items-center gap-2">
+                            <span>เอกสารนี้ได้รับการแชร์</span>
+                            @if(!empty($activeShare->note))
+                                <span class="text-xs bg-sky-200/70 dark:bg-sky-900 px-2 py-0.5 rounded text-sky-800 dark:text-sky-300 font-normal">หมายเหตุ: {{ $activeShare->note }}</span>
+                            @endif
+                        </div>
+                        <div class="text-xs text-sky-700 dark:text-sky-300 mt-0.5">
+                            แชร์โดย: <strong class="font-semibold">{{ $sharedByName }}</strong> เมื่อวันที่และเวลา: <strong class="font-semibold">{{ $sharedTime }}</strong>
+                        </div>
+                    </div>
+                </div>
+            @endif
         <!-- PAGE 1/3 Paper Container -->
-        <div class="w-full mx-auto bg-white p-6 sm:p-10 lg:p-12 shadow-xl border border-gray-300 rounded-xl mb-8 print:shadow-none print:border-none print:p-0 print:mb-0">
+        <div class="hr-form-paper">
             @php
                 $kumEmployees = \Illuminate\Support\Facades\DB::connection('appkum_user')
                     ->table('employees')
@@ -51,12 +93,12 @@
                 @endphp
                 
                 <!-- Header Section -->
-                <div class="flex justify-between items-start mb-6 text-sm">
-                    <div>
-                        <span>แบบประเมินเลขที่</span>
-                        <input readonly disabled type="text" name="form_no" value="{{ 'PE-' . date('Y', strtotime($probationEvaluation->created_at)) . '-' . str_pad($probationEvaluation->id, 4, '0', STR_PAD_LEFT) }}" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
+                <div class="flex justify-between items-center gap-2 mb-6 text-sm">
+                    <div class="min-w-0 flex-1">
+                        <span class="whitespace-nowrap">แบบประเมินเลขที่</span>
+                        <input readonly disabled type="text" name="form_no" value="{{ 'PE-' . date('Y', strtotime($probationEvaluation->created_at)) . '-' . str_pad($probationEvaluation->id, 4, '0', STR_PAD_LEFT) }}" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-32 sm:w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
                     </div>
-                    <div class="text-right text-gray-600">
+                    <div class="text-right text-gray-600 font-medium whitespace-nowrap shrink-0">
                         <p>1 / 3</p>
                     </div>
                 </div>
@@ -83,27 +125,27 @@
                                 <span class="ml-1 text-xs">นางสาว</span>
                             </label>
                         </div>
-                        <input readonly disabled type="text" name="employee_name" value="{{ old('employee_name', $probationEvaluation->employee_name ?? '') }}" class="flex-grow border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
+                        <input readonly disabled type="text" name="employee_name" value="{{ old('employee_name', $probationEvaluation->employee_name ?? '') }}" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
                     </div>
                     <div class="flex items-end">
                         <span class="whitespace-nowrap mr-2">ตำแหน่ง</span>
-                        <input readonly disabled type="text" name="position" value="{{ old('position', $probationEvaluation->position ?? '') }}" class="flex-grow border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
+                        <input readonly disabled type="text" name="position" value="{{ old('position', $probationEvaluation->position ?? '') }}" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
                     </div>
                     <div class="flex items-end">
                         <span class="whitespace-nowrap mr-2">รหัสพนักงาน</span>
-                        <input readonly disabled type="text" name="emp_code" value="{{ old('emp_code', $probationEvaluation->emp_code ?? '') }}" class="flex-grow border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
+                        <input readonly disabled type="text" name="emp_code" value="{{ old('emp_code', $probationEvaluation->emp_code ?? '') }}" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
                     </div>
                     <div class="flex items-end">
                         <span class="whitespace-nowrap mr-2">แผนก/ ฝ่าย</span>
-                        <input readonly disabled type="text" name="department" value="{{ old('department', $probationEvaluation->department ?? '') }}" class="flex-grow border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
+                        <input readonly disabled type="text" name="department" value="{{ old('department', $probationEvaluation->department ?? '') }}" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
                     </div>
                     <div class="flex items-end">
                         <span class="whitespace-nowrap mr-2">วันที่เริ่มงาน</span>
-                        <input readonly disabled type="text" name="start_date" value="{{ old('start_date', $probationEvaluation->start_date ?? '') }}" class="datepicker-th flex-grow border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-gray-700">
+                        <input readonly disabled type="text" name="start_date" value="{{ old('start_date', $probationEvaluation->start_date ?? '') }}" class="datepicker-th flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-gray-700">
                     </div>
                     <div class="flex items-end">
                         <span class="whitespace-nowrap mr-2">วันที่ครบทดลองงาน</span>
-                        <input readonly disabled type="text" name="probation_due_date" value="{{ old('probation_due_date', $probationEvaluation->probation_due_date ?? '') }}" class="datepicker-th flex-grow border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-gray-700">
+                        <input readonly disabled type="text" name="probation_due_date" value="{{ old('probation_due_date', $probationEvaluation->probation_due_date ?? '') }}" class="datepicker-th flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-gray-700">
                     </div>
                 </div>
 
@@ -240,7 +282,7 @@
                                 <input readonly disabled type="radio" name="evaluation_result" value="ไม่ผ่านการทดลองงาน" {{ old('evaluation_result', $probationEvaluation->evaluation_result ?? '') == 'ไม่ผ่านการทดลองงาน' ? 'checked' : '' }} class="form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent">
                                 <span class="ml-2 text-sm flex items-center flex-wrap">
                                     ไม่ผ่านการทดลองงาน เนื่องจาก
-                                    <input readonly disabled type="text" name="evaluation_result_reason" value="{{ old('evaluation_result_reason', $probationEvaluation->evaluation_result_reason ?? '') }}" class="ml-2 flex-grow min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
+                                    <input readonly disabled type="text" name="evaluation_result_reason" value="{{ old('evaluation_result_reason', $probationEvaluation->evaluation_result_reason ?? '') }}" class="ml-2 flex-grow min-w-0 min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0">
                                 </span>
                             </label>
                         </div>
@@ -261,7 +303,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้รับการประเมิน</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -284,7 +326,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้ประเมิน</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -307,7 +349,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้จัดการฝ่าย/แผนก</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -330,7 +372,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
                                     <span class="ml-2 text-xs text-gray-500 w-24">ฝ่ายทรัพยากรบุคคล</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -353,21 +395,27 @@
                 </div>
 
                 <!-- End of Page 1 -->
-                <div class="flex justify-between items-end mt-12 text-xs text-gray-500 text-black">
-                    <div>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)</div>
-                    <div>QF-HR-18 Rev.09 : 02-05-25</div>
+                <div class="flex justify-between items-end gap-2 mt-12 text-xs text-gray-500 text-black leading-tight">
+                    <div>
+                        <div>บริษัท คัมเวล คอร์ปอเรชั่น</div>
+                        <div>จำกัด (มหาชน)</div>
+                    </div>
+                    <div class="text-right whitespace-nowrap">
+                        <div>QF-HR-18 Rev.09 :</div>
+                        <div>02-05-25</div>
+                    </div>
                 </div>
             </div>
 
 <!-- ==================== PAGE 2/3 ==================== -->
-            <div class="w-full mx-auto bg-white p-6 sm:p-10 lg:p-12 shadow-xl border border-gray-300 rounded-xl mb-8 print:shadow-none print:border-none print:p-0 print:mb-0 break-before-page print:break-before-page" style="page-break-before: always;">
+            <div class="hr-form-paper break-before-page print:break-before-page" style="page-break-before: always;">
                 <!-- Header Section -->
-                <div class="flex justify-between items-start mb-6 text-sm mt-8 print:mt-0">
-                    <div>
-                        <span>แบบประเมินเลขที่</span>
-                        <input readonly disabled type="text" value="{{ 'PE-' . date('Y', strtotime($probationEvaluation->created_at)) . '-' . str_pad($probationEvaluation->id, 4, '0', STR_PAD_LEFT) }}" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
+                <div class="flex justify-between items-center gap-2 mb-6 text-sm mt-8 print:mt-0">
+                    <div class="min-w-0 flex-1">
+                        <span class="whitespace-nowrap">แบบประเมินเลขที่</span>
+                        <input readonly disabled type="text" value="{{ 'PE-' . date('Y', strtotime($probationEvaluation->created_at)) . '-' . str_pad($probationEvaluation->id, 4, '0', STR_PAD_LEFT) }}" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-32 sm:w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
                     </div>
-                    <div class="text-right text-gray-600">
+                    <div class="text-right text-gray-600 font-medium whitespace-nowrap shrink-0">
                         <p>2 / 3</p>
                     </div>
                 </div>
@@ -422,7 +470,7 @@
                                 <input type="radio" name="evaluation_result_2" value="ไม่ผ่านการทดลองงาน" {{ ($probationEvaluation->evaluation_result_2 ?? '') == 'ไม่ผ่านการทดลองงาน' ? 'checked' : '' }} disabled class="form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent">
                                 <span class="ml-2 text-sm flex items-center flex-wrap">
                                     ไม่ผ่านการทดลองงาน เนื่องจาก
-                                    <input type="text" name="evaluation_result_reason_2" value="{{ $probationEvaluation->evaluation_result_reason_2 ?? '' }}" class="ml-2 flex-grow min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0" readonly disabled>
+                                    <input type="text" name="evaluation_result_reason_2" value="{{ $probationEvaluation->evaluation_result_reason_2 ?? '' }}" class="ml-2 flex-grow min-w-0 min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0" readonly disabled>
                                 </span>
                             </label>
                         </div>
@@ -443,7 +491,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้รับการประเมิน</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -466,7 +514,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้ประเมิน</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -489,7 +537,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้จัดการฝ่าย/แผนก</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -512,7 +560,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
                                     <span class="ml-2 text-xs text-gray-500 w-24">ฝ่ายทรัพยากรบุคคล</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -534,21 +582,27 @@
                     </div>
                 </div>
 
-                <div class="flex justify-between items-end mt-12 text-xs text-gray-500 text-black">
-                    <div>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)</div>
-                    <div>QF-HR-18 Rev.09 : 02-05-25</div>
+                <div class="flex justify-between items-end gap-2 mt-12 text-xs text-gray-500 text-black leading-tight">
+                    <div>
+                        <div>บริษัท คัมเวล คอร์ปอเรชั่น</div>
+                        <div>จำกัด (มหาชน)</div>
+                    </div>
+                    <div class="text-right whitespace-nowrap">
+                        <div>QF-HR-18 Rev.09 :</div>
+                        <div>02-05-25</div>
+                    </div>
                 </div>
             </div>
 
             <!-- ==================== PAGE 3/3 ==================== -->
-            <div class="w-full mx-auto bg-white p-6 sm:p-10 lg:p-12 shadow-xl border border-gray-300 rounded-xl mb-8 print:shadow-none print:border-none print:p-0 print:mb-0 break-before-page print:break-before-page" style="page-break-before: always;">
+            <div class="hr-form-paper break-before-page print:break-before-page" style="page-break-before: always;">
                 <!-- Header Section -->
-                <div class="flex justify-between items-start mb-6 text-sm mt-8 print:mt-0">
-                    <div>
-                        <span>แบบประเมินเลขที่</span>
-                        <input readonly disabled type="text" value="{{ 'PE-' . date('Y', strtotime($probationEvaluation->created_at)) . '-' . str_pad($probationEvaluation->id, 4, '0', STR_PAD_LEFT) }}" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
+                <div class="flex justify-between items-center gap-2 mb-6 text-sm mt-8 print:mt-0">
+                    <div class="min-w-0 flex-1">
+                        <span class="whitespace-nowrap">แบบประเมินเลขที่</span>
+                        <input readonly disabled type="text" value="{{ 'PE-' . date('Y', strtotime($probationEvaluation->created_at)) . '-' . str_pad($probationEvaluation->id, 4, '0', STR_PAD_LEFT) }}" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-32 sm:w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
                     </div>
-                    <div class="text-right text-gray-600">
+                    <div class="text-right text-gray-600 font-medium whitespace-nowrap shrink-0">
                         <p>3 / 3</p>
                     </div>
                 </div>
@@ -604,7 +658,7 @@
                                 <input type="radio" name="evaluation_result_3" value="ไม่ผ่านการทดลองงาน" {{ ($probationEvaluation->evaluation_result_3 ?? '') == 'ไม่ผ่านการทดลองงาน' ? 'checked' : '' }} disabled class="form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent">
                                 <span class="ml-2 text-sm flex items-center flex-wrap">
                                     ไม่ผ่านการทดลองงาน เนื่องจาก
-                                    <input type="text" name="evaluation_result_reason_3" value="{{ $probationEvaluation->evaluation_result_reason_3 ?? '' }}" class="ml-2 flex-grow min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0" readonly disabled>
+                                    <input type="text" name="evaluation_result_reason_3" value="{{ $probationEvaluation->evaluation_result_reason_3 ?? '' }}" class="ml-2 flex-grow min-w-0 min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0" readonly disabled>
                                 </span>
                             </label>
                         </div>
@@ -625,7 +679,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้รับการประเมิน</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -648,7 +702,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้ประเมิน</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -671,7 +725,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                                     <span class="ml-2 text-xs text-gray-500 w-24">ผู้จัดการฝ่าย/แผนก</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -694,7 +748,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="flex items-end w-full mb-2">
                                     <span class="mr-2">ลงชื่อ</span>
-                                    <input readonly disabled type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
+                                    <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
                                     <span class="ml-2 text-xs text-gray-500 w-24">ฝ่ายทรัพยากรบุคคล</span>
                                 </div>
                                 <div class="flex w-full px-6 justify-center items-center relative">
@@ -721,9 +775,12 @@
                     * หมายเหตุ : เงื่อนไขการผ่านทดลองงาน ต้องผ่านการสอบวัดความรู้จากฝ่ายทรัพยากรบุคคล ในข้อ 1.2 และผ่านการประเมินผลการปฏิบัติงาน<br>จากหัวหน้างาน/ผู้ประเมิน ในข้อ 1.3
                 </div>
 
-                <div class="flex justify-between items-end mt-12 text-xs text-gray-500 text-black">
-                    <div>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)</div>
-                    <div>QF-HR-18 Rev.09 : 02-05-25</div>
+                <div class="flex justify-between items-end gap-2 mt-12 text-xs text-gray-500 text-black leading-tight">
+                    <div class="whitespace-nowrap">บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)</div>
+                    <div class="text-right whitespace-nowrap">
+                        <div>QF-HR-18 Rev.09 :</div>
+                        <div>02-05-25</div>
+                    </div>
                 </div>
                 
                 <!-- Action Buttons -->
@@ -747,16 +804,64 @@
     <!-- Flatpickr setup for Thai localization -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            if (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) {
+                flatpickr.localize(flatpickr.l10ns.th);
+            }
+
             flatpickr(".datepicker-th", {
-                locale: "th",
-                dateFormat: "Y-m-d",
+                locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : "th",
                 altInput: true,
-                altFormat: "d/m/Y", // display format (e.g. 24/07/2026)
-                allowInput: true
+                altFormat: "d/m/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                formatDate: function(date, formatStr, locale) {
+                    if (formatStr === 'd/m/Y') {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear() + 543;
+                        return day + '/' + month + '/' + year;
+                    }
+                    return flatpickr.formatDate(date, formatStr, locale);
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    if (instance.altInput) {
+                        instance.altInput.className = instance.input.className;
+                        instance.altInput.classList.remove('datepicker-th');
+                        instance.altInput.classList.add('flatpickr-input');
+                    }
+                    formatHeaderBuddhistYear(instance);
+                },
+                onMonthChange: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                },
+                onYearChange: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                }
             });
+
+            function formatHeaderBuddhistYear(instance) {
+                setTimeout(function() {
+                    if (!instance || !instance.calendarContainer) return;
+                    const curYearElem = instance.calendarContainer.querySelector('.flatpickr-current-month .cur-year');
+                    if (curYearElem) {
+                        const bYear = instance.currentYear + 543;
+                        curYearElem.value = bYear;
+                    }
+                    const numYearInputs = instance.calendarContainer.querySelectorAll('.cur-year');
+                    numYearInputs.forEach(function(inp) {
+                        inp.value = instance.currentYear + 543;
+                    });
+                }, 10);
+            }
+            
         });
     </script>
+
+    @include('components.form-share-modal')
 </x-app-layout>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.recruitment.app')
 
 @section('title', 'แก้ไขประกาศรับสมัครงาน')
 
@@ -96,11 +96,64 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">สถานที่ทำงาน
-                            (Location)</label>
-                        <input type="text" name="location" value="{{ old('location', $jobPost->location) }}"
-                            class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm"
-                            placeholder="เช่น สำนักงานใหญ่, คลังสินค้า">
+                        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-fire text-kumwell-red text-xs"></i>
+                            <span>แท็กความด่วน (Urgency Tag)</span>
+                        </label>
+                        <select name="urgency"
+                            class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm">
+                            <option value="normal" {{ old('urgency', $jobPost->urgency ?? 'normal') == 'normal' ? 'selected' : '' }}>ปกติ (ไม่แสดงแท็กด่วน)</option>
+                            <option value="urgent" {{ old('urgency', $jobPost->urgency ?? 'normal') == 'urgent' ? 'selected' : '' }}>🔥 รับสมัครด่วน (Urgent)</option>
+                            <option value="very_urgent" {{ old('urgency', $jobPost->urgency ?? 'normal') == 'very_urgent' ? 'selected' : '' }}>⚡ รับสมัครด่วนมาก (Very Urgent)</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-location-dot text-kumwell-red text-xs"></i>
+                                <span>สถานที่ทำงาน (Location)</span>
+                            </span>
+                        </label>
+                        
+                        @php
+                            $currentLocation = old('location', $jobPost->location ?? 'สำนักงานใหญ่');
+                            $isPreset = in_array($currentLocation, ['สำนักงานใหญ่', 'Factory สาขาบางเลน', 'Factory สาขาไทรน้อย']);
+                            $selectedKey = $isPreset ? $currentLocation : (!empty($currentLocation) ? 'custom' : 'สำนักงานใหญ่');
+                        @endphp
+
+                        <select id="location_select"
+                            class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-kumwell-red transition-all">
+                            <option value="สำนักงานใหญ่" {{ $selectedKey === 'สำนักงานใหญ่' ? 'selected' : '' }}>🏢 สำนักงานใหญ่ (Head Office)</option>
+                            <option value="Factory สาขาบางเลน" {{ $selectedKey === 'Factory สาขาบางเลน' ? 'selected' : '' }}>🏭 Factory สาขาบางเลน</option>
+                            <option value="Factory สาขาไทรน้อย" {{ $selectedKey === 'Factory สาขาไทรน้อย' ? 'selected' : '' }}>🏭 Factory สาขาไทรน้อย</option>
+                            <option value="custom" {{ $selectedKey === 'custom' ? 'selected' : '' }}>✍️ กำหนดเอง (ระบุสถานที่อื่นๆ)</option>
+                        </select>
+
+                        <!-- Custom Input (shown only if 'custom' is selected) -->
+                        <div id="custom_location_container" class="{{ $selectedKey === 'custom' ? '' : 'hidden' }} mt-2">
+                            <input type="text" id="custom_location_input"
+                                value="{{ !$isPreset ? $currentLocation : '' }}"
+                                placeholder="ระบุสถานที่ทำงาน เช่น คลังสินค้า หรือ Work from home..."
+                                class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-kumwell-red">
+                        </div>
+
+                        <!-- Actual Input submitted with form -->
+                        <input type="hidden" name="location" id="final_location_input" value="{{ $currentLocation ?: 'สำนักงานใหญ่' }}">
+
+                        <!-- Location Preset Preview Card -->
+                        <div id="location_preview_card" class="{{ $selectedKey === 'custom' ? 'hidden' : '' }} p-3 bg-red-50/50 dark:bg-slate-800/80 border border-red-100 dark:border-slate-700 rounded-xl text-xs space-y-1.5 transition-all">
+                            <div class="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200">
+                                <i class="fa-solid fa-building-circle-check text-kumwell-red"></i>
+                                <span id="loc_preview_title">สำนักงานใหญ่</span>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-[11px]" id="loc_preview_address">
+                                358 ถนนเลี่ยงเมืองนนทบุรี ตำบลบางกระสอ เมืองนนทบุรี จังหวัดนนทบุรี 11000
+                            </p>
+                            <div class="flex flex-wrap gap-x-3 gap-y-1 text-gray-500 dark:text-gray-400 text-[11px] pt-1 border-t border-red-100/60 dark:border-slate-700/60" id="loc_preview_contacts">
+                                <!-- Injected via JS -->
+                            </div>
+                        </div>
                     </div>
 
                     <div class="space-y-2">
@@ -207,15 +260,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">วันที่เริ่มประกาศ</label>
-                        <input type="date" name="start_date"
+                        <input type="text" name="start_date" id="start_date"
                             value="{{ old('start_date', $jobPost->start_date ? $jobPost->start_date->format('Y-m-d') : '') }}"
-                            class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm">
+                            placeholder="วว/ดด/ปปปป"
+                            class="datepicker-th w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm">
                     </div>
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">วันสิ้นสุดประกาศ</label>
-                        <input type="date" name="end_date"
+                        <input type="text" name="end_date" id="end_date"
                             value="{{ old('end_date', $jobPost->end_date ? $jobPost->end_date->format('Y-m-d') : '') }}"
-                            class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm">
+                            placeholder="วว/ดด/ปปปป"
+                            class="datepicker-th w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm">
                     </div>
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">สถานะการประกาศ</label>
@@ -280,6 +335,176 @@
                     }
                 }
             });
+
+            // Location Selector Logic
+            const locationData = {
+                'สำนักงานใหญ่': {
+                    title: 'สำนักงานใหญ่ (Head Office)',
+                    address: '358 ถนนเลี่ยงเมืองนนทบุรี ตำบลบางกระสอ เมืองนนทบุรี จังหวัดนนทบุรี 11000',
+                    contacts: [
+                        { icon: 'fa-phone', text: '(662) 954-3455' },
+                        { icon: 'fa-fax', text: '(662) 591-7891' },
+                        { icon: 'fa-envelope', text: 'info@kumwell.com' },
+                        { icon: 'fa-globe', text: 'www.kumwell.com' }
+                    ]
+                },
+                'Factory สาขาบางเลน': {
+                    title: 'Factory สาขาบางเลน',
+                    address: '26/2 หมู่ที่ 10 ตำบลบางเลน อำเภอบางใหญ่ จังหวัดนนทบุรี 11140',
+                    contacts: [
+                        { icon: 'fa-phone', text: '(662) 920-0133' },
+                        { icon: 'fa-fax', text: '(662) 920-0045' }
+                    ]
+                },
+                'Factory สาขาไทรน้อย': {
+                    title: 'Factory สาขาไทรน้อย',
+                    address: '27 หมู่ที่ 1 ตำบลไทรใหญ่ อำเภอไทรน้อย จังหวัดนนทบุรี 11150',
+                    contacts: [
+                        { icon: 'fa-phone', text: '(662) 117-2483-5' },
+                        { icon: 'fa-fax', text: '(662) 117-2486' }
+                    ]
+                }
+            };
+
+            const locationSelect = document.getElementById('location_select');
+            const customContainer = document.getElementById('custom_location_container');
+            const customInput = document.getElementById('custom_location_input');
+            const finalInput = document.getElementById('final_location_input');
+            const previewCard = document.getElementById('location_preview_card');
+            const previewTitle = document.getElementById('loc_preview_title');
+            const previewAddress = document.getElementById('loc_preview_address');
+            const previewContacts = document.getElementById('loc_preview_contacts');
+
+            function updateLocationUI() {
+                if (!locationSelect) return;
+                const val = locationSelect.value;
+                if (val === 'custom') {
+                    customContainer.classList.remove('hidden');
+                    previewCard.classList.add('hidden');
+                    finalInput.value = customInput.value.trim();
+                } else if (locationData[val]) {
+                    customContainer.classList.add('hidden');
+                    previewCard.classList.remove('hidden');
+                    finalInput.value = val;
+
+                    const data = locationData[val];
+                    previewTitle.textContent = data.title;
+                    previewAddress.textContent = data.address;
+                    previewContacts.innerHTML = data.contacts.map(c => 
+                        `<span><i class="fa-solid ${c.icon} mr-1 text-kumwell-red/70"></i>${c.text}</span>`
+                    ).join('');
+                }
+            }
+
+            if (locationSelect) {
+                locationSelect.addEventListener('change', updateLocationUI);
+                if (customInput) {
+                    customInput.addEventListener('input', function() {
+                        if (locationSelect.value === 'custom') {
+                            finalInput.value = this.value.trim();
+                        }
+                    });
+                }
+                updateLocationUI();
+            }
+        });
+    </script>
+
+    <!-- Flatpickr setup for Thai localization -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+    <style>
+        .flatpickr-calendar {
+            font-family: 'Prompt', 'Kanit', sans-serif !important;
+            border-radius: 1rem;
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.endRange.nextMonthDay {
+            background: #e11d48 !important;
+            border-color: #e11d48 !important;
+        }
+        .flatpickr-day.today {
+            border-color: #e11d48 !important;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) {
+                flatpickr.localize(flatpickr.l10ns.th);
+            }
+
+            flatpickr(".datepicker-th", {
+                locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : "th",
+                altInput: true,
+                altFormat: "d/m/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                parseDate: function(dateStr, formatStr) {
+                    if (typeof dateStr === 'string' && dateStr.includes('/')) {
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            let day = parseInt(parts[0], 10);
+                            let month = parseInt(parts[1], 10) - 1;
+                            let year = parseInt(parts[2], 10);
+                            if (year > 2400) {
+                                year -= 543;
+                            }
+                            return new Date(year, month, day);
+                        }
+                    }
+                    return flatpickr.parseDate(dateStr, formatStr);
+                },
+                formatDate: function(date, formatStr, locale) {
+                    if (formatStr === 'd/m/Y') {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        let year = date.getFullYear();
+                        if (year < 2400) {
+                            year += 543;
+                        }
+                        return day + '/' + month + '/' + year;
+                    }
+                    return flatpickr.formatDate(date, formatStr, locale);
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    if (instance.altInput) {
+                        instance.altInput.className = instance.input.className;
+                        instance.altInput.classList.remove('datepicker-th');
+                        instance.altInput.classList.add('flatpickr-input');
+                    }
+                    formatHeaderBuddhistYear(instance);
+                },
+                onMonthChange: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                },
+                onYearChange: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                }
+            });
+
+            function formatHeaderBuddhistYear(instance) {
+                setTimeout(function() {
+                    if (!instance || !instance.calendarContainer) return;
+                    let cYear = instance.currentYear;
+                    if (cYear > 2400) {
+                        cYear -= 543;
+                    }
+                    const bYear = cYear + 543;
+                    const curYearElem = instance.calendarContainer.querySelector('.flatpickr-current-month .cur-year');
+                    if (curYearElem) {
+                        curYearElem.value = bYear;
+                    }
+                    const numYearInputs = instance.calendarContainer.querySelectorAll('.cur-year');
+                    numYearInputs.forEach(function(inp) {
+                        inp.value = bYear;
+                    });
+                }, 10);
+            }
         });
     </script>
 @endsection

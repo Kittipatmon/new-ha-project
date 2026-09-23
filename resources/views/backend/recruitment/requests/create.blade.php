@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.recruitment.app')
 
 @section('title', 'สร้างคำขอเปิดรับสมัครพนักงาน')
 

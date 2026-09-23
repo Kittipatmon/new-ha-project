@@ -20,6 +20,7 @@ class News extends Model
         'is_active',
         'image_path',
         'views',
+        'clicks',
     ];
 
     protected $casts = [
@@ -28,6 +29,11 @@ class News extends Model
         'image_path' => 'array',
         'file_news' => 'array',
         'views' => 'integer',
+        'clicks' => 'integer',
     ];
 
+    public function viewLogs()
+    {
+        return $this->hasMany(NewsView::class, 'news_id', 'news_id');
+    }
 }

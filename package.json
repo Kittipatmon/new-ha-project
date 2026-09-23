@@ -21,6 +21,9 @@
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^7.0.0",
+        "datatables.net-dt": "^3.0.3",
+        "datatables.net-responsive-dt": "^4.0.3",
+        "jquery": "^4.0.0",
         "pikaday": "^1.8.2",
         "sweetalert2": "^11.22.3"
     }

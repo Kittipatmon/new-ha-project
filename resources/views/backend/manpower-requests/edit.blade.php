@@ -10,6 +10,66 @@
             @csrf
             @method('PUT')
             
+            @php
+                try {
+                    $allDivisions = \App\Models\Division::all();
+                    $allDepartments = \App\Models\Department::all();
+                    $allSections = \App\Models\Section::all();
+
+                    $deptOptions = collect();
+                    foreach ($allDivisions as $div) {
+                        $c = trim($div->division_name ?? '');
+                        $f = trim($div->division_fullname ?? '');
+                        if ($c && $c !== '-') $deptOptions->push(['code' => $c, 'name' => $f]);
+                    }
+                    foreach ($allDepartments as $dept) {
+                        $c = trim($dept->department_name ?? '');
+                        $f = trim($dept->department_fullname ?? '');
+                        if ($c && $c !== '-') $deptOptions->push(['code' => $c, 'name' => $f]);
+                    }
+                    $deptOptions = $deptOptions->unique('code')->sortBy('code')->values();
+
+                    $secOptions = collect();
+                    foreach ($allDepartments as $dept) {
+                        $c = trim($dept->department_name ?? '');
+                        $f = trim($dept->department_fullname ?? '');
+                        if ($c && $c !== '-') $secOptions->push(['code' => $c, 'name' => $f]);
+                    }
+                    foreach ($allDivisions as $div) {
+                        $c = trim($div->division_name ?? '');
+                        $f = trim($div->division_fullname ?? '');
+                        if ($c && $c !== '-') $secOptions->push(['code' => $c, 'name' => $f]);
+                    }
+                    foreach ($allSections as $sec) {
+                        $c = trim($sec->section_code ?? '');
+                        $f = trim($sec->section_name ?? '');
+                        if ($c && $c !== '-') $secOptions->push(['code' => $c, 'name' => $f]);
+                    }
+                    $secOptions = $secOptions->unique('code')->sortBy('code')->values();
+                } catch (\Throwable $e) {
+                    $deptOptions = collect([]);
+                    $secOptions = collect([]);
+                }
+            @endphp
+
+            <datalist id="department_list">
+                @foreach($deptOptions as $d)
+                    <option value="{{ $d['code'] }}">{{ $d['name'] ?: $d['code'] }}</option>
+                    @if(!empty($d['name']) && $d['name'] !== $d['code'])
+                        <option value="{{ $d['name'] }}">{{ $d['code'] }}</option>
+                    @endif
+                @endforeach
+            </datalist>
+
+            <datalist id="section_list">
+                @foreach($secOptions as $s)
+                    <option value="{{ $s['code'] }}">{{ $s['name'] ?: $s['code'] }}</option>
+                    @if(!empty($s['name']) && $s['name'] !== $s['code'])
+                        <option value="{{ $s['name'] }}">{{ $s['code'] }}</option>
+                    @endif
+                @endforeach
+            </datalist>
+
             <!-- A4 Paper Container Wrapper -->
             <div class="w-full overflow-x-auto pb-4">
                 <div class="min-w-[1000px] max-w-[1000px] mx-auto bg-white p-12 shadow-xl border border-gray-300 mb-8 text-black font-sans leading-relaxed relative">
@@ -34,17 +94,17 @@
                     <!-- Line 1: Dept & Section -->
                     <div class="flex items-end w-full">
                         <span class="whitespace-nowrap mr-1">ฝ่าย</span>
-                        <input type="text" name="department" value="{{ old('department', $manpowerRequest->department) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                        <input type="text" name="department" id="department_input" list="department_list" value="{{ old('department', $manpowerRequest->department) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         <span class="whitespace-nowrap mx-2">แผนก</span>
-                        <input type="text" name="section" value="{{ old('section', $manpowerRequest->section) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                        <input type="text" name="section" id="section_input" list="section_list" value="{{ old('section', $manpowerRequest->section) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                     </div>
 
                     <!-- Line 2: Job Titles & Headcount -->
                     <div class="flex items-end w-full flex-wrap gap-y-2">
                         <span class="whitespace-nowrap mr-1">ขออนุมัติตำแหน่ง (ชื่อไทย)</span>
-                        <input type="text" name="job_title_th" value="{{ old('job_title_th', $manpowerRequest->job_title_th) }}" class="flex-grow border-b border-dotted border-black px-2 min-w-[150px] bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                        <input type="text" name="job_title_th" value="{{ old('job_title_th', $manpowerRequest->job_title_th) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-w-[150px] bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         <span class="whitespace-nowrap mx-2">(ชื่ออังกฤษ)</span>
-                        <input type="text" name="job_title_en" value="{{ old('job_title_en', $manpowerRequest->job_title_en) }}" class="flex-grow border-b border-dotted border-black px-2 min-w-[150px] bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                        <input type="text" name="job_title_en" value="{{ old('job_title_en', $manpowerRequest->job_title_en) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-w-[150px] bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         <span class="whitespace-nowrap mx-2">จำนวน</span>
                         <input type="number" name="headcount" value="{{ old('headcount', $manpowerRequest->headcount) }}" class="border-b border-dotted border-black w-20 text-center px-1 font-bold bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         <span class="whitespace-nowrap ml-1">อัตรา</span>
@@ -56,13 +116,13 @@
                         <input type="number" name="current_headcount" value="{{ old('current_headcount', $manpowerRequest->current_headcount) }}" class="border-b border-dotted border-black w-24 text-center px-1 font-bold bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         <span class="whitespace-nowrap mx-2">อัตรา</span>
                         <span class="whitespace-nowrap">ต้องการรับเข้าทำงานภายในวันที่</span>
-                        <input type="date" name="expected_start_date" value="{{ old('expected_start_date', $manpowerRequest->expected_start_date) }}" class="flex-grow border-b border-dotted border-black px-2 text-center bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                        <input type="date" name="expected_start_date" value="{{ old('expected_start_date', $manpowerRequest->expected_start_date) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 text-center bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                     </div>
 
                     <!-- Line 4: Job Levels -->
                     <div class="flex items-center w-full pt-2">
                         <span class="whitespace-nowrap mr-4 font-semibold">ระดับ</span>
-                        <div class="flex flex-row justify-between flex-grow items-center gap-x-1 sm:gap-x-4">
+                        <div class="flex flex-row justify-between flex-grow min-w-0 items-center gap-x-1 sm:gap-x-4">
                             @php
                                 $lvl = old('job_level', $manpowerRequest->job_level) ?? '';
                                 $isLv98 = str_contains($lvl, 'Lv.9') || str_contains($lvl, 'บริหาร');
@@ -97,7 +157,7 @@
                     <!-- Line 5: Hire Type Detail Layout -->
                     <div class="pt-2 flex items-start w-full">
                         <span class="whitespace-nowrap mr-4 font-semibold">ลักษณะการว่าจ้าง</span>
-                        <div class="flex-grow space-y-2">
+                        <div class="flex-grow min-w-0 space-y-2">
                             @php
                                 $ht = old('hire_type', $manpowerRequest->hire_type) ?? '';
                                 $isNew = !in_array($ht, ['จ้างทดแทน', 'ทดแทน', 'โอนย้าย', 'จ้างชั่วคราว', 'ชั่วคราว']);
@@ -120,7 +180,7 @@
                                     <input type="radio" name="hire_type" value="จ้างทดแทน" class="form-radio h-4 w-4 text-black border-gray-400 focus:ring-0" {{ $isRepl ? 'checked' : '' }}>
                                     <span class="ml-2 whitespace-nowrap">จ้างทดแทนคนเก่า คือ นาย / นาง / นางสาว</span>
                                 </label>
-                                <input type="text" name="hire_replacement_name" value="{{ old('hire_replacement_name', $manpowerRequest->hire_replacement_name) }}" class="flex-grow border-b border-dotted border-black px-2 ml-1 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="hire_replacement_name" value="{{ old('hire_replacement_name', $manpowerRequest->hire_replacement_name) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 ml-1 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
 
                             <!-- Row 3: โอนย้าย -->
@@ -129,7 +189,7 @@
                                     <input type="radio" name="hire_type" value="โอนย้าย" class="form-radio h-4 w-4 text-black border-gray-400 focus:ring-0" {{ $isTrans ? 'checked' : '' }}>
                                     <span class="ml-2 whitespace-nowrap">โอนย้าย / ปรับเปลี่ยนตำแหน่ง คือ นาย / นาง / นางสาว</span>
                                 </label>
-                                <input type="text" name="hire_transfer_name" value="{{ old('hire_transfer_name', $manpowerRequest->hire_transfer_name) }}" class="flex-grow border-b border-dotted border-black px-2 ml-1 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="hire_transfer_name" value="{{ old('hire_transfer_name', $manpowerRequest->hire_transfer_name) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 ml-1 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
 
                             <!-- Row 4: จ้างชั่วคราว -->
@@ -206,31 +266,31 @@
                             <span class="whitespace-nowrap mr-1">อายุ :</span>
                             <input type="text" name="req_age" value="{{ old('req_age', $manpowerRequest->req_age) }}" class="w-20 border-b border-dotted border-black px-1 text-center font-semibold bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             <span class="whitespace-nowrap mx-2">วุฒิการศึกษา :</span>
-                            <input type="text" name="req_education" value="{{ old('req_education', $manpowerRequest->req_education) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                            <input type="text" name="req_education" value="{{ old('req_education', $manpowerRequest->req_education) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         </div>
 
                         <!-- Major -->
                         <div class="flex items-end w-full">
                             <span class="whitespace-nowrap mr-1">สาขาวิชา :</span>
-                            <input type="text" name="req_major" value="{{ old('req_major', $manpowerRequest->req_major) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                            <input type="text" name="req_major" value="{{ old('req_major', $manpowerRequest->req_major) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         </div>
 
                         <!-- Experience -->
                         <div class="flex items-end w-full">
                             <span class="whitespace-nowrap mr-1">ประสบการณ์ทำงาน :</span>
-                            <input type="text" name="req_experience" value="{{ old('req_experience', $manpowerRequest->req_experience) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                            <input type="text" name="req_experience" value="{{ old('req_experience', $manpowerRequest->req_experience) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         </div>
 
                         <!-- Special Skill -->
                         <div class="flex items-end w-full">
                             <span class="whitespace-nowrap mr-1">คุณสมบัติพิเศษ :</span>
-                            <input type="text" name="req_special" value="{{ old('req_special', $manpowerRequest->req_special) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                            <input type="text" name="req_special" value="{{ old('req_special', $manpowerRequest->req_special) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         </div>
 
                         <!-- Other -->
                         <div class="flex items-end w-full">
                             <span class="whitespace-nowrap mr-1">อื่นๆ :</span>
-                            <input type="text" name="req_other" value="{{ old('req_other', $manpowerRequest->req_other) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                            <input type="text" name="req_other" value="{{ old('req_other', $manpowerRequest->req_other) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                         </div>
                     </div>
 
@@ -241,27 +301,27 @@
                         <div class="space-y-3">
                             <div class="flex items-end w-full">
                                 <span class="mr-2">1</span>
-                                <input type="text" name="res_1" value="{{ old('res_1', $manpowerRequest->res_1) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="res_1" value="{{ old('res_1', $manpowerRequest->res_1) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
                             <div class="flex items-end w-full">
                                 <span class="mr-2">2</span>
-                                <input type="text" name="res_2" value="{{ old('res_2', $manpowerRequest->res_2) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="res_2" value="{{ old('res_2', $manpowerRequest->res_2) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
                             <div class="flex items-end w-full">
                                 <span class="mr-2">3</span>
-                                <input type="text" name="res_3" value="{{ old('res_3', $manpowerRequest->res_3) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="res_3" value="{{ old('res_3', $manpowerRequest->res_3) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
                             <div class="flex items-end w-full">
                                 <span class="mr-2">4</span>
-                                <input type="text" name="res_4" value="{{ old('res_4', $manpowerRequest->res_4) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="res_4" value="{{ old('res_4', $manpowerRequest->res_4) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
                             <div class="flex items-end w-full">
                                 <span class="mr-2">5</span>
-                                <input type="text" name="res_5" value="{{ old('res_5', $manpowerRequest->res_5) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="res_5" value="{{ old('res_5', $manpowerRequest->res_5) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
                             <div class="flex items-end w-full">
                                 <span class="mr-2">6</span>
-                                <input type="text" name="res_6" value="{{ old('res_6', $manpowerRequest->res_6) }}" class="flex-grow border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
+                                <input type="text" name="res_6" value="{{ old('res_6', $manpowerRequest->res_6) }}" class="flex-grow min-w-0 border-b border-dotted border-black px-2 bg-transparent focus:outline-none focus:ring-0 py-0 border-t-0 border-l-0 border-r-0">
                             </div>
                         </div>
                     </div>
@@ -284,4 +344,21 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            ['department_input', 'section_input'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('click', function() {
+                        try {
+                            if (typeof this.showPicker === 'function') {
+                                this.showPicker();
+                            }
+                        } catch (e) {}
+                    });
+                }
+            });
+        });
+    </script>
 </x-admin-layout>

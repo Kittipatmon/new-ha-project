@@ -3,7 +3,7 @@
 @section('content')
     <div class="space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl text-kumwell-red font-bold text-center md:text-left flex-grow w-full md:w-auto">
+            <h1 class="text-2xl text-kumwell-red font-bold text-center md:text-left flex-grow min-w-0 w-full md:w-auto">
                 จัดการประเภทพนักงาน
             </h1>
             <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">

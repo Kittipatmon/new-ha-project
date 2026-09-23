@@ -137,10 +137,177 @@ class ManpowerRequestController extends Controller
         $approvedPro = $probationEvaluations->where('status', 'approved')->count();
         $rejectedPro = $probationEvaluations->where('status', 'rejected')->count();
 
+        // Build unified "All Form Requests" collection for client-side DataTable
+        $allFormRequests = collect();
+
+        // Fetch all shares (including revoked) to identify shared documents
+        $formShares = \App\Models\FormShare::with(['sender', 'recipientUser', 'recipientDept'])
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('id', 'desc')
+            ->get()
+            ->groupBy(function ($s) {
+                return $s->form_type . '_' . $s->form_id;
+            });
+
+        $user = auth()->user();
+
+        // Helper closure to determine share info for a given form type and id
+        $getShareData = function (string $formType, $formId) use ($formShares, $user) {
+            $key = $formType . '_' . $formId;
+            if (!$formShares->has($key)) {
+                return ['is_shared' => false, 'is_revoked' => false, 'shared_by_name' => null, 'shared_to_name' => null, 'shared_at' => null];
+            }
+
+            $sharesForRecord = $formShares->get($key);
+
+            // Find the most relevant share: specifically to this user, department, public (0), or any if admin
+            $matchedShare = null;
+            if ($user) {
+                $matchedShare = $sharesForRecord->first(function ($s) use ($user) {
+                    return $s->shared_to_user_id == $user->id;
+                });
+                if (!$matchedShare && !empty($user->dept_id)) {
+                    $matchedShare = $sharesForRecord->first(function ($s) use ($user) {
+                        return $s->shared_to_dept_id == $user->dept_id;
+                    });
+                }
+                if (!$matchedShare) {
+                    $matchedShare = $sharesForRecord->first(function ($s) {
+                        return $s->shared_to_user_id === 0;
+                    });
+                }
+            }
+
+            if (!$matchedShare) {
+                $matchedShare = $sharesForRecord->first();
+            }
+
+            if ($matchedShare) {
+                $senderName = 'ไม่ระบุ';
+                if ($matchedShare->sender) {
+                    $senderName = !empty($matchedShare->sender->firstname)
+                        ? $matchedShare->sender->firstname
+                        : ($matchedShare->sender->fullname ?? $matchedShare->sender->username ?? 'ผู้ดูแลระบบ');
+                }
+
+                $recipientName = 'ทุกคนในระบบ';
+                if (!empty($matchedShare->shared_to_user_id) && $matchedShare->recipientUser) {
+                    $recipientName = !empty($matchedShare->recipientUser->firstname)
+                        ? $matchedShare->recipientUser->firstname
+                        : ($matchedShare->recipientUser->fullname ?? $matchedShare->recipientUser->username ?? 'ผู้ใช้งาน');
+                } elseif (!empty($matchedShare->shared_to_dept_id) && $matchedShare->recipientDept) {
+                    $recipientName = $matchedShare->recipientDept->name ?? 'แผนก';
+                }
+
+                $sharedAt = $matchedShare->created_at 
+                    ? \Carbon\Carbon::parse($matchedShare->created_at)->format('d/m/Y H:i น.')
+                    : '-';
+
+                return [
+                    'is_shared' => true,
+                    'is_revoked' => !is_null($matchedShare->revoked_at),
+                    'shared_by_name' => $senderName,
+                    'shared_to_name' => $recipientName,
+                    'shared_at' => $sharedAt,
+                ];
+            }
+
+            return ['is_shared' => false, 'is_revoked' => false, 'shared_by_name' => null, 'shared_to_name' => null, 'shared_at' => null];
+        };
+
+        // 1. Manpower Requests
+        foreach ($manpowerRequests as $req) {
+            $shareInfo = $getShareData('manpower_request', $req->id);
+            $allFormRequests->push([
+                'form_type' => 'ใบขออนุมัติกำลังคน',
+                'type_code' => 'manpower_request',
+                'form_badge' => 'badge-blue',
+                'id' => $req->id,
+                'date' => \Carbon\Carbon::parse($req->date)->format('d/m/Y'),
+                'raw_date' => $req->date,
+                'details' => e($req->job_title_th) . ' (' . e($req->hire_type) . ')',
+                'department' => self::formatDeptSection($req->department, $req->section),
+                'department_full' => 'ฝ่าย: ' . ($req->department ?: '-') . ' | แผนก: ' . ($req->section ?: '-'),
+                'status' => $req->status,
+                'status_label' => $this->manpowerStatusLabel($req->status),
+                'show_url' => route('manpower-request.show', $req->id),
+                'delete_url' => route('manpower-request.destroy', $req->id),
+                'is_shared' => $shareInfo['is_shared'],
+                'is_revoked' => $shareInfo['is_revoked'],
+                'shared_by_name' => $shareInfo['shared_by_name'],
+                'shared_to_name' => $shareInfo['shared_to_name'],
+                'shared_at' => $shareInfo['shared_at'],
+            ]);
+        }
+
+        // 2. Probation Evaluations
+        foreach ($probationEvaluations as $prob) {
+            $shareInfo = $getShareData('probation_evaluation', $prob->id);
+            $allFormRequests->push([
+                'form_type' => 'แบบประเมินทดลองงาน',
+                'type_code' => 'probation_evaluation',
+                'form_badge' => 'badge-green',
+                'id' => $prob->id,
+                'date' => $prob->start_date ? \Carbon\Carbon::parse($prob->start_date)->format('d/m/Y') : '-',
+                'raw_date' => $prob->start_date ?? '1970-01-01',
+                'details' => e(($prob->prefix ?? '') . ($prob->employee_name ?? 'ไม่ระบุ')) . ' - ' . e($prob->position ?? '-'),
+                'department' => self::formatDeptSection($prob->department),
+                'department_full' => 'แผนก: ' . ($prob->department ?: '-'),
+                'status' => $prob->status,
+                'status_label' => $this->probationStatusLabel($prob->status),
+                'show_url' => route('probation-evaluation.show', $prob->id),
+                'delete_url' => route('probation-evaluation.destroy', $prob->id),
+                'is_shared' => $shareInfo['is_shared'],
+                'is_revoked' => $shareInfo['is_revoked'],
+                'shared_by_name' => $shareInfo['shared_by_name'],
+                'shared_to_name' => $shareInfo['shared_to_name'],
+                'shared_at' => $shareInfo['shared_at'],
+            ]);
+        }
+
+        // 3. Interview Evaluations
+        try {
+            $allInterviews = $this->scopedInterviewQuery()->orderBy('id', 'desc')->get();
+            foreach ($allInterviews as $int) {
+                $isComplete = !empty($int->hr_evaluator_name) && !empty($int->dept_evaluator_name);
+                $shareInfo = $getShareData('interview_evaluation', $int->id);
+                $allFormRequests->push([
+                    'form_type' => 'แบบประเมินผลสัมภาษณ์',
+                    'type_code' => 'interview_evaluation',
+                    'form_badge' => 'badge-purple',
+                    'id' => $int->id,
+                    'date' => $int->evaluation_date ? \Carbon\Carbon::parse($int->evaluation_date)->format('d/m/Y') : '-',
+                    'raw_date' => $int->evaluation_date ?? '1970-01-01',
+                    'details' => e(($int->candidate_prefix ?? '') . ($int->candidate_name ?? 'ไม่ระบุ')) . ' - ' . e($int->position_applied ?? '-'),
+                    'department' => self::formatDeptSection($int->department, $int->division),
+                    'department_full' => 'แผนก: ' . ($int->department ?: '-') . ' | ฝ่าย: ' . ($int->division ?: '-'),
+                    'status' => $isComplete ? 'approved' : 'pending',
+                    'status_label' => $isComplete
+                        ? '<span class="badge badge-green">ลงนามครบถ้วน</span>'
+                        : '<span class="badge badge-purple">รอลงนาม</span>',
+                    'show_url' => route('interview-evaluation.show', $int->id),
+                    'delete_url' => route('interview-evaluation.destroy', $int->id),
+                    'is_shared' => $shareInfo['is_shared'],
+                    'is_revoked' => $shareInfo['is_revoked'],
+                    'shared_by_name' => $shareInfo['shared_by_name'],
+                    'shared_to_name' => $shareInfo['shared_to_name'],
+                    'shared_at' => $shareInfo['shared_at'],
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('allFormRequests: Interview query failed: ' . $e->getMessage());
+        }
+
+        // Sort by raw_date descending (newest first)
+        $allFormRequests = $allFormRequests->sortByDesc('raw_date')->values();
+
         return view('manpower-request.index', compact(
             'pendingApprovals', 'pendingProbations', 'pendingInterviews',
             'manpowerRequests', 'totalMpr', 'pendingMpr', 'approvedMpr', 'rejectedMpr',
-            'probationEvaluations', 'totalPro', 'pendingPro', 'approvedPro', 'rejectedPro'
+            'probationEvaluations', 'totalPro', 'pendingPro', 'approvedPro', 'rejectedPro',
+            'allFormRequests'
         ));
     }
 
@@ -267,58 +434,396 @@ class ManpowerRequestController extends Controller
     }
 
     /**
+     * DataTables server-side source for all form types combined.
+     */
+    public function dataTableAllRequests(Request $request)
+    {
+        $statusFilter = $request->input('status_filter');
+
+        // 1. Manpower Requests
+        $mprs = collect();
+        try {
+            $mprQuery = $this->scopedManpowerQuery();
+            if ($statusFilter === 'pending') {
+                $mprQuery->whereNotIn('status', ['approved', 'rejected', 'draft']);
+            } elseif (!empty($statusFilter)) {
+                $mprQuery->where('status', $statusFilter);
+            }
+            $mprs = $mprQuery->get()->map(function ($req) {
+                return [
+                    'form_type' => 'ใบขออนุมัติกำลังคน',
+                    'form_badge' => 'badge-blue',
+                    'id' => $req->id,
+                    'date' => \Carbon\Carbon::parse($req->date)->format('d/m/Y'),
+                    'raw_date' => $req->date,
+                    'details' => e($req->job_title_th) . ' (' . e($req->hire_type) . ')',
+                    'department' => e($req->department) . ' / ' . e($req->section),
+                    'status' => $req->status,
+                    'status_label' => $this->manpowerStatusLabel($req->status),
+                    'show_url' => route('manpower-request.show', $req->id),
+                    'delete_url' => route('manpower-request.destroy', $req->id),
+                ];
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('dataTableAllRequests: Manpower query failed: ' . $e->getMessage());
+        }
+
+        // 2. Probation Evaluations
+        $pros = collect();
+        try {
+            $proQuery = $this->scopedProbationQuery();
+            if ($statusFilter === 'pending') {
+                $proQuery->whereNotIn('status', ['approved', 'rejected']);
+            } elseif (!empty($statusFilter)) {
+                $proQuery->where('status', $statusFilter);
+            }
+            $pros = $proQuery->get()->map(function ($prob) {
+                return [
+                    'form_type' => 'แบบประเมินทดลองงาน',
+                    'form_badge' => 'badge-green',
+                    'id' => $prob->id,
+                    'date' => $prob->start_date ? \Carbon\Carbon::parse($prob->start_date)->format('d/m/Y') : '-',
+                    'raw_date' => $prob->start_date ?? '1970-01-01',
+                    'details' => e(($prob->prefix ?? '') . ($prob->employee_name ?? 'ไม่ระบุ')) . ' - ' . e($prob->position ?? '-'),
+                    'department' => e($prob->department ?? '-'),
+                    'status' => $prob->status,
+                    'status_label' => $this->probationStatusLabel($prob->status),
+                    'show_url' => route('probation-evaluation.show', $prob->id),
+                    'delete_url' => route('probation-evaluation.destroy', $prob->id),
+                ];
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('dataTableAllRequests: Probation query failed: ' . $e->getMessage());
+        }
+
+        // 3. Interview Evaluations
+        $ints = collect();
+        try {
+            $intQuery = $this->scopedInterviewQuery();
+            if ($statusFilter === 'pending') {
+                $intQuery->where(function($q) {
+                    $q->whereNull('hr_evaluator_name')->orWhereNull('dept_evaluator_name')
+                      ->orWhere('hr_evaluator_name', '')->orWhere('dept_evaluator_name', '');
+                });
+            } elseif ($statusFilter === 'approved') {
+                $intQuery->whereNotNull('hr_evaluator_name')->where('hr_evaluator_name', '!=', '')
+                         ->whereNotNull('dept_evaluator_name')->where('dept_evaluator_name', '!=', '');
+            }
+            $ints = $intQuery->get()->map(function ($int) {
+                $isComplete = !empty($int->hr_evaluator_name) && !empty($int->dept_evaluator_name);
+                return [
+                    'form_type' => 'แบบประเมินผลสัมภาษณ์',
+                    'form_badge' => 'badge-purple',
+                    'id' => $int->id,
+                    'date' => $int->evaluation_date ? \Carbon\Carbon::parse($int->evaluation_date)->format('d/m/Y') : '-',
+                    'raw_date' => $int->evaluation_date ?? '1970-01-01',
+                    'details' => e(($int->candidate_prefix ?? '') . ($int->candidate_name ?? 'ไม่ระบุ')) . ' - ' . e($int->position_applied ?? '-'),
+                    'department' => e($int->department ?? '-') . ($int->division ? ' / ' . e($int->division) : ''),
+                    'status' => $isComplete ? 'approved' : 'pending',
+                    'status_label' => $isComplete 
+                        ? '<span class="badge badge-green">ลงนามครบถ้วน</span>' 
+                        : '<span class="badge badge-purple">รอลงนาม</span>',
+                    'show_url' => route('interview-evaluation.show', $int->id),
+                    'delete_url' => route('interview-evaluation.destroy', $int->id),
+                ];
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('dataTableAllRequests: Interview query failed: ' . $e->getMessage());
+        }
+
+        // 4. HR General Requests (hr_requests table)
+        $hrReqs = collect();
+        try {
+            $hrReqQuery = \App\Models\hrrequest\HrRequests::with(['category', 'type', 'subtype']);
+            if ($statusFilter === 'pending') {
+                $hrReqQuery->whereIn('status', ['pending', 'approved_manager', 'approved_hr']);
+            } elseif (!empty($statusFilter)) {
+                $hrReqQuery->where('status', $statusFilter);
+            }
+            $hrReqs = $hrReqQuery->get()->map(function ($hrReq) {
+                // Safely resolve user info (cross-database relation)
+                $userName = '-';
+                $deptName = '-';
+                $secName = '';
+                try {
+                    $userObj = $hrReq->user;
+                    if ($userObj) {
+                        $userName = trim($userObj->firstname . ' ' . $userObj->lastname);
+                        if ($userObj->department) {
+                            $deptName = $userObj->department->department_name ?? '-';
+                        }
+                        if ($userObj->section) {
+                            $secName = $userObj->section->section_name ?? '';
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Cross-database relation may fail — use fallback
+                }
+
+                $catName = 'คำร้องทั่วไป';
+                try {
+                    if ($hrReq->category) {
+                        $catName = $hrReq->category->name_th ?? 'คำร้องทั่วไป';
+                    }
+                } catch (\Throwable $e) {
+                    // Fallback
+                }
+
+                $typeName = 'คำร้อง HR';
+                try {
+                    if ($hrReq->type) {
+                        $typeName = $hrReq->type->name_th ?? $hrReq->type->type_name ?? 'คำร้อง HR';
+                    }
+                } catch (\Throwable $e) {
+                    // Fallback
+                }
+
+                return [
+                    'form_type' => e($catName),
+                    'form_badge' => 'badge-yellow',
+                    'id' => $hrReq->hr_request_id,
+                    'date' => $hrReq->created_at ? \Carbon\Carbon::parse($hrReq->created_at)->format('d/m/Y') : '-',
+                    'raw_date' => $hrReq->created_at ? $hrReq->created_at->format('Y-m-d H:i:s') : '1970-01-01',
+                    'details' => e($hrReq->title ?: $typeName) . ($userName !== '-' ? ' (' . e($userName) . ')' : ''),
+                    'department' => e($deptName) . ($secName ? ' / ' . e($secName) : ''),
+                    'status' => $hrReq->status,
+                    'status_label' => '<span class="badge ' . ($hrReq->status_color ?? 'badge-gray') . '">' . e($hrReq->status_label ?? $hrReq->status) . '</span>',
+                    'show_url' => route('requesthr.dashboard', ['id' => $hrReq->hr_request_id]),
+                    'delete_url' => route('requesthr.destroy', $hrReq->hr_request_id),
+                ];
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('dataTableAllRequests: HR Requests query failed: ' . $e->getMessage());
+        }
+
+        // Combine
+        $all = collect();
+        $typeFilter = $request->input('type_filter');
+
+        if (empty($typeFilter) || $typeFilter === 'ใบขออนุมัติกำลังคน') {
+            $all = $all->concat($mprs);
+        }
+        if (empty($typeFilter) || $typeFilter === 'แบบประเมินทดลองงาน') {
+            $all = $all->concat($pros);
+        }
+        if (empty($typeFilter) || $typeFilter === 'แบบประเมินผลสัมภาษณ์') {
+            $all = $all->concat($ints);
+        }
+        if (empty($typeFilter) || $typeFilter === 'คำร้องทั่วไป HR') {
+            $all = $all->concat($hrReqs);
+        }
+
+        // Searching
+        $searchValue = mb_strtolower((string)$request->input('search.value'), 'UTF-8');
+        if (!empty($searchValue)) {
+            $all = $all->filter(function ($item) use ($searchValue) {
+                return str_contains(mb_strtolower($item['form_type'], 'UTF-8'), $searchValue) ||
+                       str_contains(mb_strtolower($item['details'], 'UTF-8'), $searchValue) ||
+                       str_contains(mb_strtolower($item['department'], 'UTF-8'), $searchValue) ||
+                       str_contains(mb_strtolower(strip_tags($item['status_label']), 'UTF-8'), $searchValue);
+            });
+        }
+
+        $recordsTotal = $all->count();
+        $recordsFiltered = $all->count();
+
+        // Sorting
+        $columns = ['form_type', 'id', 'raw_date', 'details', 'department', 'status'];
+        $orderColumnIndex = (int) $request->input('order.0.column', 2);
+        $orderDir = $request->input('order.0.dir', 'desc') === 'asc' ? 'asc' : 'desc';
+        $orderColumn = $columns[$orderColumnIndex] ?? 'raw_date';
+        
+        $all = $orderDir === 'asc' ? $all->sortBy($orderColumn) : $all->sortByDesc($orderColumn);
+
+        // Pagination
+        $start = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        $rows = $length > 0 ? $all->slice($start, $length)->values() : $all->values();
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $rows,
+        ]);
+    }
+
+    /**
      * Manpower requests visible to the current user: their own, plus any where
-     * they are named as the manager/VP approver, unless they hold an admin-tier role.
+     * they are named as manager/VP approver, or where access was explicitly shared.
      */
     private function scopedManpowerQuery()
     {
         $user = auth()->user();
-        $canApproveAll = $user ? ($user->isHrOrAdmin() || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) : false;
-
-        $query = ManpowerRequest::query();
-        if (!$canApproveAll && $user) {
-            $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
-            $query->where(function ($q) use ($userFullName) {
-                $q->where('user_id', auth()->id())
-                  ->orWhere('manager_name', $userFullName)
-                  ->orWhere('vp_name', $userFullName);
-            });
+        if (!$user) {
+            return ManpowerRequest::whereRaw('1 = 0');
         }
 
-        return $query;
+        // Admin, Backend Staff, and CEO have full visibility
+        if ($user->canAccessBackend() || (method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9' || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) {
+            return ManpowerRequest::query();
+        }
+
+        $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
+        $userName = trim($user->firstname ?? '');
+        $sharedIds = \App\Models\FormShare::getAccessibleFormIds('manpower_request', $user);
+
+        return ManpowerRequest::query()->where(function ($q) use ($user, $userName, $userFullName, $sharedIds) {
+            $q->where('user_id', $user->id);
+            if (!empty($userName)) {
+                $q->orWhere('manager_name', 'like', "%{$userName}%")
+                  ->orWhere('vp_name', 'like', "%{$userName}%");
+            }
+            if (!empty($userFullName)) {
+                $q->orWhere('manager_name', 'like', "%{$userFullName}%")
+                  ->orWhere('vp_name', 'like', "%{$userFullName}%");
+            }
+            if (!empty($sharedIds)) {
+                $q->orWhereIn('id', $sharedIds);
+            }
+            $q->orWhere('manager_approved_by', $user->id)
+              ->orWhere('vp_approved_by', $user->id)
+              ->orWhere('hr_approved_by', $user->id)
+              ->orWhere('ceo_approved_by', $user->id);
+        });
     }
 
     /**
-     * Probation evaluations visible to the current user: their own, plus any where
-     * they are a named evaluator/manager/hr signatory, unless they hold an admin-tier role.
+     * Probation evaluations visible to the current user: their own, signed by them,
+     * or where access was explicitly shared.
      */
     private function scopedProbationQuery()
     {
         $user = auth()->user();
-        $canApproveAll = $user ? ($user->isHrOrAdmin() || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) : false;
-
-        $query = \App\Models\ProbationEvaluation::query();
-        if (!$canApproveAll && $user) {
-            $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
-            $query->where(function ($q) use ($userFullName) {
-                $q->where('user_id', auth()->id())
-                  ->orWhereHas('signatures', function ($sq) use ($userFullName) {
-                      $sq->whereIn('role', ['evaluator', 'manager', 'hr'])
-                         ->where('name', $userFullName);
-                  });
-            });
+        if (!$user) {
+            return \App\Models\ProbationEvaluation::whereRaw('1 = 0');
         }
 
-        return $query;
+        if ($user->canAccessBackend() || (method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9' || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) {
+            return \App\Models\ProbationEvaluation::query();
+        }
+
+        $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
+        $sharedIds = \App\Models\FormShare::getAccessibleFormIds('probation_evaluation', $user);
+
+        return \App\Models\ProbationEvaluation::query()->where(function ($q) use ($user, $userFullName, $sharedIds) {
+            $q->where('user_id', $user->id)
+              ->orWhereHas('signatures', function ($sq) use ($userFullName) {
+                  $sq->whereIn('role', ['evaluator', 'manager', 'hr'])
+                     ->where('name', $userFullName);
+              });
+            if (!empty($sharedIds)) {
+                $q->orWhereIn('id', $sharedIds);
+            }
+        });
+    }
+
+    /**
+     * Interview evaluations visible to the current user: their own, signed by them,
+     * or where access was explicitly shared.
+     */
+    private function scopedInterviewQuery()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return \App\Models\InterviewEvaluation::whereRaw('1 = 0');
+        }
+
+        if ($user->canAccessBackend() || (method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9' || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) {
+            return \App\Models\InterviewEvaluation::query();
+        }
+
+        $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
+        $sharedIds = \App\Models\FormShare::getAccessibleFormIds('interview_evaluation', $user);
+
+        return \App\Models\InterviewEvaluation::query()->where(function ($q) use ($user, $userFullName, $sharedIds) {
+            $q->where('user_id', $user->id);
+            if (!empty($userFullName)) {
+                $q->orWhere('hr_evaluator_name', 'like', "%{$userFullName}%")
+                  ->orWhere('dept_evaluator_name', 'like', "%{$userFullName}%");
+            }
+            if (!empty($sharedIds)) {
+                $q->orWhereIn('id', $sharedIds);
+            }
+        });
+    }
+
+    /**
+     * Check if the user is authorized to view or download a manpower request.
+     */
+    private function isUserAuthorizedForManpowerRequest(ManpowerRequest $manpowerRequest, $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        // 1. Admin or Editor (Backend role)
+        if ($user->canAccessBackend()) {
+            return true;
+        }
+
+        // 2. Creator
+        if ($manpowerRequest->user_id === $user->id) {
+            return true;
+        }
+
+        // 3. CEO (Level 9 or isCeo())
+        if ((method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9') {
+            return true;
+        }
+
+        $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
+        $userName = trim($user->firstname ?? '');
+
+        // 4. Current approver based on status
+        if ($manpowerRequest->status === 'pending_manager') {
+            if (empty($manpowerRequest->manager_name) ||
+                (!empty($userName) && (str_contains($manpowerRequest->manager_name, $userName) || str_contains($userName, $manpowerRequest->manager_name))) ||
+                (!empty($userFullName) && (str_contains($manpowerRequest->manager_name, $userFullName) || str_contains($userFullName, $manpowerRequest->manager_name))) ||
+                $user->isDepartmentManager()) {
+                return true;
+            }
+        } elseif ($manpowerRequest->status === 'pending_vp') {
+            if (empty($manpowerRequest->vp_name) ||
+                (!empty($userName) && (str_contains($manpowerRequest->vp_name, $userName) || str_contains($userName, $manpowerRequest->vp_name))) ||
+                (!empty($userFullName) && (str_contains($manpowerRequest->vp_name, $userFullName) || str_contains($userFullName, $manpowerRequest->vp_name))) ||
+                (int)$user->level_user >= 8) {
+                return true;
+            }
+        } elseif ($manpowerRequest->status === 'pending_hr') {
+            if ($user->dept_id == 15 || $user->hr_status == '0' || $user->canAccessBackend()) {
+                return true;
+            }
+        } elseif ($manpowerRequest->status === 'pending_ceo') {
+            if ((method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9') {
+                return true;
+            }
+        }
+
+        // 5. Named in manager_name or vp_name, or in approved/rejected logs
+        if ((!empty($manpowerRequest->manager_name) && ((!empty($userName) && str_contains($manpowerRequest->manager_name, $userName)) || (!empty($userFullName) && str_contains($manpowerRequest->manager_name, $userFullName)))) ||
+            (!empty($manpowerRequest->vp_name) && ((!empty($userName) && str_contains($manpowerRequest->vp_name, $userName)) || (!empty($userFullName) && str_contains($manpowerRequest->vp_name, $userFullName)))) ||
+            $manpowerRequest->manager_approved_by == $user->id ||
+            $manpowerRequest->vp_approved_by == $user->id ||
+            $manpowerRequest->hr_approved_by == $user->id ||
+            $manpowerRequest->ceo_approved_by == $user->id ||
+            $manpowerRequest->rejected_by == $user->id) {
+            return true;
+        }
+
+        // 6. Form shares
+        if (\App\Models\FormShare::hasAccess('manpower_request', $manpowerRequest->id, $user)) {
+            return true;
+        }
+
+        return false;
     }
 
     private function manpowerStatusLabel($status)
     {
         $map = [
-            'pending_manager' => ['badge-blue', 'รอ ผจก.แผนก'],
-            'pending_vp' => ['badge-purple', 'รอ ปธ.สายงาน'],
-            'pending_hr' => ['badge-yellow', 'รอ ผจก.HR'],
-            'pending_ceo' => ['badge-yellow', 'รอ CEO'],
+            'draft' => ['badge-gray', 'แบบร่าง'],
+            'pending' => ['badge-blue', 'รออนุมัติ'],
             'approved' => ['badge-green', 'อนุมัติแล้ว'],
             'rejected' => ['badge-red', 'ไม่อนุมัติ'],
         ];
@@ -341,28 +846,32 @@ class ManpowerRequestController extends Controller
     public function show($id)
     {
         $user = auth()->user();
-        $canApproveAll = $user ? ($user->isHrOrAdmin() || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) : false;
+        $manpowerRequest = ManpowerRequest::findOrFail($id);
 
-        $query = ManpowerRequest::where('id', $id);
-        if (!$canApproveAll && $user) {
-            $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
-            $userName = trim($user->firstname ?? '');
-            $query->where(function ($q) use ($user, $userFullName, $userName) {
-                $q->where('user_id', auth()->id())
-                  ->orWhere('manager_name', 'like', "%{$userName}%")
-                  ->orWhere('manager_name', 'like', "%{$userFullName}%")
-                  ->orWhere('vp_name', 'like', "%{$userName}%")
-                  ->orWhere('vp_name', 'like', "%{$userFullName}%");
-            });
+        if (!$this->isUserAuthorizedForManpowerRequest($manpowerRequest, $user)) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงเอกสารนี้ (เอกสารนี้ต้องได้รับการแชร์หรือได้รับสิทธิ์จากผู้มีอำนาจเท่านั้น)');
         }
 
-        $manpowerRequest = $query->firstOrFail();
-        return view('manpower-request.show', compact('manpowerRequest'));
+        // Check if there is an active share for this document to display who shared it and when
+        $activeShare = \App\Models\FormShare::with('sender')
+            ->where('form_type', 'manpower_request')
+            ->where('form_id', $id)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('id', 'desc')
+            ->first();
+
+        return view('manpower-request.show', compact('manpowerRequest', 'activeShare'));
     }
 
     public function exportPdf($id)
     {
-        $manpowerRequest = \App\Models\ManpowerRequest::where('user_id', auth()->id())->findOrFail($id);
+        $user = auth()->user();
+        $manpowerRequest = \App\Models\ManpowerRequest::findOrFail($id);
+        if (!$this->isUserAuthorizedForManpowerRequest($manpowerRequest, $user)) {
+            abort(403, 'คุณไม่มีสิทธิ์ดาวน์โหลดเอกสารนี้');
+        }
         
         $pdf = Pdf::loadView('admin.manpower-requests.pdf', compact('manpowerRequest'));
         $pdf->setOption(['isRemoteEnabled' => true]);
@@ -455,6 +964,48 @@ class ManpowerRequestController extends Controller
 
         $manpowerRequest = \App\Models\ManpowerRequest::create($data);
 
+        // Also sync/create corresponding RecruitmentRequest so it appears in /recruitment/reports
+        try {
+            $dept = \App\Models\Recruitment\Department::where('department_name', 'like', "%{$manpowerRequest->department}%")
+                ->orWhere('department_fullname', 'like', "%{$manpowerRequest->department}%")
+                ->orWhere('department_description', 'like', "%{$manpowerRequest->department}%")
+                ->first();
+            $deptId = $dept ? $dept->department_id : (auth()->user()?->dept_id ?: (\App\Models\Recruitment\Department::first()?->department_id ?? 1));
+
+            $managerUser = !empty($validatedData['manager_name']) 
+                ? User::whereRaw("CONCAT(firstname, ' ', lastname) = ?", [$validatedData['manager_name']])->first()
+                : null;
+            $vpUser = !empty($validatedData['vp_name'])
+                ? User::whereRaw("CONCAT(firstname, ' ', lastname) = ?", [$validatedData['vp_name']])->first()
+                : null;
+
+            $duties = array_filter([
+                $manpowerRequest->res_1,
+                $manpowerRequest->res_2,
+                $manpowerRequest->res_3,
+                $manpowerRequest->res_4,
+                $manpowerRequest->res_5,
+                $manpowerRequest->res_6,
+            ]);
+
+            \App\Models\Recruitment\RecruitmentRequest::create([
+                'request_no' => 'REQ-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                'department_id' => $deptId,
+                'position_name' => $manpowerRequest->job_title_th ?: $manpowerRequest->job_title_en,
+                'requested_by' => auth()->id() ?? 0,
+                'approver_manager_id' => $managerUser?->id,
+                'approver_executive_id' => $vpUser?->id,
+                'headcount' => $manpowerRequest->headcount ?? 1,
+                'reason' => 'ลักษณะการว่าจ้าง: ' . $manpowerRequest->hire_type . ($manpowerRequest->hire_replacement_name ? ' (ทดแทน: ' . $manpowerRequest->hire_replacement_name . ')' : '') . ($manpowerRequest->hire_transfer_name ? ' (โอนย้าย: ' . $manpowerRequest->hire_transfer_name . ')' : ''),
+                'job_description' => "ระดับ: " . ($manpowerRequest->job_level ?? '-') . "\nหน้าที่ความรับผิดชอบ:\n" . implode("\n", $duties),
+                'qualification' => "เพศ: " . ($manpowerRequest->req_gender ?? '-') . ", อายุ: " . ($manpowerRequest->req_age ?? '-') . ", วุฒิ: " . ($manpowerRequest->req_education ?? '-') . ", สาขา: " . ($manpowerRequest->req_major ?? '-') . ", ประสบการณ์: " . ($manpowerRequest->req_experience ?? '-') . ($manpowerRequest->req_special ? ", คุณสมบัติพิเศษ: " . $manpowerRequest->req_special : ''),
+                'required_start_date' => $manpowerRequest->expected_start_date,
+                'status' => 'pending_manager',
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('RecruitmentRequest sync failed: ' . $e->getMessage());
+        }
+
         // Notify the manager
         try {
             if (!empty($validatedData['manager_name'])) {
@@ -481,6 +1032,64 @@ class ManpowerRequestController extends Controller
             \Illuminate\Support\Facades\Log::warning('Notification sending skipped: ' . $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'บันทึกข้อมูลใบขออนุมัติกำลังคนเรียบร้อยแล้ว');
+        return redirect()->route('recruitment.reports')->with('success', 'บันทึกข้อมูลใบขออนุมัติกำลังคนเรียบร้อยแล้ว');
+    }
+
+    public function destroy($id)
+    {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => false, 'message' => 'ระบบไม่อนุญาตให้ลบรายการใบขออนุมัติกำลังคน'], 403);
+        }
+
+        return redirect()->back()->with('error', 'ระบบไม่อนุญาตให้ลบรายการใบขออนุมัติกำลังคน');
+    }
+
+    /**
+     * Format Department and Section/Division cleanly:
+     * - Abbreviates known long fullnames to short codes (e.g. Information Communication Technology -> ICT)
+     * - Deduplicates identical department and section
+     */
+    public static function formatDeptSection(?string $dept, ?string $sec = null): string
+    {
+        static $codeMap = null;
+        if ($codeMap === null) {
+            $codeMap = [];
+            try {
+                foreach (\App\Models\Division::all() as $d) {
+                    if (!empty($d->division_fullname) && !empty($d->division_name) && $d->division_name !== '-') {
+                        $codeMap[mb_strtolower(trim($d->division_fullname))] = trim($d->division_name);
+                    }
+                }
+                foreach (\App\Models\Department::all() as $d) {
+                    if (!empty($d->department_fullname) && !empty($d->department_name) && $d->department_name !== '-') {
+                        $codeMap[mb_strtolower(trim($d->department_fullname))] = trim($d->department_name);
+                    }
+                }
+                foreach (\App\Models\Section::all() as $s) {
+                    if (!empty($s->section_name) && !empty($s->section_code) && $s->section_code !== '-') {
+                        $codeMap[mb_strtolower(trim($s->section_name))] = trim($s->section_code);
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        $resolve = function($val) use ($codeMap) {
+            if (!$val) return '';
+            $trimmed = trim($val);
+            $lower = mb_strtolower($trimmed);
+            return $codeMap[$lower] ?? $trimmed;
+        };
+
+        $c1 = $resolve($dept);
+        $c2 = $resolve($sec);
+
+        if ($c1 && $c2) {
+            if (mb_strtolower($c1) === mb_strtolower($c2)) {
+                return $c1;
+            }
+            return $c1 . ' / ' . $c2;
+        }
+
+        return $c1 ?: ($c2 ?: '-');
     }
 }

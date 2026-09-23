@@ -18,7 +18,7 @@
             {{-- Section Title
             <div class="flex items-center">
                 <h2 class="text-3xl font-light text-gray-800 dark:text-gray-100 pr-4">News</h2>
-                <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+                <div class="flex-grow min-w-0 border-t border-gray-200 dark:border-gray-700"></div>
             </div> --}}
             <!-- Header matching the screenshot -->
             <div class="flex items-center mb-12">
@@ -78,7 +78,7 @@
                             </a>
 
                             {{-- Content Section --}}
-                            <div class="flex flex-col flex-grow pt-4">
+                            <div class="flex flex-col flex-grow min-w-0 pt-4">
                                 {{-- Title --}}
                                 <h2
                                     class="text-[1.05rem] font-normal text-gray-800 dark:text-gray-100 line-clamp-2 leading-relaxed">

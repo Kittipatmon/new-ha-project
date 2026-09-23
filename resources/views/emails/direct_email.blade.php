@@ -79,10 +79,12 @@
             <div class="signature">
                 <p style="margin: 0; font-weight: 600; color: #1f2937;">Best Regards,</p>
                 <p style="margin: 5px 0 0 0; color: #4b5563;">
-                    <strong>พีรสรณ์ หรั่งชั้น (บิ๊กเอ็ม)</strong><br>
-                    Pirasorn Rangchan (Bigm)<br>
-                    Sr.Recruitment Planning Officer<br>
-                    Kumwell Corporation Public Company Limited
+                    <strong>{{ $senderName ?? 'ฝ่ายทรัพยากรบุคคล' }}</strong><br>
+                    <span style="font-size: 13px; color: #6b7280;">{{ $senderPosition ?? 'เจ้าหน้าที่ฝ่ายทรัพยากรบุคคล' }}</span><br>
+                    Kumwell Corporation Public Company Limited<br>
+                    @if(!empty($senderEmail))
+                        <span style="font-size: 13px; color: #6b7280;">Email: <a href="mailto:{{ $senderEmail }}">{{ $senderEmail }}</a> | Tel: +662 954 3455</span>
+                    @endif
                 </p>
             </div>
         </div>

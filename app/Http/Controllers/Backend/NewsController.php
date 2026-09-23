@@ -177,10 +177,60 @@ class NewsController extends Controller
         return response()->json(['success' => 'News deleted successfully.']);
     }
 
-    public function detail($id)
+    public function detail(Request $request, $id)
     {
         $news = News::findOrFail($id);
         $news->increment('views');
+        $news->increment('clicks'); // count opening detail as click
+
+        // Record log into news_views
+        \App\Models\datacenter\NewsView::create([
+            'news_id' => $news->news_id,
+            'event_type' => 'view',
+            'user_id' => auth()->id(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+            'view_date' => now()->toDateString(),
+        ]);
+
         return view('backend.news.detail', compact('news'));
+    }
+
+    /**
+     * Return analytics stats for news modal/charts.
+     */
+    public function analyticsData(Request $request)
+    {
+        $newsId = $request->query('news_id');
+        $days = (int) $request->query('days', 7);
+
+        $query = \App\Models\datacenter\NewsView::query();
+        if ($newsId) {
+            $query->where('news_id', $newsId);
+        }
+
+        $startDate = now()->subDays($days - 1)->toDateString();
+        $logs = (clone $query)->where('view_date', '>=', $startDate)
+            ->selectRaw('view_date, event_type, count(*) as count')
+            ->groupBy('view_date', 'event_type')
+            ->orderBy('view_date', 'asc')
+            ->get();
+
+        // Hourly statistics for peak hours
+        $hourlyLogs = (clone $query)->where('view_date', '>=', $startDate)
+            ->selectRaw('HOUR(created_at) as hour, event_type, count(*) as count')
+            ->groupBy('hour', 'event_type')
+            ->orderBy('hour', 'asc')
+            ->get();
+
+        $newsList = News::select('news_id', 'views', 'clicks', 'is_active', 'title')->get();
+
+        return response()->json([
+            'logs' => $logs,
+            'hourly_logs' => $hourlyLogs,
+            'total_views' => News::sum('views'),
+            'total_clicks' => News::sum('clicks'),
+            'news_items' => $newsList,
+        ]);
     }
 }

@@ -12,7 +12,7 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->isHrOrAdmin();
+        return auth()->check() && auth()->user()->canManageUsers();
     }
 
     /**
@@ -38,6 +38,16 @@ class StoreUserRequest extends FormRequest
             'section_id'    => 'nullable|integer|exists:sections,section_id',
             'level_user'    => 'required',
             'hr_status'     => 'required',
+            'role'          => [
+                'nullable',
+                'string',
+                'in:admin,editor,viewer',
+                function ($attribute, $value, $fail) {
+                    if ($value === 'admin' && !auth()->user()->canAssignAdminRole()) {
+                        $fail('เฉพาะผู้ดูแลระบบสังกัดฝ่าย 16 Information Communication Technology เท่านั้นที่สามารถกำหนดสิทธิ์เป็น ADMIN ได้');
+                    }
+                },
+            ],
             'startwork_date' => 'nullable|date',
         ];
     }

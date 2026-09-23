@@ -18,7 +18,12 @@ class ApplicantController extends Controller
             ->pluck('id');
 
         $query = Application::select('recruitment_applications.*')
-            ->with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+            ->with([
+                'applicant.applications.jobPost.department',
+                'applicant.applications.jobPost.jobPosition',
+                'jobPost.jobPosition',
+                'jobPost.department'
+            ])
             ->addSelect([
                 'total_applications' => Application::from('recruitment_applications as app_count')
                     ->selectRaw('count(*)')
@@ -32,10 +37,21 @@ class ApplicantController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('applicant', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+            $query->where(function ($sub) use ($search) {
+                $sub->whereHas('applicant', function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })->orWhereHas('jobPost', function ($q) use ($search) {
+                    $q->where('position_name', 'like', "%{$search}%")
+                        ->orWhereHas('jobPosition', function ($jq) use ($search) {
+                            $jq->where('position_name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('department', function ($dq) use ($search) {
+                            $dq->where('department_name', 'like', "%{$search}%")
+                                ->orWhere('department_fullname', 'like', "%{$search}%");
+                        });
+                });
             });
         }
 
@@ -43,13 +59,54 @@ class ApplicantController extends Controller
             $query->where('job_post_id', $request->job_post_id);
         }
 
-        $applications = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        if ($request->ajax()) {
-            return view('backend.recruitment.applications.table', compact('applications'))->render();
+        if ($request->filled('open_only') && $request->open_only == '1') {
+            $query->whereHas('jobPost', function ($q) {
+                $q->where('publish_status', 'published');
+            });
         }
 
-        return view('backend.recruitment.applications.index', compact('applications'));
+        if ($request->filled('date_from')) {
+            $query->whereDate('applied_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('applied_at', '<=', $request->date_to);
+        }
+
+        $departments = \App\Models\Recruitment\Department::orderBy('department_fullname')->get();
+        $applications = $query->orderBy('created_at', 'desc')->get();
+
+        // Fetch open job posts (currently active recruitment)
+        $openJobPosts = \App\Models\Recruitment\JobPost::with('department')
+            ->where('publish_status', 'published')
+            ->orderBy('title')
+            ->get();
+
+        // Fetch all job posts for list selection
+        $allJobPosts = \App\Models\Recruitment\JobPost::with('department')
+            ->orderByRaw("FIELD(publish_status, 'published', 'draft', 'closed')")
+            ->orderBy('title')
+            ->get();
+
+        // Fetch dynamic popular positions from Job Posts + common default recruitment terms
+        $dbPositions = \App\Models\Recruitment\JobPost::select('position_name')
+            ->whereNotNull('position_name')
+            ->where('position_name', '!=', '')
+            ->distinct()
+            ->limit(10)
+            ->pluck('position_name')
+            ->toArray();
+
+        $defaultKeywords = ['ช่างซ่อมคอม', 'Developer', 'Programmer', 'วิศวกร', 'HR', 'บัญชี', 'การตลาด', 'ช่างไฟฟ้า'];
+        $popularSearches = array_values(array_unique(array_filter(array_merge($dbPositions, $defaultKeywords))));
+
+        return view('backend.recruitment.applications.index', compact(
+            'applications',
+            'departments',
+            'popularSearches',
+            'openJobPosts',
+            'allJobPosts'
+        ));
     }
 
     public function show($id)
@@ -109,40 +166,93 @@ class ApplicantController extends Controller
         $validated = $request->validate([
             'status' => 'required|string',
             'note' => 'nullable|string',
+            'onboarding_date' => 'nullable|date',
         ]);
 
-        $application->update([
+        // Guard status changes: non-HA users can only make department review decisions (interview, dept_rejected)
+        $user = Auth::user();
+        if ($user && !$user->isHrOrAdmin()) {
+            if (!in_array($validated['status'], ['interview', 'dept_rejected'])) {
+                return back()->with('error', 'สิทธิ์ไม่เพียงพอ: การปรับเปลี่ยนสถานะด้วยตนเองสามารถทำได้เฉพาะฝ่าย HA เท่านั้น');
+            }
+        }
+
+        $updateData = [
             'status' => $validated['status'],
-            'screened_by' => Auth::id(),
-            'screened_at' => now(),
-        ]);
+        ];
+
+        // Track who performed the action based on status
+        if (in_array($validated['status'], ['dept_review', 'screening_failed'])) {
+            $updateData['screened_by'] = Auth::id();
+            $updateData['screened_at'] = now();
+        } elseif (in_array($validated['status'], ['dept_rejected', 'interview', 'interview_scheduled'])) {
+            $updateData['dept_reviewed_by'] = Auth::id();
+            $updateData['dept_reviewed_at'] = now();
+        } elseif (in_array($validated['status'], ['passed_selection', 'selection_approved', 'hired', 'offered'])) {
+            $updateData['final_result'] = $validated['status'];
+            $updateData['final_result_at'] = now();
+        }
+
+        if ($request->filled('onboarding_date')) {
+            $updateData['onboarding_date'] = $validated['onboarding_date'];
+        }
+
+        $application->update($updateData);
+
+        // Meaningful default remark if note not provided
+        $remark = $validated['note'] ?? $request->get('remark') ?? null;
+        if (empty($remark)) {
+            $remark = match ($validated['status']) {
+                'screening_failed' => 'HA ตรวจสอบข้อมูลแล้ว: ไม่ผ่านคุณสมบัติ (บันทึกจัดเก็บข้อมูล)',
+                'dept_review' => 'HA ตรวจสอบคุณสมบัติผ่าน: ส่งรายชื่อให้หัวหน้าแผนกพิจารณา',
+                'dept_rejected' => 'หัวหน้าแผนกพิจารณา: ไม่ผ่าน (ส่งกลับให้ HA พิจารณาผู้สมัครคนอื่น)',
+                'interview', 'interview_scheduled' => 'หัวหน้าแผนกพิจารณาผ่าน: ดำเนินการเตรียมนัดสัมภาษณ์',
+                'interview_failed' => 'ผลสัมภาษณ์: ไม่ผ่านเกณฑ์ (ส่งกลับให้ HA พิจารณาผู้สมัครคนอื่น)',
+                'passed_selection', 'selection_approved' => 'ผลสัมภาษณ์: ผ่านเกณฑ์ และกดอนุมัติผ่านการคัดเลือก',
+                'offered' => 'HA ดำเนินการติดต่อผู้สมัครเพื่อแจ้งผลและยื่นข้อเสนอจ้างงาน',
+                'hired' => 'กำหนดวันเริ่มงานเรียบร้อย: รับเข้าทำงาน ' . ($application->onboarding_date ? '(เริ่มงาน: ' . $application->onboarding_date->format('d/m/Y') . ')' : ''),
+                default => 'เปลี่ยนสถานะเป็น ' . $application->status_label,
+            };
+        }
 
         StatusLog::create([
             'application_id' => $application->id,
             'old_status' => $oldStatus,
             'new_status' => $validated['status'],
             'changed_by' => Auth::id(),
-            'remark' => $validated['note'],
+            'remark' => $remark,
         ]);
 
         if ($validated['status'] === 'hired' && $application->applicant && $application->applicant->email) {
             try {
-                \Illuminate\Support\Facades\Mail::to($application->applicant->email)
-                    ->send(new \App\Mail\ApplicationHired($application));
+                $mailable = new \App\Mail\ApplicationHired($application, Auth::user());
+                \App\Services\RecruitmentMailService::queueMailable(
+                    $mailable,
+                    $application->applicant->email,
+                    $application->applicant->full_name,
+                    'application_hired',
+                    ['application_id' => $application->id, 'status' => 'hired'],
+                    Auth::user()
+                );
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to send hired email: ' . $e->getMessage());
-                return back()->with('success', 'อัปเดตสถานะผู้สมัครเรียบร้อยแล้ว แต่อีเมลแจ้งเตือนอาจขัดข้อง');
+                \Illuminate\Support\Facades\Log::error('Failed to queue hired email: ' . $e->getMessage());
             }
-        } elseif ($validated['status'] === 'rejected' && $application->applicant && $application->applicant->email) {
+        } elseif (in_array($validated['status'], ['screening_failed', 'rejected']) && $application->applicant && $application->applicant->email) {
             try {
-                \Illuminate\Support\Facades\Mail::to($application->applicant->email)
-                    ->send(new \App\Mail\ApplicationRejected($application));
+                $mailable = new \App\Mail\ApplicationRejected($application, Auth::user());
+                \App\Services\RecruitmentMailService::queueMailable(
+                    $mailable,
+                    $application->applicant->email,
+                    $application->applicant->full_name,
+                    'application_rejected',
+                    ['application_id' => $application->id, 'status' => $validated['status']],
+                    Auth::user()
+                );
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to send rejected email: ' . $e->getMessage());
-                return back()->with('success', 'อัปเดตสถานะผู้สมัครเรียบร้อยแล้ว แต่อีเมลแจ้งเตือนอาจขัดข้อง');
+                \Illuminate\Support\Facades\Log::error('Failed to queue rejected email: ' . $e->getMessage());
             }
         }
 
-        return back()->with('success', 'อัปเดตสถานะผู้สมัครเรียบร้อยแล้ว');
+        return back()->with('success', 'ดำเนินการอัปเดตสถานะ: ' . $application->status_label . ' เรียบร้อยแล้ว');
     }
 }

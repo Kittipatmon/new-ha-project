@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProbationEvaluation extends Model
 {
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id', 'prefix', 'employee_name', 'position', 'emp_code', 'department', 

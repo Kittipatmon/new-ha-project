@@ -3,15 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InterviewEvaluation extends Model
 {
+    use SoftDeletes;
     protected $table = 'interview_evaluations';
 
     protected $fillable = [
         'user_id',
+        'interview_id',
+        'application_id',
         'evaluation_date',
         'candidate_prefix',
         'candidate_name',
@@ -44,6 +48,16 @@ class InterviewEvaluation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function interview(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Recruitment\Interview::class, 'interview_id');
+    }
+
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Recruitment\Application::class, 'application_id');
     }
 
     public function scores(): HasMany

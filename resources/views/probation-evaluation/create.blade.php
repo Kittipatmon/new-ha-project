@@ -5,8 +5,8 @@
     </h2>
   </x-slot>
 
-  <div class="py-8 bg-gray-100 dark:bg-gray-900 min-h-screen relative">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="py-6 sm:py-8 bg-gray-100 dark:bg-gray-900 min-h-screen relative">
+    <div class="max-w-[1600px] w-full mx-auto px-3 sm:px-6 lg:px-8">
       <div class="flex flex-col lg:flex-row gap-6 items-start">
         
         <!-- Left: Form Categories Sidebar -->
@@ -40,17 +40,17 @@
             @csrf
             
             <!-- All Pages Wrapper -->
-            <div class="w-full pb-4">
+            <div class="hr-form-container">
             <!-- PAGE 1/3 Paper Container -->
-            <div class="w-full mx-auto bg-white p-6 sm:p-10 lg:p-12 shadow-xl border border-gray-300 rounded-xl mb-8 print:shadow-none print:border-none print:p-0 print:mb-0">
+            <div class="hr-form-paper">
         
         <!-- Header Section -->
-        <div class="flex justify-between items-start mb-6 text-sm">
-          <div>
-            <span>แบบประเมินเลขที่</span>
-            <input type="text" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
+        <div class="flex justify-between items-center gap-2 mb-6 text-sm">
+          <div class="min-w-0 flex-1">
+            <span class="whitespace-nowrap">แบบประเมินเลขที่</span>
+            <input type="text" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-32 sm:w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
           </div>
-          <div class="text-right text-gray-600">
+          <div class="text-right text-gray-600 font-medium whitespace-nowrap shrink-0">
             <p>1 / 3</p>
           </div>
         </div>
@@ -61,42 +61,44 @@
 
         <!-- Employee Info Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-8 text-sm text-black">
-          <div class="flex items-end w-full">
-            <span class="whitespace-nowrap mr-2 font-medium shrink-0">ชื่อ-นามสกุล</span>
-            <div class="flex items-center space-x-1.5 mr-2 mb-1 shrink-0">
-              <label class="inline-flex items-center cursor-pointer">
-                <input type="radio" name="prefix" value="นาย" class="form-radio h-3.5 w-3.5 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('prefix') ring-2 ring-red-500 border-red-500 @enderror">
-                <span class="ml-0.5 text-xs">นาย</span>
-              </label>
-              <label class="inline-flex items-center cursor-pointer">
-                <input type="radio" name="prefix" value="นาง" class="form-radio h-3.5 w-3.5 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('prefix') ring-2 ring-red-500 border-red-500 @enderror">
-                <span class="ml-0.5 text-xs">นาง</span>
-              </label>
-              <label class="inline-flex items-center cursor-pointer">
-                <input type="radio" name="prefix" value="นางสาว" class="form-radio h-3.5 w-3.5 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('prefix') ring-2 ring-red-500 border-red-500 @enderror">
-                <span class="ml-0.5 text-xs">นางสาว</span>
-              </label>
+          <div class="flex flex-wrap sm:flex-nowrap items-end w-full gap-y-1">
+            <div class="flex items-center shrink-0 mr-2 mb-1">
+              <span class="whitespace-nowrap mr-2 font-medium">ชื่อ-นามสกุล <span class="text-red-500">*</span></span>
+              <div class="flex items-center space-x-1.5">
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" name="prefix" value="นาย" class="form-radio h-3.5 w-3.5 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('prefix') ring-2 ring-red-500 border-red-500 @enderror">
+                  <span class="ml-0.5 text-xs">นาย</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" name="prefix" value="นาง" class="form-radio h-3.5 w-3.5 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('prefix') ring-2 ring-red-500 border-red-500 @enderror">
+                  <span class="ml-0.5 text-xs">นาง</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" name="prefix" value="นางสาว" class="form-radio h-3.5 w-3.5 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('prefix') ring-2 ring-red-500 border-red-500 @enderror">
+                  <span class="ml-0.5 text-xs">นางสาว</span>
+                </label>
+              </div>
             </div>
-            <input type="text" name="employee_name" list="employee_names" class="flex-1 min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 placeholder-gray-400 @error('employee_name') border-red-500 border-b-2 placeholder-red-400 @enderror" placeholder="พิมพ์ชื่อเพื่อค้นหา..." @error('employee_name') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('employee_name') }}">
+            <input type="text" name="employee_name" list="employee_names" class="flex-1 min-w-[120px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 placeholder-gray-400 @error('employee_name') border-red-500 border-b-2 placeholder-red-400 @enderror" placeholder="พิมพ์ชื่อเพื่อค้นหา..." @error('employee_name') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('employee_name') }}">
           </div>
           <div class="flex items-end w-full">
-            <span class="whitespace-nowrap mr-2 font-medium shrink-0">ตำแหน่ง</span>
+            <span class="whitespace-nowrap mr-2 font-medium shrink-0">ตำแหน่ง <span class="text-red-500">*</span></span>
             <input type="text" name="position" class="flex-1 min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('position') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('position') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('position') }}">
           </div>
           <div class="flex items-end w-full">
-            <span class="whitespace-nowrap mr-2 font-medium shrink-0">รหัสพนักงาน</span>
+            <span class="whitespace-nowrap mr-2 font-medium shrink-0">รหัสพนักงาน <span class="text-red-500">*</span></span>
             <input type="text" name="emp_code" class="flex-1 min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('emp_code') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('emp_code') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('emp_code') }}">
           </div>
           <div class="flex items-end w-full">
-            <span class="whitespace-nowrap mr-2 font-medium shrink-0">แผนก/ ฝ่าย</span>
+            <span class="whitespace-nowrap mr-2 font-medium shrink-0">แผนก/ ฝ่าย <span class="text-red-500">*</span></span>
             <input type="text" name="department" class="flex-1 min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('department') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('department') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('department') }}">
           </div>
           <div class="flex items-end w-full">
-            <span class="whitespace-nowrap mr-2 font-medium shrink-0">วันที่เริ่มงาน</span>
+            <span class="whitespace-nowrap mr-2 font-medium shrink-0">วันที่เริ่มงาน <span class="text-red-500">*</span></span>
             <input type="text" name="start_date" class="datepicker-th flex-1 min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-gray-700 @error('start_date') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('start_date') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('start_date') }}">
           </div>
           <div class="flex items-end w-full">
-            <span class="whitespace-nowrap mr-2 font-medium shrink-0">วันที่ครบทดลองงาน</span>
+            <span class="whitespace-nowrap mr-2 font-medium shrink-0">วันที่ครบทดลองงาน <span class="text-red-500">*</span></span>
             <input type="text" name="probation_due_date" class="datepicker-th flex-1 min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-gray-700 @error('probation_due_date') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('probation_due_date') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('probation_due_date') }}">
           </div>
         </div>
@@ -240,7 +242,7 @@
                 <input type="radio" name="evaluation_result" value="ไม่ผ่านการทดลองงาน" class="form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('evaluation_result') ring-2 ring-red-500 border-red-500 @enderror" {{ old('evaluation_result') == 'ไม่ผ่านการทดลองงาน' ? 'checked' : '' }}>
                 <span class="ml-2 text-sm flex items-center flex-wrap">
                   ไม่ผ่านการทดลองงาน เนื่องจาก
-                  <input type="text" name="evaluation_result_reason" class="ml-2 flex-grow min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('evaluation_result_reason') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('evaluation_result_reason') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('evaluation_result_reason') }}">
+                  <input type="text" name="evaluation_result_reason" class="ml-2 flex-grow min-w-0 min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('evaluation_result_reason') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('evaluation_result_reason') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('evaluation_result_reason') }}">
                 </span>
               </label>
             </div>
@@ -261,7 +263,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้รับการประเมิน</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -276,7 +278,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้ประเมิน</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -291,7 +293,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้จัดการฝ่าย/แผนก</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -306,7 +308,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
+                  <input type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
                   <span class="ml-2 text-xs text-gray-500 w-24">ฝ่ายทรัพยากรบุคคล</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center">
@@ -320,21 +322,27 @@
         </div>
 
         <!-- End of Page 1 -->
-        <div class="flex justify-between items-end mt-12 text-xs text-gray-500 text-black">
-          <div>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)</div>
-          <div>QF-HR-18 Rev.09 : 02-05-25</div>
+        <div class="flex justify-between items-end gap-2 mt-12 text-xs text-gray-500 text-black leading-tight">
+          <div>
+            <div>บริษัท คัมเวล คอร์ปอเรชั่น</div>
+            <div>จำกัด (มหาชน)</div>
+          </div>
+          <div class="text-right whitespace-nowrap">
+            <div>QF-HR-18 Rev.09 :</div>
+            <div>02-05-25</div>
+          </div>
         </div>
       </div>
 
       <!-- ==================== PAGE 2/3 ==================== -->
-      <div class="w-full mx-auto bg-white p-6 sm:p-10 lg:p-12 shadow-xl border border-gray-300 rounded-xl mb-8 print:shadow-none print:border-none print:p-0 print:mb-0 break-before-page print:break-before-page" style="page-break-before: always;">
+      <div class="hr-form-paper break-before-page print:break-before-page" style="page-break-before: always;">
         <!-- Header Section -->
-        <div class="flex justify-between items-start mb-6 text-sm mt-8 print:mt-0">
-          <div>
-            <span>แบบประเมินเลขที่</span>
-            <input type="text" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
+        <div class="flex justify-between items-center gap-2 mb-6 text-sm mt-8 print:mt-0">
+          <div class="min-w-0 flex-1">
+            <span class="whitespace-nowrap">แบบประเมินเลขที่</span>
+            <input type="text" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-32 sm:w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
           </div>
-          <div class="text-right text-gray-600">
+          <div class="text-right text-gray-600 font-medium whitespace-nowrap shrink-0">
             <p>2 / 3</p>
           </div>
         </div>
@@ -391,7 +399,7 @@
                 <input type="radio" name="evaluation_result_2" value="ไม่ผ่านการทดลองงาน" class="form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('evaluation_result_2') ring-2 ring-red-500 border-red-500 @enderror" {{ old('evaluation_result_2') == 'ไม่ผ่านการทดลองงาน' ? 'checked' : '' }}>
                 <span class="ml-2 text-sm flex items-center flex-wrap">
                   ไม่ผ่านการทดลองงาน เนื่องจาก
-                  <input type="text" name="evaluation_result_reason_2" class="ml-2 flex-grow min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('evaluation_result_reason_2') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('evaluation_result_reason_2') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('evaluation_result_reason_2') }}">
+                  <input type="text" name="evaluation_result_reason_2" class="ml-2 flex-grow min-w-0 min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('evaluation_result_reason_2') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('evaluation_result_reason_2') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('evaluation_result_reason_2') }}">
                 </span>
               </label>
             </div>
@@ -412,7 +420,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้รับการประเมิน</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -427,7 +435,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้ประเมิน</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -442,7 +450,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้จัดการฝ่าย/แผนก</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -457,7 +465,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
+                  <input type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
                   <span class="ml-2 text-xs text-gray-500 w-24">ฝ่ายทรัพยากรบุคคล</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center">
@@ -470,21 +478,27 @@
           </div>
         </div>
 
-        <div class="flex justify-between items-end mt-12 text-xs text-gray-500 text-black">
-          <div>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)</div>
-          <div>QF-HR-18 Rev.09 : 02-05-25</div>
+        <div class="flex justify-between items-end gap-2 mt-12 text-xs text-gray-500 text-black leading-tight">
+          <div>
+            <div>บริษัท คัมเวล คอร์ปอเรชั่น</div>
+            <div>จำกัด (มหาชน)</div>
+          </div>
+          <div class="text-right whitespace-nowrap">
+            <div>QF-HR-18 Rev.09 :</div>
+            <div>02-05-25</div>
+          </div>
         </div>
       </div>
 
       <!-- ==================== PAGE 3/3 ==================== -->
-      <div class="w-full mx-auto bg-white p-6 sm:p-10 lg:p-12 shadow-xl border border-gray-300 rounded-xl mb-8 print:shadow-none print:border-none print:p-0 print:mb-0 break-before-page print:break-before-page" style="page-break-before: always;">
+      <div class="hr-form-paper break-before-page print:break-before-page" style="page-break-before: always;">
         <!-- Header Section -->
-        <div class="flex justify-between items-start mb-6 text-sm mt-8 print:mt-0">
-          <div>
-            <span>แบบประเมินเลขที่</span>
-            <input type="text" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
+        <div class="flex justify-between items-center gap-2 mb-6 text-sm mt-8 print:mt-0">
+          <div class="min-w-0 flex-1">
+            <span class="whitespace-nowrap">แบบประเมินเลขที่</span>
+            <input type="text" class="border-b border-gray-400 bg-transparent focus:outline-none focus:border-black w-32 sm:w-48 px-2 py-0 border-t-0 border-l-0 border-r-0 ring-0 focus:ring-0">
           </div>
-          <div class="text-right text-gray-600">
+          <div class="text-right text-gray-600 font-medium whitespace-nowrap shrink-0">
             <p>3 / 3</p>
           </div>
         </div>
@@ -542,7 +556,7 @@
                 <input type="radio" name="evaluation_result_3" value="ไม่ผ่านการทดลองงาน" class="form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent @error('evaluation_result_3') ring-2 ring-red-500 border-red-500 @enderror" {{ old('evaluation_result_3') == 'ไม่ผ่านการทดลองงาน' ? 'checked' : '' }}>
                 <span class="ml-2 text-sm flex items-center flex-wrap">
                   ไม่ผ่านการทดลองงาน เนื่องจาก
-                  <input type="text" name="evaluation_result_reason_3" class="ml-2 flex-grow min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('evaluation_result_reason_3') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('evaluation_result_reason_3') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('evaluation_result_reason_3') }}">
+                  <input type="text" name="evaluation_result_reason_3" class="ml-2 flex-grow min-w-0 min-w-[150px] border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 @error('evaluation_result_reason_3') border-red-500 border-b-2 placeholder-red-400 @enderror" @error('evaluation_result_reason_3') placeholder="กรุณาระบุข้อมูล" @enderror value="{{ old('evaluation_result_reason_3') }}">
                 </span>
               </label>
             </div>
@@ -563,7 +577,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้รับการประเมิน</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -578,7 +592,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้ประเมิน</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -593,7 +607,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
+                  <input readonly disabled type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center">
                   <span class="ml-2 text-xs text-gray-500 w-24">ผู้จัดการฝ่าย/แผนก</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center relative group">
@@ -608,7 +622,7 @@
               <div class="flex flex-col items-center">
                 <div class="flex items-end w-full mb-2">
                   <span class="mr-2">ลงชื่อ</span>
-                  <input type="text" class="flex-grow border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
+                  <input type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
                   <span class="ml-2 text-xs text-gray-500 w-24">ฝ่ายทรัพยากรบุคคล</span>
                 </div>
                 <div class="flex w-full px-6 justify-center items-center">
@@ -626,9 +640,15 @@
           * หมายเหตุ : เงื่อนไขการผ่านทดลองงาน ต้องผ่านการสอบวัดความรู้จากฝ่ายทรัพยากรบุคคล ในข้อ 1.2 และผ่านการประเมินผลการปฏิบัติงาน<br>จากหัวหน้างาน/ผู้ประเมิน ในข้อ 1.3
         </div>
 
-        <div class="flex justify-between items-end mt-12 text-xs text-gray-500 text-black">
-          <div>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)</div>
-          <div>QF-HR-18 Rev.09 : 02-05-25</div>
+        <div class="flex justify-between items-end gap-2 mt-12 text-xs text-gray-500 text-black leading-tight">
+          <div>
+            <div>บริษัท คัมเวล คอร์ปอเรชั่น</div>
+            <div>จำกัด (มหาชน)</div>
+          </div>
+          <div class="text-right whitespace-nowrap">
+            <div>QF-HR-18 Rev.09 :</div>
+            <div>02-05-25</div>
+          </div>
         </div>
         
         <!-- Action Buttons -->
@@ -652,16 +672,62 @@
   <!-- Flatpickr setup for Thai localization -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      flatpickr(".datepicker-th", {
-        locale: "th",
-        dateFormat: "Y-m-d",
-        altInput: true,
-        altFormat: "d/m/Y", // display format (e.g. 24/07/2026)
-        allowInput: true
-      });
+            if (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) {
+                flatpickr.localize(flatpickr.l10ns.th);
+            }
+
+            flatpickr(".datepicker-th", {
+                locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : "th",
+                altInput: true,
+                altFormat: "d/m/Y",
+                dateFormat: "Y-m-d",
+                allowInput: true,
+                formatDate: function(date, formatStr, locale) {
+                    if (formatStr === 'd/m/Y') {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear() + 543;
+                        return day + '/' + month + '/' + year;
+                    }
+                    return flatpickr.formatDate(date, formatStr, locale);
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    if (instance.altInput) {
+                        instance.altInput.className = instance.input.className;
+                        instance.altInput.classList.remove('datepicker-th');
+                        instance.altInput.classList.add('flatpickr-input');
+                    }
+                    formatHeaderBuddhistYear(instance);
+                },
+                onMonthChange: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                },
+                onYearChange: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    formatHeaderBuddhistYear(instance);
+                }
+            });
+
+            function formatHeaderBuddhistYear(instance) {
+                setTimeout(function() {
+                    if (!instance || !instance.calendarContainer) return;
+                    const curYearElem = instance.calendarContainer.querySelector('.flatpickr-current-month .cur-year');
+                    if (curYearElem) {
+                        const bYear = instance.currentYear + 543;
+                        curYearElem.value = bYear;
+                    }
+                    const numYearInputs = instance.calendarContainer.querySelectorAll('.cur-year');
+                    numYearInputs.forEach(function(inp) {
+                        inp.value = instance.currentYear + 543;
+                    });
+                }, 10);
+            }
+      
     });
   </script>
 <script>

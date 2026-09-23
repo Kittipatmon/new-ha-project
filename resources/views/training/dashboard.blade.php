@@ -134,7 +134,7 @@
                     <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-6 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-ranking-star text-amber-500"></i> สถิติความสนใจรายหลักสูตร
                     </h3>
-                    <div id="trainingMainChart" class="flex-grow w-full" style="min-height: 400px;"></div>
+                    <div id="trainingMainChart" class="flex-grow min-w-0 w-full" style="min-height: 400px;"></div>
                 </div>
 
                 <!-- Right Side Donut/Bar -->
@@ -148,7 +148,7 @@
                     </div>
 
                     <!-- Additional Stats -->
-                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 flex-grow text-center flex flex-col items-center justify-center">
+                    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-100 dark:border-white/5 p-6 flex-grow min-w-0 text-center flex flex-col items-center justify-center">
                         <h3 class="text-sm font-bold text-slate-800 dark:text-white mb-6 uppercase tracking-wider w-full text-left flex items-center gap-2">
                             <i class="fa-solid fa-building-user text-emerald-500"></i> ความสนใจแยกตามหน่วยงาน
                         </h3>

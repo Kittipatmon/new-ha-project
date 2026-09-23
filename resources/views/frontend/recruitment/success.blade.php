@@ -1,7 +1,7 @@
 @extends('layouts.recruitment.app')
 
 @section('content')
-    <div class="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center px-6 py-20">
+    <div class="min-h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 flex items-center justify-center px-6 py-12">
         <div class="max-w-md w-full text-center space-y-8">
             <div class="relative">
                 <div
@@ -50,4 +50,28 @@
             </div>
         </div>
     </div>
+
+    @if(session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            (function() {
+                function showSuccessAlert() {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งใบสมัครเรียบร้อยแล้ว!',
+                            text: @json(session('success')),
+                            confirmButtonText: 'รับทราบ',
+                            confirmButtonColor: '#B21F24'
+                        });
+                    }
+                }
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', showSuccessAlert);
+                } else {
+                    showSuccessAlert();
+                }
+            })();
+        </script>
+    @endif
 @endsection

@@ -56,13 +56,43 @@ class User extends Authenticatable
         'hr_status_color',
         'status_label',
         'status_color',
+        'role_label',
+        'role_badge',
+        'hr_role',
+        'hr_role_label',
+        'hr_role_badge',
     ];
     
+    /**
+     * Relationship to HR System specific role in Database: hrsystem
+     */
+    public function hrRole()
+    {
+        return $this->hasOne(HrUserRole::class, 'employee_code', 'emp_code');
+    }
+
+    /**
+     * Relationship to Microsoft 365 OAuth Token
+     */
+    public function microsoftToken()
+    {
+        return $this->hasOne(\App\Models\UserMicrosoftToken::class, 'user_id');
+    }
+
+    /**
+     * Check if user has active Microsoft 365 connection
+     */
+    public function hasMicrosoftConnected(): bool
+    {
+        return $this->microsoftToken()->whereNotNull('access_token')->exists();
+    }
 
     // Accessors/Mutators to dynamically map missing/changed columns
     public function getStartworkDateAttribute()
     {
-        return $this->created_at;
+        $kml = $this->getUserKmlRecord();
+        $date = ($kml && !empty($kml->startwork_date)) ? $kml->startwork_date : $this->created_at;
+        return $date ? \Carbon\Carbon::parse($date) : null;
     }
 
     public function setStartworkDateAttribute($value)
@@ -72,7 +102,7 @@ class User extends Authenticatable
 
     public function getEndworkDateAttribute()
     {
-        return $this->resign_date;
+        return $this->resign_date ? \Carbon\Carbon::parse($this->resign_date) : null;
     }
 
     public function setEndworkDateAttribute($value)
@@ -110,19 +140,68 @@ class User extends Authenticatable
         // No-op to prevent database errors when saving
     }
 
-    public function getLevelUserAttribute()
+    public function getPrefixAttribute()
     {
-        return $this->role === 'admin' ? self::LEVEL_USER_SYSTEM_ADMIN : self::LEVEL_USER_OPERATION_STAFF;
+        if (!empty($this->attributes['prefix'])) {
+            return $this->attributes['prefix'];
+        }
+        $kml = $this->getUserKmlRecord();
+        return $kml?->prefix ?? '';
     }
 
-    public function setLevelUserAttribute($value)
+    public function setPrefixAttribute($value)
     {
-        // No-op
+        $this->attributes['prefix'] = $value;
+    }
+
+    public function getFirstNameAttribute()
+    {
+        return $this->attributes['first_name'] ?? ($this->attributes['firstname'] ?? null);
+    }
+
+    public function getLastNameAttribute()
+    {
+        return $this->attributes['last_name'] ?? ($this->attributes['lastname'] ?? null);
+    }
+
+    protected function getUserKmlRecord()
+    {
+        static $userKmlCache = [];
+        $code = $this->emp_code;
+        if (!$code) return null;
+        if (!array_key_exists($code, $userKmlCache)) {
+            try {
+                $userKmlCache[$code] = \Illuminate\Support\Facades\DB::table('userkmlsystem.userskml')
+                    ->where('employee_code', $code)
+                    ->first();
+            } catch (\Throwable $e) {
+                $userKmlCache[$code] = null;
+            }
+        }
+        return $userKmlCache[$code];
+    }
+
+    public function getPositionAttribute()
+    {
+        if (!empty($this->attributes['position'])) {
+            return $this->attributes['position'];
+        }
+        $kml = $this->getUserKmlRecord();
+        return $kml?->position ?? null;
+    }
+
+    public function setPositionAttribute($value)
+    {
+        $this->attributes['position'] = $value;
     }
 
     public function getSexAttribute()
     {
-        return $this->attributes['sex'] ?? 'ชาย';
+        if (!empty($this->attributes['sex'])) {
+            return $this->attributes['sex'];
+        }
+        $kml = $this->getUserKmlRecord();
+        return $kml?->sex ?? 'ชาย';
     }
 
     public function setSexAttribute($value)
@@ -132,12 +211,39 @@ class User extends Authenticatable
 
     public function getWorkplaceAttribute()
     {
-        return $this->attributes['workplace'] ?? 'HQ';
+        if (!empty($this->attributes['workplace'])) {
+            return $this->attributes['workplace'];
+        }
+        $kml = $this->getUserKmlRecord();
+        return $kml?->workplace ?? 'สนง.ใหญ่';
     }
 
     public function setWorkplaceAttribute($value)
     {
         $this->attributes['workplace'] = $value;
+    }
+
+    public function getEmployeeTypeAttribute()
+    {
+        if (!empty($this->attributes['employee_type'])) {
+            return $this->attributes['employee_type'];
+        }
+        $kml = $this->getUserKmlRecord();
+        return $kml?->employee_type ?? 'รายเดือน';
+    }
+
+    public function getLevelUserAttribute()
+    {
+        $kml = $this->getUserKmlRecord();
+        if ($kml && isset($kml->level_user)) {
+            return (string)$kml->level_user;
+        }
+        return $this->role === 'admin' ? self::LEVEL_USER_SYSTEM_ADMIN : self::LEVEL_USER_OPERATION_STAFF;
+    }
+
+    public function setLevelUserAttribute($value)
+    {
+        // No-op
     }
 
     public function usertype()
@@ -164,7 +270,14 @@ class User extends Authenticatable
 
     public function getHrStatusAttribute()
     {
-        return '1'; // Default inactive since column is gone
+        if (isset($this->attributes['hr_status'])) {
+            return (string)$this->attributes['hr_status'];
+        }
+        $kml = $this->getUserKmlRecord();
+        if ($kml && isset($kml->hr_status)) {
+            return (string)$kml->hr_status;
+        }
+        return ($this->dept_id == 15) ? self::HR_STATUS_ACTIVE : self::HR_STATUS_INACTIVE;
     }
 
     public function setHrStatusAttribute($value)
@@ -174,7 +287,170 @@ class User extends Authenticatable
 
     public function isHrOrAdmin()
     {
-        return $this->role === 'admin' || $this->dept_id == 15 || $this->hr_status == '0' || (int)$this->level_user >= 5;
+        return $this->canAccessBackend();
+    }
+
+    /**
+     * Central database (appkum_user) Role:
+     * - admin
+     * - staff
+     *
+     * HR System database (hrsystem) Rules:
+     * - admin (เข้าถึงระบบ HR ได้ทั้งหมด)
+     * - editor (ดู/เพิ่ม/แก้ไข - ห้ามลบ/ห้ามจัดการสิทธิ์)
+     * - viewer (ดูข้อมูลได้อย่างเดียว)
+     */
+    const ROLE_ADMIN = 'admin';
+    const ROLE_EDITOR = 'editor';
+    const ROLE_VIEWER = 'viewer';
+    const ROLE_STAFF = 'staff';
+
+    /**
+     * Get the HR System specific role (admin / editor / viewer)
+     * Loaded from hrsystem.hr_user_roles, with fallback to central role if admin.
+     */
+    public function getHrRoleAttribute(): string
+    {
+        // Safely check relations array or query relationship directly
+        $roleRecord = array_key_exists('hrRole', $this->relations) 
+            ? $this->relations['hrRole'] 
+            : $this->hrRole()->first();
+
+        if ($roleRecord && !empty($roleRecord->role)) {
+            return strtolower(trim($roleRecord->role));
+        }
+
+        // Fallback: If central user is admin or level_user == 0, grant HR admin
+        $centralRole = strtolower(trim((string)($this->role ?? '')));
+        if (in_array($centralRole, ['admin', 'superadmin', 'administrator']) || (int)$this->level_user === 0) {
+            return self::ROLE_ADMIN;
+        }
+
+        return self::ROLE_VIEWER;
+    }
+
+    public function getRoleNormalizedAttribute(): string
+    {
+        return $this->hr_role;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hr_role === self::ROLE_ADMIN;
+    }
+
+    public function isEditor(): bool
+    {
+        return in_array($this->hr_role, [self::ROLE_ADMIN, self::ROLE_EDITOR]);
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->hr_role === self::ROLE_VIEWER;
+    }
+
+    /**
+     * Check if user can access backend (Only ADMIN and EDITOR)
+     */
+    public function canAccessBackend(): bool
+    {
+        return in_array($this->hr_role, [self::ROLE_ADMIN, self::ROLE_EDITOR]);
+    }
+
+    /**
+     * Check if user belongs to Department 16: Information Communication Technology (ICT)
+     */
+    public function isIctDepartment(): bool
+    {
+        if ((int)$this->dept_id === 16 || (int)$this->department_id === 16) {
+            return true;
+        }
+
+        if ($this->department) {
+            if ((int)$this->department->department_id === 16) {
+                return true;
+            }
+            $fullname = strtolower($this->department->department_fullname ?? '');
+            $name = strtolower($this->department->department_name ?? '');
+            if (str_contains($fullname, 'information communication technology') || str_contains($name, 'ict')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user can assign the ADMIN role:
+     * ADMIN can grant EDITOR, VIEWER.
+     * Only Department 16 (Information Communication Technology) can grant ADMIN.
+     */
+    public function canAssignAdminRole(): bool
+    {
+        return $this->isAdmin() && $this->isIctDepartment();
+    }
+
+    public function canManageUsers(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    public function canDelete(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Check if user is the CEO / Chief Executive Officer
+     */
+    public function isCeo(): bool
+    {
+        $pos = strtolower($this->position ?? '');
+        if (str_contains($pos, 'ceo') || str_contains($pos, 'ประธานเจ้าหน้าที่บริหาร') || str_contains($pos, 'chief executive')) {
+            return true;
+        }
+        if ((string)$this->level_user === '9' || (string)$this->level_user === self::LEVEL_USER_C_LEVEL) {
+            if (empty($pos) || str_contains($pos, 'บริหาร')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function canEdit(): bool
+    {
+        return $this->isAdmin() || $this->hr_role === self::ROLE_EDITOR;
+    }
+
+    public function canCreate(): bool
+    {
+        return $this->isAdmin() || $this->hr_role === self::ROLE_EDITOR;
+    }
+
+    public static function getAvailableRoles(): array
+    {
+        return HrUserRole::getAvailableRoles();
+    }
+
+    public function getHrRoleLabelAttribute(): string
+    {
+        return strtoupper($this->hr_role);
+    }
+
+    public function getHrRoleBadgeAttribute(): string
+    {
+        $roles = self::getAvailableRoles();
+        return $roles[$this->hr_role]['badge_class'] ?? 'bg-gray-100 text-gray-700';
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->hr_role_label;
+    }
+
+    public function getRoleBadgeAttribute(): string
+    {
+        return $this->hr_role_badge;
     }
 
     public function hasRole($roles)
@@ -185,13 +461,35 @@ class User extends Authenticatable
             }
             return false;
         }
-        if ($this->isHrOrAdmin()) return true;
-        return $this->role === $roles;
+        if ($this->isAdmin()) return true;
+        return $this->hr_role === strtolower($roles) || $this->role === $roles;
     }
 
     public function getPhotoUserAttribute()
     {
-        return $this->profile_pic;
+        if (!empty($this->profile_pic) && file_exists(public_path($this->profile_pic))) {
+            return $this->profile_pic;
+        }
+
+        // Check if there is an image in images/profiles for this employee code
+        $code = $this->emp_code;
+        if ($code) {
+            $files = glob(public_path('images/profiles/*' . $code . '*'));
+            if (!empty($files)) {
+                usort($files, function ($a, $b) {
+                    return filemtime($b) - filemtime($a);
+                });
+                $relPath = 'images/profiles/' . basename($files[0]);
+                return $relPath;
+            }
+        }
+
+        $kml = $this->getUserKmlRecord();
+        if ($kml && !empty($kml->photo_user) && file_exists(public_path($kml->photo_user))) {
+            return $kml->photo_user;
+        }
+
+        return null;
     }
 
     public function setPhotoUserAttribute($value)
@@ -202,6 +500,44 @@ class User extends Authenticatable
     public function department()
     {
         return $this->belongsTo(Department::class, 'dept_id', 'department_id');
+    }
+
+    public function orgDepartment()
+    {
+        return $this->belongsTo(OrgDepartment::class, 'dept_id', 'id');
+    }
+
+    /**
+     * Get department IDs where this user is the department manager (manager_id in departments table).
+     */
+    public function getManagedDepartmentIds(): array
+    {
+        return OrgDepartment::where('manager_id', $this->id)->pluck('id')->toArray();
+    }
+
+    /**
+     * Check if this user is a department manager in departments table.
+     */
+    public function isDepartmentManager(): bool
+    {
+        return !empty($this->getManagedDepartmentIds());
+    }
+
+    /**
+     * Check if user is in Central HR / Recruitment department (dept_id = 15 or role = admin)
+     */
+    public function isCentralHr(): bool
+    {
+        return $this->role === 'admin' || (int)$this->dept_id === 15;
+    }
+
+    /**
+     * Check if user is allowed to see 'Candidates forwarded by HA'
+     * (Only Central HR or designated department managers with manager_id)
+     */
+    public function canViewDeptCandidates(): bool
+    {
+        return $this->isCentralHr() || $this->isDepartmentManager();
     }
 
     public function division()

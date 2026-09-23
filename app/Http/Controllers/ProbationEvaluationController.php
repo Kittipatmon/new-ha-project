@@ -18,7 +18,17 @@ class ProbationEvaluationController extends Controller
     public function show($id)
     {
         $probationEvaluation = $this->authorizedProbationEvaluation($id);
-        return view('probation-evaluation.show', compact('probationEvaluation'));
+
+        $activeShare = \App\Models\FormShare::with('sender')
+            ->where('form_type', 'probation_evaluation')
+            ->where('form_id', $id)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('id', 'desc')
+            ->first();
+
+        return view('probation-evaluation.show', compact('probationEvaluation', 'activeShare'));
     }
 
     /**
@@ -28,21 +38,22 @@ class ProbationEvaluationController extends Controller
     private function authorizedProbationEvaluation($id)
     {
         $user = auth()->user();
-        $canApproveAll = $user->hasRole(['admin', 'hr_manager', 'ceo']);
+        $canApproveAll = $user ? ($user->canAccessBackend() || (method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9' || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) : false;
 
-        $query = \App\Models\ProbationEvaluation::query();
+        $probationEvaluation = \App\Models\ProbationEvaluation::findOrFail($id);
         if (!$canApproveAll) {
             $userFullName = $user->firstname . ' ' . $user->lastname;
-            $query->where(function ($q) use ($user, $userFullName) {
-                $q->where('user_id', $user->id)
-                  ->orWhereHas('signatures', function ($sq) use ($userFullName) {
-                      $sq->whereIn('role', ['evaluator', 'manager', 'hr'])
-                         ->where('name', $userFullName);
-                  });
-            });
+            $isOwnerOrSignatory = ($probationEvaluation->user_id === $user->id) ||
+                $probationEvaluation->signatures()->whereIn('role', ['evaluator', 'manager', 'hr'])->where('name', $userFullName)->exists();
+
+            $hasSharedAccess = \App\Models\FormShare::hasAccess('probation_evaluation', $id, $user);
+
+            if (!$isOwnerOrSignatory && !$hasSharedAccess) {
+                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงเอกสารนี้ (เอกสารนี้ต้องได้รับการแชร์หรือได้รับสิทธิ์จากผู้มีอำนาจเท่านั้น)');
+            }
         }
 
-        return $query->findOrFail($id);
+        return $probationEvaluation;
     }
 
     public function store(Request $request)
@@ -301,5 +312,14 @@ class ProbationEvaluationController extends Controller
         $pdf->setOption(['isRemoteEnabled' => true]);
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream('probation_evaluation_' . $probationEvaluation->id . '.pdf');
+    }
+
+    public function destroy($id)
+    {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => false, 'message' => 'ระบบไม่อนุญาตให้ลบรายการแบบประเมินทดลองงาน'], 403);
+        }
+
+        return redirect()->back()->with('error', 'ระบบไม่อนุญาตให้ลบรายการแบบประเมินทดลองงาน');
     }
 }

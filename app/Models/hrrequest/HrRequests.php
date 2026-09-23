@@ -3,11 +3,13 @@
 namespace App\Models\hrrequest;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Models\User;
 
 class HrRequests extends Model
 {
+    use SoftDeletes;
     protected $table = 'hr_requests';
 
     protected $primaryKey = 'hr_request_id';

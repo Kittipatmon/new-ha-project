@@ -163,6 +163,20 @@
                                 </div>
                             @endif
                         @endif
+
+                        @if ($recruitmentRequest->status === 'approved')
+                            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+                                <div class="bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-2xl p-5 text-center shadow-sm">
+                                    <h4 class="text-base font-bold text-blue-900 dark:text-blue-100 mb-1.5">พร้อมสำหรับประกาศรับสมัคร</h4>
+                                    <p class="text-xs text-blue-600 dark:text-blue-300 mb-4 leading-relaxed">คำขอนี้ได้รับการอนุมัติแล้ว และสามารถนำข้อมูลไปสร้างประกาศรับสมัครงานได้ทันที</p>
+                                    <a href="{{ route('backend.recruitment.posts.create', ['request_id' => $recruitmentRequest->id]) }}"
+                                       class="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 transition-all active:scale-95">
+                                        <i class="fa-solid fa-bullhorn text-xs"></i>
+                                        <span>สร้าง Job Post</span>
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

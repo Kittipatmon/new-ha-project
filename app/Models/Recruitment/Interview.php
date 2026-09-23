@@ -48,4 +48,9 @@ class Interview extends Model
     {
         return $this->hasMany(InterviewScore::class, 'interview_id');
     }
+
+    public function evaluation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\InterviewEvaluation::class, 'interview_id');
+    }
 }

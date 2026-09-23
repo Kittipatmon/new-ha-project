@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Backend\Users;
 use App\Http\Controllers\Controller;
 
+use App\Models\HrUserRole;
 use App\Models\Department;
 use App\Models\Division;
 use App\Models\Section;
@@ -58,6 +59,10 @@ class UserController extends Controller
     // หน้าเว็บ: แสดงผลแบบ paginate + ส่งค่ากลับไปเติมในฟอร์ม
     public function index(Request $request)
     {
+        if (auth()->check() && !auth()->user()->canManageUsers()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลพนักงาน (เฉพาะสิทธิ์ ADMIN เท่านั้น)');
+        }
+
         $users = $this->filteredUsers($request)->paginate(50)->withQueryString();
         
         $departments = Cache::remember('all_departments', 3600, fn() => Department::all());
@@ -74,7 +79,7 @@ class UserController extends Controller
      */
     private function filteredUsers(Request $request)
     {
-        $query = User::with(['department', 'division', 'section']);
+        $query = User::with(['department', 'division', 'section', 'hrRole']);
 
         $simpleFilters = [
             'prefix'        => 'like',
@@ -105,9 +110,40 @@ class UserController extends Controller
             }
         }
 
+        if ($request->filled('keyword')) {
+            $keyword = trim($request->input('keyword'));
+            $query->where(function ($q) use ($keyword) {
+                $q->where('emp_code', 'like', "%{$keyword}%")
+                  ->orWhere('firstname', 'like', "%{$keyword}%")
+                  ->orWhere('lastname', 'like', "%{$keyword}%")
+                  ->orWhereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ["%{$keyword}%"])
+                  ->orWhere('position', 'like', "%{$keyword}%");
+            });
+        }
+
         if ($request->filled('employee_code')) {
             $value = trim($request->input('employee_code'));
             $query->where('emp_code', 'like', "%{$value}%");
+        }
+
+        if ($request->filled('role')) {
+            $roleFilter = strtolower(trim($request->input('role')));
+            $codesForRole = HrUserRole::where('role', $roleFilter)->pluck('employee_code')->toArray();
+            
+            if ($roleFilter === 'admin') {
+                $query->where(function($q) use ($codesForRole) {
+                    $q->whereIn('emp_code', $codesForRole)
+                      ->orWhere('role', 'admin')
+                      ->orWhere('role', 'superadmin');
+                });
+            } elseif ($roleFilter === 'editor') {
+                $query->whereIn('emp_code', $codesForRole);
+            } elseif ($roleFilter === 'viewer') {
+                // Users explicitly marked viewer OR not having admin/editor hr_user_roles and central not admin
+                $otherCodes = HrUserRole::whereIn('role', ['admin', 'editor'])->pluck('employee_code')->toArray();
+                $query->whereNotIn('emp_code', $otherCodes)
+                      ->where('role', '!=', 'admin');
+            }
         }
 
         if ($request->filled('fullname')) {
@@ -178,6 +214,10 @@ class UserController extends Controller
 
 public function create()
 {
+    if (auth()->check() && !auth()->user()->canManageUsers()) {
+        abort(403, 'คุณไม่มีสิทธิ์เพิ่มข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
+    }
+
     $departments = Cache::remember('all_departments', 3600, fn() => Department::all());
     $divisions = Cache::remember('all_divisions', 3600, fn() => Division::all());
     $sections = Cache::remember('all_sections', 3600, fn() => Section::all());
@@ -188,7 +228,16 @@ public function create()
 
 public function store(StoreUserRequest $request)
 {
+    if (auth()->check() && !auth()->user()->canManageUsers()) {
+        abort(403, 'คุณไม่มีสิทธิ์เพิ่มข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
+    }
+
     $validated = $request->validated();
+
+    // ตรวจสอบสิทธิ์การให้ ADMIN: เฉพาะฝ่าย 16 Information Communication Technology เท่านั้น
+    if (($validated['role'] ?? '') === 'admin' && !auth()->user()->canAssignAdminRole()) {
+        return back()->withInput()->with('error', 'เฉพาะผู้ดูแลระบบสังกัดฝ่าย 16 Information Communication Technology เท่านั้นที่สามารถกำหนดสิทธิ์เป็น ADMIN ได้');
+    }
 
     DB::transaction(function () use ($validated) {
         $user = new User();
@@ -208,8 +257,23 @@ public function store(StoreUserRequest $request)
         $user->level_user    = $validated['level_user'];
         $user->hr_status     = $validated['hr_status'];
 
+        // Central database role remains 'staff' unless set to admin
+        $user->role          = ($validated['role'] ?? '') === 'admin' ? 'admin' : 'staff';
+
         $user->startwork_date = $validated['startwork_date'] ?? null;
         $user->save();
+
+        // Save HR System Rule (admin, editor, viewer) in Database: hrsystem
+        if (!empty($validated['role'])) {
+            HrUserRole::updateOrCreate(
+                ['employee_code' => (string)$user->employee_code],
+                [
+                    'employee_id' => $user->id,
+                    'role'        => $validated['role'],
+                    'updated_at'  => now(),
+                ]
+            );
+        }
     });
 
     return redirect()->route('users.index')->with('success', 'บันทึกข้อมูลพนักงานเรียบร้อยแล้ว');
@@ -217,27 +281,45 @@ public function store(StoreUserRequest $request)
 
 public function show($id)
 {
+    if (auth()->check() && !auth()->user()->canManageUsers()) {
+        abort(403, 'คุณไม่มีสิทธิ์เข้าถึงข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
+    }
+
     $user = User::with(['department', 'division', 'section'])->findOrFail($id);
     return view('backend.users.detail', compact('user'));
 }
 
 public function edit($id)
 {
+    if (auth()->check() && !auth()->user()->canManageUsers()) {
+        abort(403, 'คุณไม่มีสิทธิ์แก้ไขข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
+    }
+
     $user = User::findOrFail($id);
     $departments = Cache::remember('all_departments', 3600, fn() => Department::all());
     $divisions = Cache::remember('all_divisions', 3600, fn() => Division::all());
     $sections = Cache::remember('all_sections', 3600, fn() => Section::all());
-    $userTypes = UserType::where('status', 0)->get();
+    $userTypes = UserType::where('status', 0)->orWhere('status', 1)->get();
 
     return view('backend.users.edit', compact('user', 'departments', 'divisions', 'sections', 'userTypes'));
 }
 
 public function update(UpdateUserRequest $request, $id)
 {
-    $validated = $request->validated();
+    if (auth()->check() && !auth()->user()->canManageUsers()) {
+        abort(403, 'คุณไม่มีสิทธิ์แก้ไขข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
+    }
 
-    DB::transaction(function () use ($validated, $id) {
-        $user = User::findOrFail($id);
+    $validated = $request->validated();
+    $targetUser = User::findOrFail($id);
+
+    // ตรวจสอบสิทธิ์การให้ ADMIN: ถ้าเปลี่ยนคนที่ไม่ใช่ admin ให้เป็น admin ต้องเป็นฝ่าย 16 ICT เท่านั้น
+    if (($validated['role'] ?? '') === 'admin' && $targetUser->hr_role !== 'admin' && !auth()->user()->canAssignAdminRole()) {
+        return back()->withInput()->with('error', 'เฉพาะผู้ดูแลระบบสังกัดฝ่าย 16 Information Communication Technology เท่านั้นที่สามารถเปลี่ยนสิทธิ์เป็น ADMIN ได้');
+    }
+
+    DB::transaction(function () use ($validated, $targetUser) {
+        $user = $targetUser;
         $user->employee_code = $validated['employee_code'];
         $user->sex           = $validated['sex'];
         $user->prefix        = $validated['prefix'];    
@@ -251,6 +333,21 @@ public function update(UpdateUserRequest $request, $id)
         $user->section_id    = $validated['section_id'] ?? null;
         $user->level_user    = $validated['level_user'];
         $user->hr_status     = $validated['hr_status'];
+
+        // Central database role: keep 'admin' if role is admin, otherwise 'staff'
+        if (!empty($validated['role']) && auth()->user()->isAdmin()) {
+            $user->role = $validated['role'] === 'admin' ? 'admin' : 'staff';
+            
+            // Save HR System Rule (admin, editor, viewer) in Database: hrsystem
+            HrUserRole::updateOrCreate(
+                ['employee_code' => (string)$user->employee_code],
+                [
+                    'employee_id' => $user->id,
+                    'role'        => $validated['role'],
+                    'updated_at'  => now(),
+                ]
+            );
+        }
         $user->status        = $validated['status'];
         $user->startwork_date = $validated['startwork_date'] ?? null;
 
@@ -269,16 +366,20 @@ public function update(UpdateUserRequest $request, $id)
     });
 
     return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลพนักงานเรียบร้อยแล้ว');  
+}
+
+
+public function destroy($id)
+{
+    if (auth()->check() && !auth()->user()->canDelete()) {
+        abort(403, 'คุณไม่มีสิทธิ์ลบข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
     }
 
+    $user = User::findOrFail($id);
+    $user->delete();
 
-    public function destroy($id)
-    {
-        $user = User::findOrFail($id);
-        $user->delete();
-
-        return redirect()->route('users.index')->with('success', 'ลบข้อมูลพนักงานเรียบร้อยแล้ว');
-    }
+    return redirect()->route('users.index')->with('success', 'ลบข้อมูลพนักงานเรียบร้อยแล้ว');
+}
 
     public function updateAvatar(Request $request)
     {

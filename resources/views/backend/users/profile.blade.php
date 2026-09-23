@@ -13,15 +13,18 @@
     </div>
 
     <!-- Main Profile Container -->
-    <div class="max-w-6xl mx-auto px-6 -mt-20 md:-mt-24 relative z-10">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 -mt-20 md:-mt-24 relative z-10">
         <!-- Header Card -->
-        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700/50 mb-8">
+        <div class="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700/50 mb-6 sm:mb-8">
             <div class="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8">
                 <!-- Avatar Section -->
                 <div class="relative group">
                     <div id="avatar-container" class="w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden ring-4 ring-white dark:ring-slate-800 shadow-md bg-white dark:bg-slate-700 transition-transform duration-350 hover:scale-[1.02]">
-                        @php $avatar = $user->photo_user; @endphp
-                        @if($avatar)
+                        @php 
+                            $avatar = $user->photo_user; 
+                            $hasAvatarFile = $avatar && file_exists(public_path($avatar));
+                        @endphp
+                        @if($hasAvatarFile)
                             <img id="profile-image" src="{{ asset($avatar) }}" alt="User Avatar" class="w-full h-full object-cover" loading="lazy">
                         @else
                             <div id="profile-placeholder" class="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500">
@@ -46,7 +49,7 @@
                 <div class="flex-1 flex flex-col items-center md:items-start space-y-3 text-center md:text-left">
                     <div class="space-y-1">
                         <span class="inline-block px-3 py-1 rounded bg-[#B21F24]/10 text-[#B21F24] dark:text-red-400 text-[10px] font-bold uppercase tracking-wider border border-[#B21F24]/20">
-                            {{ $user->usertype->description ?? 'Employee' }}
+                            {{ $user->usertype->description ?? ($user->position ?: 'พนักงาน') }}
                         </span>
                         <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                             {{ $user->first_name }} {{ $user->last_name }}
@@ -64,23 +67,9 @@
                         </div>
                         <div class="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded-lg">
                             <i class="fa-solid fa-circle text-[6px] animate-pulse"></i>
-                            <span>Active</span>
+                            <span>{{ $user->status_label ?? 'Active' }}</span>
                         </div>
                     </div>
-
-                    <!-- Mobile Action Button -->
-                    <div class="lg:hidden w-full pt-2">
-                        <a href="#" class="w-full text-center bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-6 py-3 rounded-lg font-semibold text-xs uppercase tracking-wider transition-colors shadow-sm inline-block">
-                            Edit Profile
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Primary Action (Optional) -->
-                <div class="hidden lg:block pb-2">
-                    <a href="#" class="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-6 py-3 rounded-lg font-semibold text-xs uppercase tracking-wider transition-colors shadow-sm inline-block">
-                        Edit Profile
-                    </a>
                 </div>
             </div>
         </div>
@@ -147,69 +136,102 @@
             <div class="lg:col-span-8 space-y-6 md:space-y-8">
                 <!-- Navigation Tabs -->
                 <div class="flex gap-8 border-b border-slate-200 dark:border-slate-700 px-2">
-                    <button class="pb-3 text-xs font-bold uppercase tracking-wider text-[#B21F24] border-b-2 border-[#B21F24]">Information</button>
-                    <button class="pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Career Path</button>
+                    <button type="button" id="tab-btn-info" onclick="switchProfileTab('info')" class="pb-3 text-xs font-bold uppercase tracking-wider text-[#B21F24] border-b-2 border-[#B21F24] transition-all">Information</button>
+                    <button type="button" id="tab-btn-career" onclick="switchProfileTab('career')" class="pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Career Path</button>
                 </div>
 
-                <!-- Info Sections -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Personal Info -->
-                    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700/50 transition-colors hover:border-[#B21F24]/30">
-                        <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-                            <span class="w-1 h-4 bg-[#B21F24] rounded-full"></span>
-                            Personal Information
-                        </h4>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Employee Code</label>
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->employee_code }}</p>
+                <!-- Tab 1: Information -->
+                <div id="tab-content-info" class="space-y-6 md:space-y-8">
+                    <!-- Info Sections -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Personal Info -->
+                        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700/50 transition-colors hover:border-[#B21F24]/30">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                                <span class="w-1 h-4 bg-[#B21F24] rounded-full"></span>
+                                Personal Information
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Employee Code</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->employee_code }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Gender</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->sex ?? 'Not Specified' }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Employee Type</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->employee_type ?? 'Permanent' }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Workplace</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->workplace ?? 'สนง.ใหญ่' }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Gender</label>
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->sex ?? 'Not Specified' }}</p>
-                            </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Employee Type</label>
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->employee_type ?? 'Permanent' }}</p>
+                        </div>
+
+                        <!-- Org Info -->
+                        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700/50 transition-colors hover:border-[#B21F24]/30">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                                <span class="w-1 h-4 bg-[#B21F24] rounded-full"></span>
+                                Organizational Details
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Position</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $user->position ?: 'N/A' }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Section Code</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ optional($user->section)->section_code ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Division</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ optional($user->division)->division_name ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Department</label>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ optional($user->department)->department_name ?? '-' }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Org Info -->
-                    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700/50 transition-colors hover:border-[#B21F24]/30">
-                        <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
-                            <span class="w-1 h-4 bg-[#B21F24] rounded-full"></span>
-                            Organizational Details
-                        </h4>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Section Code</label>
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ optional($user->section)->section_code ?? '-' }}</p>
+                    <!-- HR Level / Compliance Card -->
+                    <div class="bg-slate-50 dark:bg-slate-800/20 rounded-xl p-6 md:p-8 border border-dashed border-slate-200 dark:border-slate-700">
+                        <div class="flex flex-col md:flex-row items-center gap-6">
+                            <div class="w-14 h-14 rounded-xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-600 shrink-0">
+                                <i class="fa-solid fa-shield-halved text-[#B21F24] text-xl"></i>
                             </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Division</label>
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ optional($user->division)->division_name ?? '-' }}</p>
-                            </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Department</label>
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ optional($user->department)->department_name ?? '-' }}</p>
+                            <div class="flex-1 text-center md:text-left">
+                                <h5 class="text-sm font-bold text-slate-900 dark:text-white mb-1.5">Corporate & HR System Access</h5>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                                    ระดับตำแหน่ง (Level): <span class="text-[#B21F24] dark:text-red-400 font-extrabold">Level {{ $user->level_user }} ({{ $user->usertype->description ?? 'Standard' }})</span>
+                                    <span class="mx-2 text-slate-300 dark:text-slate-600">|</span>
+                                    สิทธิ์ในระบบ HR: <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide {{ $user->hr_role_badge }}">{{ $user->hr_role_label }}</span>
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- HR Level / Compliance Card -->
-                <div class="bg-slate-50 dark:bg-slate-800/20 rounded-xl p-6 md:p-8 border border-dashed border-slate-200 dark:border-slate-700">
-                    <div class="flex flex-col md:flex-row items-center gap-6">
-                        <div class="w-14 h-14 rounded-xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-600 shrink-0">
-                            <i class="fa-solid fa-shield-halved text-[#B21F24] text-xl"></i>
-                        </div>
-                        <div class="flex-1 text-center md:text-left">
-                            <h5 class="text-sm font-bold text-slate-900 dark:text-white mb-1.5">Corporate Classification</h5>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-                                Current HR Level: <span class="text-[#B21F24] dark:text-red-400 font-extrabold">{{ $user->hr_level ?? 'Standard' }}</span>. 
-                                This information is managed by the Human Resources department specialized for Kumwell Corporation.
-                            </p>
+                <!-- Tab 2: Career Path -->
+                <div id="tab-content-career" class="hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-800 rounded-xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700/50">
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                            <span class="w-1 h-4 bg-[#B21F24] rounded-full"></span>
+                            Career Path & History
+                        </h4>
+                        <div class="relative pl-6 border-l-2 border-red-500 space-y-6">
+                            <div class="relative">
+                                <div class="absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full bg-[#B21F24] ring-4 ring-red-100 dark:ring-red-950"></div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Position</span>
+                                <h5 class="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">{{ $user->position ?: 'Software Specialist' }}</h5>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                                    {{ optional($user->department)->department_name ?? 'ICT' }} &bull; Level {{ $user->level_user }} ({{ $user->usertype->description ?? 'Executive' }})
+                                </p>
+                                <p class="text-[10px] text-slate-400 mt-0.5">เริ่มงาน: {{ \Carbon\Carbon::parse($user->startwork_date ?? now())->format('d M Y') }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -218,9 +240,30 @@
     </div>
 </div>
 
+@include('layouts.footer')
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    function switchProfileTab(tab) {
+        const infoTab = document.getElementById('tab-content-info');
+        const careerTab = document.getElementById('tab-content-career');
+        const btnInfo = document.getElementById('tab-btn-info');
+        const btnCareer = document.getElementById('tab-btn-career');
+
+        if (tab === 'info') {
+            infoTab.classList.remove('hidden');
+            careerTab.classList.add('hidden');
+            btnInfo.className = 'pb-3 text-xs font-bold uppercase tracking-wider text-[#B21F24] border-b-2 border-[#B21F24] transition-all';
+            btnCareer.className = 'pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors';
+        } else if (tab === 'career') {
+            careerTab.classList.remove('hidden');
+            infoTab.classList.add('hidden');
+            btnCareer.className = 'pb-3 text-xs font-bold uppercase tracking-wider text-[#B21F24] border-b-2 border-[#B21F24] transition-all';
+            btnInfo.className = 'pb-3 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors';
+        }
+    }
+
     function uploadAvatar(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];

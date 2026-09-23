@@ -9,19 +9,23 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Recruitment\Application;
+use App\Models\User;
+use Illuminate\Mail\Mailables\Address;
 
 class ApplicationRejected extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $application;
+    public $sender;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Application $application)
+    public function __construct(Application $application, ?User $sender = null)
     {
         $this->application = $application;
+        $this->sender = $sender ?? auth()->user();
     }
 
     /**
@@ -29,9 +33,25 @@ class ApplicationRejected extends Mailable
      */
     public function envelope(): Envelope
     {
+        $fromAddress = config('mail.from.address', 'recruitment@kumwell.com');
+        $fromName = !empty($this->sender?->fullname)
+            ? ($this->sender->fullname . ' (Kumwell Recruitment)')
+            : config('mail.from.name', 'Kumwell Recruitment Team');
+
+        $senderEmail = (!empty($this->sender?->email) && filter_var($this->sender->email, FILTER_VALIDATE_EMAIL))
+            ? $this->sender->email
+            : $fromAddress;
+
+        $senderName = !empty($this->sender?->fullname)
+            ? $this->sender->fullname
+            : config('mail.from.name');
+
         return new Envelope(
             subject: 'แจ้งผลการพิจารณาใบสมัครงาน - Kumwell Corporation',
-            from: new \Illuminate\Mail\Mailables\Address('Pirasorn.Ra@kumwell.com', 'Pirasorn Rangchan (Bigm)'),
+            from: new Address($fromAddress, $fromName),
+            replyTo: [
+                new Address($senderEmail, $senderName),
+            ],
         );
     }
 
@@ -40,11 +60,25 @@ class ApplicationRejected extends Mailable
      */
     public function content(): Content
     {
+        $senderName = !empty($this->sender?->fullname)
+            ? $this->sender->fullname
+            : config('mail.from.name');
+
+        $senderEmail = (!empty($this->sender?->email) && filter_var($this->sender->email, FILTER_VALIDATE_EMAIL))
+            ? $this->sender->email
+            : config('mail.from.address');
+
+        $senderPosition = $this->sender?->position ?? 'ฝ่ายทรัพยากรบุคคล (Human Resources)';
+
         return new Content(
             view: 'emails.application_rejected',
             with: [
                 'applicantName' => $this->application->applicant ? $this->application->applicant->full_name : 'ผู้สมัคร',
                 'positionName' => $this->application->jobPost->position_name ?? ($this->application->jobPost->jobPosition->position_name ?? '-'),
+                'sender' => $this->sender,
+                'senderName' => $senderName,
+                'senderEmail' => $senderEmail,
+                'senderPosition' => $senderPosition,
             ]
         );
     }

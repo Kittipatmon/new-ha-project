@@ -1,11 +1,8 @@
 @extends('layouts.app')
 @section('title', 'เพิ่มข้อมูลการฝึกอบรม')
 @section('content')
-    <div class="container mx-auto px-4 py-6">
-        <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white">เพิ่มข้อมูลการฝึกอบรม</h2>
-            </div>
+    <div class="container mx-auto px-4 py-2 max-w-3xl">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
             <div class="p-6">
                 <form action="{{ route('backend.training.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf

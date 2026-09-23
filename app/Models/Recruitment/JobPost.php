@@ -20,6 +20,7 @@ class JobPost extends Model
         'department_id',
         'vacancy',
         'employment_type',
+        'urgency',
         'location',
         'work_schedule',
         'salary_min',
@@ -32,6 +33,8 @@ class JobPost extends Model
         'start_date',
         'end_date',
         'publish_status',
+        'views',
+        'clicks',
         'published_at',
         'created_by',
         'updated_by',
@@ -66,5 +69,28 @@ class JobPost extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class, 'job_post_id');
+    }
+
+    /**
+     * Check if the job post has passed its end date.
+     */
+    public function getIsExpiredAttribute(): bool
+    {
+        if (!$this->end_date) {
+            return false;
+        }
+
+        return $this->end_date->endOfDay()->isPast();
+    }
+
+    /**
+     * Automatically update expired published posts to 'closed'.
+     */
+    public static function autoCloseExpired(): int
+    {
+        return static::where('publish_status', 'published')
+            ->whereNotNull('end_date')
+            ->where('end_date', '<', now()->startOfDay())
+            ->update(['publish_status' => 'closed']);
     }
 }

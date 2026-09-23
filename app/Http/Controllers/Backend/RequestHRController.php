@@ -794,4 +794,27 @@ class RequestHRController extends Controller
             return response()->json(['success' => false, 'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        $hrRequest = HrRequests::findOrFail($id);
+
+        $user = auth()->user();
+        $canDelete = $user && $user->canDelete();
+
+        if (!$canDelete) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'คุณไม่มีสิทธิ์ลบรายการนี้'], 403);
+            }
+            return redirect()->back()->with('error', 'คุณไม่มีสิทธิ์ลบรายการนี้');
+        }
+
+        $hrRequest->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'ลบรายการคำร้องเรียบร้อยแล้ว']);
+        }
+
+        return redirect()->back()->with('success', 'ลบรายการคำร้องเรียบร้อยแล้ว');
+    }
 }

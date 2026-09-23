@@ -3,7 +3,7 @@
 @section('content')
     <div class="container mx-auto px-4 py-3">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-white flex-grow">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white flex-grow min-w-0">
                 รายการร้องเรียน
             </h1>
             <button type="button" id="toggle-filter" class="btn btn-warning btn-sm w-full md:w-auto shadow-sm">
@@ -170,10 +170,12 @@
                                         class="btn btn-warning btn-sm btn-square text-white shadow-sm" title="แก้ไข">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    <button type="button" class="btn btn-error btn-sm btn-square text-white shadow-sm"
-                                        onclick="confirmDelete({{ $suggestion->id }}, '{{ $suggestion->topic }}')" title="ลบ">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                     @if(Auth::check() && Auth::user()->canDelete())
+                                     <button type="button" class="btn btn-error btn-sm btn-square text-white shadow-sm"
+                                         onclick="confirmDelete({{ $suggestion->id }}, '{{ $suggestion->topic }}')" title="ลบ">
+                                         <i class="fa-solid fa-trash"></i>
+                                     </button>
+                                     @endif
                                 </td>
                             </tr>
                         @empty

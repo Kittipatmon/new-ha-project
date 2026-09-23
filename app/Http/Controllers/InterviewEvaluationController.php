@@ -21,26 +21,54 @@ class InterviewEvaluationController extends Controller
         10 => 'ความเหมาะสมกับตำแหน่งงานนี้ : เป็นผลสรุปจากหัวข้อต่างๆ ข้างต้น',
     ];
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('interview-evaluation.create');
+        $prefillInterview = null;
+        $prefillApplication = null;
+
+        if ($request->filled('interview_id')) {
+            $prefillInterview = \App\Models\Recruitment\Interview::with([
+                'application.applicant',
+                'application.jobPost.department.division',
+                'interviewers'
+            ])->find($request->interview_id);
+            $prefillApplication = $prefillInterview?->application;
+        } elseif ($request->filled('application_id')) {
+            $prefillApplication = \App\Models\Recruitment\Application::with([
+                'applicant',
+                'jobPost.department.division',
+                'interviews.interviewers'
+            ])->find($request->application_id);
+            $prefillInterview = $prefillApplication?->interviews?->where('status', 'scheduled')->last() 
+                ?? $prefillApplication?->interviews?->last();
+        }
+
+        return view('interview-evaluation.create', [
+            'prefillInterview' => $prefillInterview,
+            'prefillApplication' => $prefillApplication,
+            'interviewId' => $request->interview_id ?? $prefillInterview?->id,
+            'applicationId' => $request->application_id ?? $prefillApplication?->id,
+            'returnUrl' => $request->return_url ?? ($prefillApplication ? route('backend.recruitment.applications.show', $prefillApplication->id) : null),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'evaluation_date' => 'nullable|date',
-            'candidate_prefix' => 'nullable|string',
-            'candidate_name' => 'required|string',
-            'position_applied' => 'nullable|string',
-            'department' => 'nullable|string',
-            'division' => 'nullable|string',
-            'interview_times' => 'nullable|integer',
+        $hasDept = !empty($request->input('dept_score')) && count(array_filter($request->input('dept_score'), fn($v) => $v !== null && $v !== ''));
+        $hasHr = !empty($request->input('hr_score')) && count(array_filter($request->input('hr_score'), fn($v) => $v !== null && $v !== ''));
 
-            'hr_score' => 'nullable|array',
-            'hr_score.*' => 'nullable|integer|min:1|max:4',
-            'dept_score' => 'nullable|array',
-            'dept_score.*' => 'nullable|integer|min:1|max:4',
+        $rules = [
+            'interview_id' => 'nullable|integer',
+            'application_id' => 'nullable|integer',
+            'return_url' => 'nullable|string',
+
+            'evaluation_date' => 'required|date',
+            'candidate_prefix' => 'required|string',
+            'candidate_name' => 'required|string',
+            'position_applied' => 'required|string',
+            'department' => 'required|string',
+            'division' => 'required|string',
+            'interview_times' => 'nullable|integer',
 
             'remarks' => 'nullable|string',
             'summary_result' => 'nullable|string|in:hire,reserve,reject',
@@ -52,7 +80,33 @@ class InterviewEvaluationController extends Controller
             'dept_evaluator_name' => 'nullable|string',
             'dept_position' => 'nullable|string',
             'dept_signed_date' => 'nullable|date',
-        ]);
+        ];
+
+        if ($hasDept && !$hasHr) {
+            for ($i = 1; $i <= 10; $i++) {
+                $rules["dept_score.{$i}"] = 'required|integer|min:1|max:4';
+            }
+        } else {
+            for ($i = 1; $i <= 10; $i++) {
+                $rules["hr_score.{$i}"] = 'required|integer|min:1|max:4';
+            }
+        }
+
+        $messages = [
+            'evaluation_date.required' => 'กรุณาระบุข้อมูล',
+            'candidate_prefix.required' => 'กรุณาระบุข้อมูล',
+            'candidate_name.required' => 'กรุณาระบุข้อมูล',
+            'position_applied.required' => 'กรุณาระบุข้อมูล',
+            'department.required' => 'กรุณาระบุข้อมูล',
+            'division.required' => 'กรุณาระบุข้อมูล',
+        ];
+
+        for ($i = 1; $i <= 10; $i++) {
+            $messages["hr_score.{$i}.required"] = 'กรุณาระบุข้อมูล';
+            $messages["dept_score.{$i}.required"] = 'กรุณาระบุข้อมูล';
+        }
+
+        $validated = $request->validate($rules, $messages);
 
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
@@ -67,6 +121,8 @@ class InterviewEvaluationController extends Controller
 
             $evaluation = InterviewEvaluation::create([
                 'user_id' => auth()->id(),
+                'interview_id' => $validated['interview_id'] ?? null,
+                'application_id' => $validated['application_id'] ?? null,
                 'evaluation_date' => $validated['evaluation_date'] ?? null,
                 'candidate_prefix' => $validated['candidate_prefix'] ?? null,
                 'candidate_name' => $validated['candidate_name'],
@@ -103,9 +159,48 @@ class InterviewEvaluationController extends Controller
                 ]);
             }
 
+            // ซิงค์สถานะการสัมภาษณ์และใบสมัคร (Recruitment Integration)
+            $interviewId = $validated['interview_id'] ?? null;
+            $applicationId = $validated['application_id'] ?? null;
+            $interview = null;
+
+            if ($interviewId) {
+                $interview = \App\Models\Recruitment\Interview::find($interviewId);
+                if ($interview) {
+                    $interview->update(['status' => 'completed']);
+                    $applicationId = $applicationId ?: $interview->application_id;
+                }
+            }
+
+            if ($applicationId) {
+                $application = \App\Models\Recruitment\Application::find($applicationId);
+                if ($application) {
+                    if (in_array($application->status, ['interview', 'interview_scheduled'])) {
+                        $application->update(['status' => 'interview_completed']);
+                    }
+
+                    $roundNum = $validated['interview_times'] ?? ($interview?->interview_round ?? 1);
+                    \App\Models\Recruitment\StatusLog::create([
+                        'application_id' => $application->id,
+                        'old_status' => $application->status,
+                        'new_status' => $application->status,
+                        'changed_by' => auth()->id(),
+                        'remark' => 'บันทึกแบบประเมินผลการสัมภาษณ์ผู้สมัครงาน (QF-HR-15) รอบที่ ' . $roundNum . ' เรียบร้อยแล้ว (ผลการประเมิน: ' . ($evaluation->summary_result_label ?? '-') . ', คะแนนรวม: ' . $avgScore . '/40)',
+                    ]);
+                }
+            }
+
             \Illuminate\Support\Facades\DB::commit();
 
-            return redirect()->back()->with('success', 'บันทึกแบบประเมินผลการสัมภาษณ์เรียบร้อยแล้ว');
+            if (!empty($validated['return_url'])) {
+                return redirect($validated['return_url'])->with('success', 'บันทึกแบบประเมินผลการสัมภาษณ์ผู้สมัครงานเรียบร้อยแล้ว');
+            }
+
+            if (!empty($applicationId)) {
+                return redirect()->route('backend.recruitment.applications.show', $applicationId)->with('success', 'บันทึกแบบประเมินผลการสัมภาษณ์ผู้สมัครงานเรียบร้อยแล้ว');
+            }
+
+            return redirect()->route('interview-evaluation.show', $evaluation->id)->with('success', 'บันทึกแบบประเมินผลการสัมภาษณ์เรียบร้อยแล้ว');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             return redirect()->back()->with('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage())->withInput();
@@ -114,9 +209,35 @@ class InterviewEvaluationController extends Controller
 
     public function show($id)
     {
+        $user = auth()->user();
+        $canApproveAll = $user ? ($user->canAccessBackend() || (method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9' || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) : false;
+
         $evaluation = InterviewEvaluation::with('scores')->findOrFail($id);
+
+        if (!$canApproveAll && $user) {
+            $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
+            $isOwner = ($evaluation->user_id === $user->id);
+            $isEvaluator = (!empty($evaluation->hr_evaluator_name) && str_contains($evaluation->hr_evaluator_name, $userFullName)) ||
+                           (!empty($evaluation->dept_evaluator_name) && str_contains($evaluation->dept_evaluator_name, $userFullName));
+            $hasSharedAccess = \App\Models\FormShare::hasAccess('interview_evaluation', $id, $user);
+
+            if (!$isOwner && !$isEvaluator && !$hasSharedAccess) {
+                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงเอกสารนี้ (เอกสารนี้ต้องได้รับการแชร์หรือได้รับสิทธิ์จากผู้มีอำนาจเท่านั้น)');
+            }
+        }
+
         $scoresByItem = $evaluation->scores->keyBy('item_no');
-        return view('interview-evaluation.show', compact('evaluation', 'scoresByItem'));
+
+        $activeShare = \App\Models\FormShare::with('sender')
+            ->where('form_type', 'interview_evaluation')
+            ->where('form_id', $id)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->orderBy('id', 'desc')
+            ->first();
+
+        return view('interview-evaluation.show', compact('evaluation', 'scoresByItem', 'activeShare'));
     }
 
     public function sign(Request $request, $id)
@@ -144,12 +265,37 @@ class InterviewEvaluationController extends Controller
 
     public function exportPdf($id)
     {
+        $user = auth()->user();
+        $canApproveAll = $user ? ($user->canAccessBackend() || (method_exists($user, 'isCeo') && $user->isCeo()) || (string)$user->level_user === '9' || (method_exists($user, 'hasRole') && $user->hasRole(['admin', 'hr_manager', 'ceo']))) : false;
+
         $evaluation = InterviewEvaluation::with('scores')->findOrFail($id);
+
+        if (!$canApproveAll && $user) {
+            $userFullName = trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? ''));
+            $isOwner = ($evaluation->user_id === $user->id);
+            $isEvaluator = (!empty($evaluation->hr_evaluator_name) && str_contains($evaluation->hr_evaluator_name, $userFullName)) ||
+                           (!empty($evaluation->dept_evaluator_name) && str_contains($evaluation->dept_evaluator_name, $userFullName));
+            $hasSharedAccess = \App\Models\FormShare::hasAccess('interview_evaluation', $id, $user);
+
+            if (!$isOwner && !$isEvaluator && !$hasSharedAccess) {
+                abort(403, 'คุณไม่มีสิทธิ์ดาวน์โหลดเอกสารนี้');
+            }
+        }
+
         $scoresByItem = $evaluation->scores->keyBy('item_no');
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('interview-evaluation.pdf', compact('evaluation', 'scoresByItem'));
         $pdf->setOption(['isRemoteEnabled' => true]);
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream('interview_evaluation_' . $evaluation->id . '.pdf');
+    }
+
+    public function destroy($id)
+    {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => false, 'message' => 'ระบบไม่อนุญาตให้ลบรายการแบบประเมินผลสัมภาษณ์'], 403);
+        }
+
+        return redirect()->back()->with('error', 'ระบบไม่อนุญาตให้ลบรายการแบบประเมินผลสัมภาษณ์');
     }
 }

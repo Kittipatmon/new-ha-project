@@ -15,22 +15,76 @@ class JobPostController extends Controller
 {
     public function index()
     {
+        // Auto-close any published posts whose end_date has passed
+        JobPost::autoCloseExpired();
+
         $posts = JobPost::with(['department', 'jobPosition'])
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->get();
 
-        return view('backend.recruitment.posts.index', compact('posts'));
+        $departments = Department::orderBy('department_fullname')->get();
+
+        return view('backend.recruitment.posts.index', compact('posts', 'departments'));
     }
 
     public function create(Request $request)
     {
         $recruitmentRequest = null;
         if ($request->has('request_id')) {
-            $recruitmentRequest = RecruitmentRequest::findOrFail($request->request_id);
+            $recruitmentRequest = RecruitmentRequest::find($request->request_id);
+        } elseif ($request->has('manpower_request_id')) {
+            $manpowerRequest = \App\Models\ManpowerRequest::find($request->manpower_request_id);
+            if ($manpowerRequest) {
+                $dept = Department::where('department_name', 'like', "%{$manpowerRequest->department}%")
+                    ->orWhere('department_fullname', 'like', "%{$manpowerRequest->department}%")
+                    ->orWhere('department_description', 'like', "%{$manpowerRequest->department}%")
+                    ->first();
+                $deptId = $dept ? $dept->department_id : (auth()->user()?->dept_id ?: (Department::first()?->department_id ?? 1));
+
+                $duties = array_filter([
+                    $manpowerRequest->res_1,
+                    $manpowerRequest->res_2,
+                    $manpowerRequest->res_3,
+                    $manpowerRequest->res_4,
+                    $manpowerRequest->res_5,
+                    $manpowerRequest->res_6,
+                ]);
+
+                $qual = array_filter([
+                    $manpowerRequest->req_gender ? "เพศ: " . $manpowerRequest->req_gender : null,
+                    $manpowerRequest->req_age ? "อายุ: " . $manpowerRequest->req_age : null,
+                    $manpowerRequest->req_education ? "วุฒิการศึกษา: " . $manpowerRequest->req_education : null,
+                    $manpowerRequest->req_major ? "สาขาวิชา: " . $manpowerRequest->req_major : null,
+                    $manpowerRequest->req_experience ? "ประสบการณ์ทำงาน: " . $manpowerRequest->req_experience : null,
+                    $manpowerRequest->req_special ? "คุณสมบัติพิเศษ: " . $manpowerRequest->req_special : null,
+                    $manpowerRequest->req_other ? "อื่นๆ: " . $manpowerRequest->req_other : null,
+                ]);
+
+                $recruitmentRequest = RecruitmentRequest::firstOrCreate(
+                    ['request_no' => 'REQ-' . str_pad($manpowerRequest->id, 5, '0', STR_PAD_LEFT)],
+                    [
+                        'department_id' => $deptId,
+                        'position_name' => $manpowerRequest->job_title_th ?: $manpowerRequest->job_title_en,
+                        'requested_by' => $manpowerRequest->user_id ?? auth()->id() ?? 0,
+                        'headcount' => $manpowerRequest->headcount ?? 1,
+                        'reason' => 'ลักษณะการว่าจ้าง: ' . $manpowerRequest->hire_type,
+                        'job_description' => "ระดับ: " . ($manpowerRequest->job_level ?? '-') . "\nหน้าที่ความรับผิดชอบ:\n" . implode("\n", $duties),
+                        'qualification' => implode("\n", $qual),
+                        'required_start_date' => $manpowerRequest->expected_start_date,
+                        'status' => 'approved',
+                    ]
+                );
+            }
         }
 
         $departments = Department::where('department_status', '0')->get();
         $positions = JobPosition::where('status', 'active')->get();
+
+        // Get all approved Recruitment Requests for the dropdown reference
+        $approvedRequests = RecruitmentRequest::where('status', 'approved')
+            ->with(['department', 'jobPosts'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         // Pull distinct positions from existing employees (safely fallback if column does not exist)
         if (\Schema::connection('userkml2025')->hasColumn('employees', 'position')) {
@@ -42,7 +96,7 @@ class JobPostController extends Controller
             $employeePositions = collect([]);
         }
 
-        return view('backend.recruitment.posts.create', compact('departments', 'positions', 'recruitmentRequest', 'employeePositions'));
+        return view('backend.recruitment.posts.create', compact('departments', 'positions', 'recruitmentRequest', 'approvedRequests', 'employeePositions'));
     }
 
     public function store(Request $request)
@@ -55,6 +109,7 @@ class JobPostController extends Controller
             'recruitment_request_id' => 'nullable|exists:recruitment_requests,id',
             'vacancy' => 'required|integer|min:1',
             'employment_type' => 'required|string',
+            'urgency' => 'nullable|string|in:normal,urgent,very_urgent',
             'location' => 'nullable|string',
             'work_schedule' => 'nullable|string',
             'salary_min' => 'nullable|numeric|min:0',
@@ -89,6 +144,11 @@ class JobPostController extends Controller
 
     public function edit(JobPost $jobPost)
     {
+        if ($jobPost->publish_status === 'closed') {
+            return redirect()->route('backend.recruitment.posts.index')
+                ->with('error', 'ไม่สามารถแก้ไขประกาศที่ยกเลิกแล้วได้ สามารถดูรายละเอียดได้อย่างเดียว');
+        }
+
         $departments = Department::where('department_status', '0')->get();
         $positions = JobPosition::where('status', 'active')->get();
 
@@ -107,6 +167,11 @@ class JobPostController extends Controller
 
     public function update(Request $request, JobPost $jobPost)
     {
+        if ($jobPost->publish_status === 'closed') {
+            return redirect()->route('backend.recruitment.posts.index')
+                ->with('error', 'ไม่สามารถแก้ไขประกาศที่ยกเลิกแล้วได้ สามารถดูรายละเอียดได้อย่างเดียว');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'department_id' => 'required|exists:department,department_id',
@@ -114,6 +179,7 @@ class JobPostController extends Controller
             'position_name' => 'required|string|max:255',
             'vacancy' => 'required|integer|min:1',
             'employment_type' => 'required|string',
+            'urgency' => 'nullable|string|in:normal,urgent,very_urgent',
             'location' => 'nullable|string',
             'work_schedule' => 'nullable|string',
             'salary_min' => 'nullable|numeric|min:0',
@@ -147,7 +213,10 @@ class JobPostController extends Controller
 
     public function destroy(JobPost $jobPost)
     {
-        $jobPost->delete();
-        return back()->with('success', 'ลบประกาศเรียบร้อยแล้ว');
+        // Don't hard delete: cancel the post and mark status as closed
+        $jobPost->update([
+            'publish_status' => 'closed',
+        ]);
+        return back()->with('success', 'ยกเลิกประกาศรับสมัครงานเรียบร้อยแล้ว');
     }
 }

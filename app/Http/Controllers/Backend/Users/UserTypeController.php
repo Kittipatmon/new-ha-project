@@ -10,6 +10,10 @@ class UserTypeController extends Controller
 {
     public function index()
     {
+        if (auth()->check() && !auth()->user()->canManageUsers()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการประเภทพนักงาน (สำหรับ Admin เท่านั้น)');
+        }
+
         $userTypes = UserType::all();
         return view('backend.usertypes.index', compact('userTypes'));
     }
@@ -17,6 +21,10 @@ class UserTypeController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->check() && !auth()->user()->canManageUsers()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการประเภทพนักงาน (สำหรับ Admin เท่านั้น)');
+        }
+
         $request->validate([
             'type_name' => 'required|string|max:255',
         ]);
@@ -37,6 +45,10 @@ class UserTypeController extends Controller
     }
     public function update(Request $request, $id)
     {
+        if (auth()->check() && !auth()->user()->canManageUsers()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการประเภทพนักงาน (สำหรับ Admin เท่านั้น)');
+        }
+
         $request->validate([
             'type_name' => 'required|string|max:255',
         ]);
@@ -53,6 +65,10 @@ class UserTypeController extends Controller
 
     public function destroy($id)
     {
+        if (auth()->check() && !auth()->user()->canManageUsers()) {
+            abort(403, 'คุณไม่มีสิทธิ์จัดการประเภทพนักงาน (สำหรับ Admin เท่านั้น)');
+        }
+
         $userType = UserType::findOrFail($id);
         $userType->delete();
 

@@ -4,15 +4,51 @@
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
         {{ __('รายละเอียดแบบประเมินผลการสัมภาษณ์ผู้สมัครงาน') }}
       </h2>
-      <a href="{{ route('interview-evaluation.pdf', $evaluation->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-900 focus:outline-none transition shadow-sm">
-        📄 Export PDF
-      </a>
+      <div class="flex items-center gap-2">
+        <a href="{{ route('interview-evaluation.pdf', $evaluation->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-900 focus:outline-none transition shadow-sm">
+          📄 Export PDF
+        </a>
+        @if(auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->isHrOrAdmin()))
+          <button type="button" onclick="openShareModal('interview_evaluation', {{ $evaluation->id }}, 'แบบประเมินผลสัมภาษณ์ #{{ $evaluation->id }}')" class="inline-flex items-center px-4 py-2 bg-sky-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-sky-700 active:bg-sky-900 transition shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+            </svg>
+            แชร์เอกสาร
+          </button>
+        @endif
+      </div>
     </div>
   </x-slot>
 
   <div class="py-12 bg-gray-100 dark:bg-gray-900 min-h-screen relative overflow-x-hidden">
-    <div class="w-full overflow-x-auto pb-4">
-      <div class="min-w-[950px] max-w-[950px] mx-auto bg-white p-8 sm:p-12 shadow-xl border border-gray-300 mb-8">
+    <div class="hr-form-container">
+      @if(!empty($activeShare))
+        @php
+          $sharedByName = $activeShare->sender 
+              ? ($activeShare->sender->fullname ?? trim(($activeShare->sender->firstname ?? '') . ' ' . ($activeShare->sender->lastname ?? '')))
+              : 'ผู้ดูแลระบบ';
+          $sharedTime = $activeShare->created_at ? \Carbon\Carbon::parse($activeShare->created_at)->format('d/m/Y H:i น.') : '-';
+        @endphp
+        <div class="mb-4 flex items-center gap-3 p-4 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl text-sky-800 dark:text-sky-200 text-sm shadow-sm print:hidden">
+          <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-sky-500 text-white shrink-0 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-sky-900 dark:text-sky-100 flex items-center gap-2">
+              <span>เอกสารนี้ได้รับการแชร์</span>
+              @if(!empty($activeShare->note))
+                <span class="text-xs bg-sky-200/70 dark:bg-sky-900 px-2 py-0.5 rounded text-sky-800 dark:text-sky-300 font-normal">หมายเหตุ: {{ $activeShare->note }}</span>
+              @endif
+            </div>
+            <div class="text-xs text-sky-700 dark:text-sky-300 mt-0.5">
+              แชร์โดย: <strong class="font-semibold">{{ $sharedByName }}</strong> เมื่อวันที่และเวลา: <strong class="font-semibold">{{ $sharedTime }}</strong>
+            </div>
+          </div>
+        </div>
+      @endif
+      <div class="hr-form-paper">
         
         <div class="text-center mb-6">
           <h1 class="text-2xl font-bold text-black tracking-wide">แบบประเมินผลการสัมภาษณ์ผู้สมัครงาน</h1>
@@ -28,19 +64,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6 text-sm text-black">
           <div class="flex items-center">
             <span class="mr-2 font-medium">ชื่อผู้สมัคร:</span>
-            <span class="border-b border-gray-400 flex-grow px-2 py-0.5 font-bold">{{ $evaluation->full_candidate_name }}</span>
+            <span class="border-b border-gray-400 flex-grow min-w-0 px-2 py-0.5 font-bold">{{ $evaluation->full_candidate_name }}</span>
           </div>
 
           <div class="flex items-center">
             <span class="mr-2 font-medium">ตำแหน่งที่สมัคร:</span>
-            <span class="border-b border-gray-400 flex-grow px-2 py-0.5 font-bold">{{ $evaluation->position_applied ?? '-' }}</span>
+            <span class="border-b border-gray-400 flex-grow min-w-0 px-2 py-0.5 font-bold">{{ $evaluation->position_applied ?? '-' }}</span>
           </div>
 
           <div class="flex items-center">
             <span class="mr-2 font-medium">แผนก:</span>
             <span class="border-b border-gray-400 w-1/2 px-2 py-0.5 font-medium">{{ $evaluation->department ?? '-' }}</span>
             <span class="mx-2 font-medium">ฝ่าย:</span>
-            <span class="border-b border-gray-400 flex-grow px-2 py-0.5 font-medium">{{ $evaluation->division ?? '-' }}</span>
+            <span class="border-b border-gray-400 flex-grow min-w-0 px-2 py-0.5 font-medium">{{ $evaluation->division ?? '-' }}</span>
           </div>
 
           <div class="flex items-center">
@@ -51,7 +87,7 @@
 
         <!-- Evaluation Table -->
         <div class="mb-6 border border-black overflow-x-auto">
-          <table class="w-full text-sm border-collapse text-black">
+          <table class="w-full min-w-[700px] text-sm border-collapse text-black">
             <thead>
               <tr class="border-b border-black divide-x divide-black bg-gray-50">
                 <th class="py-3 px-2 w-12 text-center font-bold align-middle" rowspan="2">ลำดับ</th>
@@ -127,7 +163,7 @@
         <div class="mb-6 text-sm text-black">
           <div class="flex items-start">
             <span class="whitespace-nowrap font-bold mr-2">หมายเหตุ :</span>
-            <div class="flex-grow border-b border-gray-400 pb-1 font-medium">{{ $evaluation->remarks ?? '-' }}</div>
+            <div class="flex-grow min-w-0 border-b border-gray-400 pb-1 font-medium">{{ $evaluation->remarks ?? '-' }}</div>
           </div>
         </div>
 
@@ -143,7 +179,7 @@
           <div class="flex flex-col items-center space-y-2">
             <div class="flex items-end w-full">
               <span class="mr-2 font-medium">ลงชื่อ</span>
-              <span class="flex-grow border-b border-dashed border-gray-400 text-center font-bold text-indigo-900 py-0.5 relative flex items-center justify-center min-h-[28px]">
+              <span class="flex-grow min-w-0 border-b border-dashed border-gray-400 text-center font-bold text-indigo-900 py-0.5 relative flex items-center justify-center min-h-[28px]">
                 @if($evaluation->hr_evaluator_name)
                   {{ $evaluation->hr_evaluator_name }}
                 @else
@@ -158,18 +194,18 @@
             </div>
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium">ตำแหน่ง</span>
-              <span class="flex-grow border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->hr_position ?? 'ฝ่ายทรัพยากรบุคคล' }}</span>
+              <span class="flex-grow min-w-0 border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->hr_position ?? 'ฝ่ายทรัพยากรบุคคล' }}</span>
             </div>
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium">วัน/เดือน/ปี</span>
-              <span class="flex-grow border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->hr_signed_date ? \Carbon\Carbon::parse($evaluation->hr_signed_date)->format('d/m/Y') : date('d/m/Y') }}</span>
+              <span class="flex-grow min-w-0 border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->hr_signed_date ? \Carbon\Carbon::parse($evaluation->hr_signed_date)->format('d/m/Y') : date('d/m/Y') }}</span>
             </div>
           </div>
 
           <div class="flex flex-col items-center space-y-2">
             <div class="flex items-end w-full">
               <span class="mr-2 font-medium">ลงชื่อ</span>
-              <span class="flex-grow border-b border-dashed border-gray-400 text-center font-bold text-indigo-900 py-0.5 relative flex items-center justify-center min-h-[28px]">
+              <span class="flex-grow min-w-0 border-b border-dashed border-gray-400 text-center font-bold text-indigo-900 py-0.5 relative flex items-center justify-center min-h-[28px]">
                 @if($evaluation->dept_evaluator_name)
                   {{ $evaluation->dept_evaluator_name }}
                 @else
@@ -184,11 +220,11 @@
             </div>
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium">ตำแหน่ง</span>
-              <span class="flex-grow border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->dept_position ?? '-' }}</span>
+              <span class="flex-grow min-w-0 border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->dept_position ?? '-' }}</span>
             </div>
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium">วัน/เดือน/ปี</span>
-              <span class="flex-grow border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->dept_signed_date ? \Carbon\Carbon::parse($evaluation->dept_signed_date)->format('d/m/Y') : date('d/m/Y') }}</span>
+              <span class="flex-grow min-w-0 border-b border-gray-400 text-center text-xs py-0.5">{{ $evaluation->dept_signed_date ? \Carbon\Carbon::parse($evaluation->dept_signed_date)->format('d/m/Y') : date('d/m/Y') }}</span>
             </div>
           </div>
         </div>
@@ -199,4 +235,6 @@
       </div>
     </div>
   </div>
+
+  @include('components.form-share-modal')
 </x-app-layout>

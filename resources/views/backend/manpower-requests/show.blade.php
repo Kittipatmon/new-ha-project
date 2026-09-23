@@ -45,17 +45,17 @@
                 <!-- Line 1: Dept & Section -->
                 <div class="flex items-end w-full">
                     <span class="whitespace-nowrap mr-1">ฝ่าย</span>
-                    <span class="flex-grow border-b border-dotted border-black px-2">{{ $manpowerRequest->department }}</span>
+                    <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">{{ $manpowerRequest->department }}</span>
                     <span class="whitespace-nowrap mx-2">แผนก</span>
-                    <span class="flex-grow border-b border-dotted border-black px-2">{{ $manpowerRequest->section }}</span>
+                    <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">{{ $manpowerRequest->section }}</span>
                 </div>
 
                 <!-- Line 2: Job Titles & Headcount -->
                 <div class="flex items-end w-full flex-wrap gap-y-2">
                     <span class="whitespace-nowrap mr-1">ขออนุมัติตำแหน่ง (ชื่อไทย)</span>
-                    <span class="flex-grow border-b border-dotted border-black px-2 min-w-[150px]">{{ $manpowerRequest->job_title_th }}</span>
+                    <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-w-[150px]">{{ $manpowerRequest->job_title_th }}</span>
                     <span class="whitespace-nowrap mx-2">(ชื่ออังกฤษ)</span>
-                    <span class="flex-grow border-b border-dotted border-black px-2 min-w-[150px]">{{ $manpowerRequest->job_title_en ?? '-' }}</span>
+                    <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-w-[150px]">{{ $manpowerRequest->job_title_en ?? '-' }}</span>
                     <span class="whitespace-nowrap mx-2">จำนวน</span>
                     <span class="border-b border-dotted border-black w-16 text-center px-1 font-bold">{{ $manpowerRequest->headcount }}</span>
                     <span class="whitespace-nowrap ml-1">อัตรา</span>
@@ -67,7 +67,7 @@
                     <span class="border-b border-dotted border-black w-24 text-center px-1 font-bold">{{ $manpowerRequest->current_headcount }}</span>
                     <span class="whitespace-nowrap mx-2">อัตรา</span>
                     <span class="whitespace-nowrap">ต้องการรับเข้าทำงานภายในวันที่</span>
-                    <span class="flex-grow border-b border-dotted border-black px-2 text-center">
+                    <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 text-center">
                         {{ \Carbon\Carbon::parse($manpowerRequest->expected_start_date)->format('d/m/Y') }}
                     </span>
                 </div>
@@ -75,7 +75,7 @@
                 <!-- Line 4: Job Levels -->
                 <div class="flex items-center w-full pt-2">
                     <span class="whitespace-nowrap mr-4 font-semibold">ระดับ</span>
-                    <div class="flex flex-row justify-between flex-grow items-center gap-x-1 sm:gap-x-4">
+                    <div class="flex flex-row justify-between flex-grow min-w-0 items-center gap-x-1 sm:gap-x-4">
                         @php
                             $lvl = $manpowerRequest->job_level ?? '';
                             $isLv98 = str_contains($lvl, 'Lv.9') || str_contains($lvl, 'บริหาร');
@@ -110,7 +110,7 @@
                 <!-- Line 5: Hire Type Detail Layout -->
                 <div class="pt-2 flex items-start w-full">
                     <span class="whitespace-nowrap mr-4 font-semibold">ลักษณะการว่าจ้าง</span>
-                    <div class="flex-grow space-y-2">
+                    <div class="flex-grow min-w-0 space-y-2">
                         @php
                             $ht = $manpowerRequest->hire_type ?? '';
                             $isNew = !in_array($ht, ['จ้างทดแทน', 'ทดแทน', 'โอนย้าย', 'จ้างชั่วคราว', 'ชั่วคราว']);
@@ -129,7 +129,7 @@
                         <div class="flex items-end w-full">
                             <input disabled type="radio" class="form-radio h-4 w-4 text-black border-gray-400 mr-2" {{ $isRepl ? 'checked' : '' }}>
                             <span class="whitespace-nowrap">จ้างทดแทนคนเก่า คือ นาย / นาง / นางสาว</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 ml-1">
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 ml-1">
                                 {{ $isRepl ? $manpowerRequest->hire_replacement_name : '' }}
                             </span>
                         </div>
@@ -138,7 +138,7 @@
                         <div class="flex items-end w-full">
                             <input disabled type="radio" class="form-radio h-4 w-4 text-black border-gray-400 mr-2" {{ $isTrans ? 'checked' : '' }}>
                             <span class="whitespace-nowrap">โอนย้าย / ปรับเปลี่ยนตำแหน่ง คือ นาย / นาง / นางสาว</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 ml-1">
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 ml-1">
                                 {{ $isTrans ? $manpowerRequest->hire_transfer_name : '' }}
                             </span>
                         </div>
@@ -214,31 +214,31 @@
                         <span class="whitespace-nowrap mr-1">อายุ :</span>
                         <span class="w-16 border-b border-dotted border-black px-1 text-center font-semibold">{{ $manpowerRequest->req_age ?? '-' }}</span>
                         <span class="whitespace-nowrap mx-2">วุฒิการศึกษา :</span>
-                        <span class="flex-grow border-b border-dotted border-black px-2">{{ $manpowerRequest->req_education ?? '-' }}</span>
+                        <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">{{ $manpowerRequest->req_education ?? '-' }}</span>
                     </div>
 
                     <!-- Major -->
                     <div class="flex items-end w-full">
                         <span class="whitespace-nowrap mr-1">สาขาวิชา :</span>
-                        <span class="flex-grow border-b border-dotted border-black px-2">{{ $manpowerRequest->req_major ?? '-' }}</span>
+                        <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">{{ $manpowerRequest->req_major ?? '-' }}</span>
                     </div>
 
                     <!-- Experience -->
                     <div class="flex items-end w-full">
                         <span class="whitespace-nowrap mr-1">ประสบการณ์ทำงาน :</span>
-                        <span class="flex-grow border-b border-dotted border-black px-2">{{ $manpowerRequest->req_experience ?? '-' }}</span>
+                        <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">{{ $manpowerRequest->req_experience ?? '-' }}</span>
                     </div>
 
                     <!-- Special Skill -->
                     <div class="flex items-end w-full">
                         <span class="whitespace-nowrap mr-1">คุณสมบัติพิเศษ :</span>
-                        <span class="flex-grow border-b border-dotted border-black px-2">{{ $manpowerRequest->req_special ?? '-' }}</span>
+                        <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">{{ $manpowerRequest->req_special ?? '-' }}</span>
                     </div>
 
                     <!-- Other -->
                     <div class="flex items-end w-full">
                         <span class="whitespace-nowrap mr-1">อื่นๆ :</span>
-                        <span class="flex-grow border-b border-dotted border-black px-2">{{ $manpowerRequest->req_other ?? '-' }}</span>
+                        <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">{{ $manpowerRequest->req_other ?? '-' }}</span>
                     </div>
                 </div>
 
@@ -249,27 +249,27 @@
                     <div class="space-y-3">
                         <div class="flex items-end w-full">
                             <span class="mr-2">1</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_1 }}</span>
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_1 }}</span>
                         </div>
                         <div class="flex items-end w-full">
                             <span class="mr-2">2</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_2 }}</span>
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_2 }}</span>
                         </div>
                         <div class="flex items-end w-full">
                             <span class="mr-2">3</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_3 }}</span>
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_3 }}</span>
                         </div>
                         <div class="flex items-end w-full">
                             <span class="mr-2">4</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_4 }}</span>
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_4 }}</span>
                         </div>
                         <div class="flex items-end w-full">
                             <span class="mr-2">5</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_5 }}</span>
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_5 }}</span>
                         </div>
                         <div class="flex items-end w-full">
                             <span class="mr-2">6</span>
-                            <span class="flex-grow border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_6 }}</span>
+                            <span class="flex-grow min-w-0 border-b border-dotted border-black px-2 min-h-[20px]">{{ $manpowerRequest->res_6 }}</span>
                         </div>
                     </div>
                 </div>
@@ -280,7 +280,7 @@
                 <!-- Requester -->
                 <div class="flex items-end w-full flex-wrap gap-y-2">
                     <span class="whitespace-nowrap mr-2">ลงชื่อ</span>
-                    <span class="border-b border-dotted border-black min-w-[300px] flex-grow text-center text-green-600 font-semibold">
+                    <span class="border-b border-dotted border-black min-w-[300px] flex-grow min-w-0 text-center text-green-600 font-semibold">
                         {{ $manpowerRequest->requester_name ?? '-' }}
                     </span>
                     <span class="whitespace-nowrap mx-4">ผู้ร้องขอ</span>
@@ -293,7 +293,7 @@
                 <!-- Manager -->
                 <div class="flex items-end w-full flex-wrap gap-y-2">
                     <span class="whitespace-nowrap mr-2">ลงชื่อ</span>
-                    <span class="border-b border-dotted border-black min-w-[300px] flex-grow text-center">
+                    <span class="border-b border-dotted border-black min-w-[300px] flex-grow min-w-0 text-center">
                         @if($manpowerRequest->manager_approved_at)
                             <span class="text-green-600 font-semibold">{{ $manpowerRequest->managerApprover ? $manpowerRequest->managerApprover->firstname . ' ' . $manpowerRequest->managerApprover->lastname : 'ผู้จัดการแผนก/ฝ่าย' }}</span>
                         @else
@@ -310,7 +310,7 @@
                 <!-- VP -->
                 <div class="flex items-end w-full flex-wrap gap-y-2">
                     <span class="whitespace-nowrap mr-2">ลงชื่อ</span>
-                    <span class="border-b border-dotted border-black min-w-[300px] flex-grow text-center">
+                    <span class="border-b border-dotted border-black min-w-[300px] flex-grow min-w-0 text-center">
                         @if($manpowerRequest->vp_approved_at)
                             <span class="text-green-600 font-semibold">{{ $manpowerRequest->vpApprover ? $manpowerRequest->vpApprover->firstname . ' ' . $manpowerRequest->vpApprover->lastname : 'ประธานสายงาน (C Level)' }}</span>
                         @else
@@ -331,7 +331,7 @@
                 <div class="border-r border-black p-4 flex flex-col justify-between min-h-[160px]">
                     <div class="text-center font-bold border-b border-black pb-1 mb-2 bg-gray-50">ความคิดเห็นฝ่ายบุคคล</div>
                     
-                    <div class="flex-grow py-3">
+                    <div class="flex-grow min-w-0 py-3">
                         <span class="text-gray-600">ความเห็น :</span>
                         @if($manpowerRequest->hr_approved_at)
                             <span class="ml-2 text-green-600 font-semibold">อนุมัติการตรวจสอบ/เห็นชอบ</span>
@@ -396,7 +396,7 @@
                         {{ $manpowerRequest->onboard_employee_code ?? '-' }}
                     </span>
                     <span class="whitespace-nowrap mx-2">(ชื่อ-สกุล)</span>
-                    <span class="flex-grow border-b border-dotted border-black px-2">
+                    <span class="flex-grow min-w-0 border-b border-dotted border-black px-2">
                         {{ $manpowerRequest->onboard_employee_name ?? '-' }}
                     </span>
                     <span class="whitespace-nowrap mx-2">เข้าทำงานในวันที่</span>
@@ -444,13 +444,16 @@
                 </form>
                 
                 @if($manpowerRequest->status === 'pending_hr')
-                    <button type="button" @click="$dispatch('open-hr-modal', { url: '{{ route('admin.manpower-requests.approve', $manpowerRequest) }}' })" class="inline-flex items-center px-5 py-2.5 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
-                        พิจารณาอนุมัติ (Approve)
-                    </button>
+                    <form action="{{ route('admin.manpower-requests.approve', $manpowerRequest) }}" method="POST" class="inline" id="approve-form-{{ $manpowerRequest->id }}">
+                        @csrf
+                        <button type="button" onclick="confirmApprove({{ $manpowerRequest->id }}, 'รับทราบ')" class="inline-flex items-center px-5 py-2.5 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
+                            รับทราบ (Acknowledge)
+                        </button>
+                    </form>
                 @else
                     <form action="{{ route('admin.manpower-requests.approve', $manpowerRequest) }}" method="POST" class="inline" id="approve-form-{{ $manpowerRequest->id }}">
                         @csrf
-                        <button type="button" onclick="confirmApprove({{ $manpowerRequest->id }}, false)" class="inline-flex items-center px-5 py-2.5 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
+                        <button type="button" onclick="confirmApprove({{ $manpowerRequest->id }}, 'อนุมัติ')" class="inline-flex items-center px-5 py-2.5 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
                             พิจารณาอนุมัติ (Approve)
                         </button>
                     </form>
@@ -464,82 +467,22 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function confirmApprove(id, isHrStep = false) {
-            if (isHrStep) {
-                Swal.fire({
-                    title: 'ระบุข้อมูลผู้เข้าปฏิบัติงานใหม่',
-                    html:
-                        '<div class="text-left space-y-3 px-1">' +
-                        '  <div class="mb-3">' +
-                        '    <label class="block text-sm font-semibold mb-1">รหัสพนักงาน:</label>' +
-                        '    <input id="swal-input-code" class="swal2-input w-full m-0" placeholder="ตัวอย่าง: 11223">' +
-                        '  </div>' +
-                        '  <div class="mb-3">' +
-                        '    <label class="block text-sm font-semibold mb-1">ชื่อ-สกุล:</label>' +
-                        '    <input id="swal-input-name" class="swal2-input w-full m-0" placeholder="ชื่อ และนามสกุล">' +
-                        '  </div>' +
-                        '  <div>' +
-                        '    <label class="block text-sm font-semibold mb-1">เข้าทำงานในวันที่:</label>' +
-                        '    <input id="swal-input-date" type="date" class="swal2-input w-full m-0" style="padding: 0 10px;">' +
-                        '  </div>' +
-                        '</div>',
-                    focusConfirm: false,
-                    showCancelButton: true,
-                    confirmButtonColor: '#16a34a',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'บันทึกและอนุมัติ',
-                    cancelButtonText: 'ยกเลิก',
-                    preConfirm: () => {
-                        const code = document.getElementById('swal-input-code').value.trim();
-                        const name = document.getElementById('swal-input-name').value.trim();
-                        const date = document.getElementById('swal-input-date').value;
-                        if (!code || !name || !date) {
-                            Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบถ้วนทุกช่องครับ!');
-                            return false;
-                        }
-                        return { code: code, name: name, date: date };
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const form = document.getElementById('approve-form-' + id);
-                        
-                        const inputCode = document.createElement('input');
-                        inputCode.type = 'hidden';
-                        inputCode.name = 'onboard_employee_code';
-                        inputCode.value = result.value.code;
-                        form.appendChild(inputCode);
-                        
-                        const inputName = document.createElement('input');
-                        inputName.type = 'hidden';
-                        inputName.name = 'onboard_employee_name';
-                        inputName.value = result.value.name;
-                        form.appendChild(inputName);
-                        
-                        const inputDate = document.createElement('input');
-                        inputDate.type = 'hidden';
-                        inputDate.name = 'onboard_date';
-                        inputDate.value = result.value.date;
-                        form.appendChild(inputDate);
-                        
-                        form.submit();
-                    }
-                });
-            } else {
-                Swal.fire({
-                    title: 'ยืนยันการพิจารณาอนุมัติ?',
-                    text: "คุณต้องการพิจารณาอนุมัติคำขออัตรากำลังนี้ใช่หรือไม่?",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#16a34a',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'ใช่, อนุมัติ',
-                    cancelButtonText: 'ยกเลิก'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('approve-form-' + id).submit();
-                    }
-                })
-            }
+        function confirmApprove(id, actionType = 'อนุมัติ') {
+            const isAck = (actionType === 'รับทราบ');
+            Swal.fire({
+                title: isAck ? 'ยืนยันการรับทราบคำขอ?' : 'ยืนยันการพิจารณาอนุมัติ?',
+                text: isAck ? 'คุณต้องการรับทราบคำขอนี้และส่งต่อให้ CEO ใช่หรือไม่?' : 'คุณต้องการพิจารณาอนุมัติคำขออัตรากำลังนี้ใช่หรือไม่?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: isAck ? 'ใช่, รับทราบ' : 'ใช่, อนุมัติ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('approve-form-' + id).submit();
+                }
+            });
         }
 
         function confirmReject(id) {

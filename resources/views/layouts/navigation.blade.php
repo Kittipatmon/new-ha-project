@@ -127,13 +127,10 @@
                         <li>
                             <a class="navbar-link shadow transition" href="{{ route('welcome') }}">หน้าหลัก</a>
                         </li>
-                        <!-- <li>
-                            <a class="navbar-link px-6 py-2 text-base text-black rounded-xl shadow transition" href="{{ route('welcome.system') }}">บริการ</a>
-                        </li> -->
                         <li>
                             @auth
                                 <section id="HAService">
-                                    <a class="navbar-link shadow transition" href="#services-grid">HA Service</a>
+                                    <a class="navbar-link shadow transition" href="{{ request()->routeIs('welcome') ? '#services-grid' : route('welcome') . '#services-grid' }}">HA Service</a>
                                 </section>
                             @else
                                 <section id="HAService">
@@ -145,7 +142,7 @@
                         <li>
                             @auth
                                 <section id="news">
-                                    <a class="navbar-link shadow transition" href="#news-grid">ประชาสัมพันธ์</a>
+                                    <a class="navbar-link shadow transition" href="{{ request()->routeIs('welcome') ? '#news-grid' : route('welcome') . '#news-grid' }}">ประชาสัมพันธ์</a>
                                 </section>
                             @else
                                 <section id="news">
@@ -154,252 +151,99 @@
                                 </section>
                             @endauth
                         </li>
-                        <!-- Dropdown แบบฟอร์ม HR -->
-                        <li class="relative group">
-                            <button type="button" id="forms-btn"
-                                class="navbar-link shadow transition flex items-center gap-1.5 cursor-pointer">
-                                <i class="fa-solid fa-file-signature text-sm"></i>
-                                <span>แบบฟอร์ม</span>
-                                <svg class="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div id="forms-menu"
-                                class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700/80 py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out transform group-hover:scale-100 scale-95 group-hover:translate-y-0 translate-y-2 origin-top-right">
-                                <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
-                                    <span class="text-[11px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider">ระบบแบบฟอร์ม HR</span>
-                                    <span class="text-[10px] font-semibold text-red-500 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full">HR Forms</span>
-                                </div>
-                                @auth
-                                    <a href="{{ route('manpower-request.create') }}"
-                                        class="flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item">
-                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                            <i class="fa-solid fa-user-plus text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
-                                                <span>ใบขออนุมัติกำลังคน</span>
-                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-13</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบฟอร์มขออนุมัติจ้าง/โอนย้ายพนักงานใหม่</p>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('probation-evaluation.create') }}"
-                                        class="flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item border-t border-gray-50 dark:border-gray-700/40">
-                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                            <i class="fa-solid fa-clipboard-check text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
-                                                <span>แบบประเมินทดลองงาน</span>
-                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-18</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบประเมินผลการปฏิบัติงานทดลองงาน</p>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('interview-evaluation.create') }}"
-                                        class="flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item border-t border-gray-50 dark:border-gray-700/40">
-                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                            <i class="fa-solid fa-id-card-clip text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
-                                                <span>แบบประเมินผลสัมภาษณ์</span>
-                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-25</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบประเมินผลการสัมภาษณ์ผู้สมัครงาน</p>
-                                        </div>
-                                    </a>
-                                    <div class="px-2 pt-2 border-t border-gray-100 dark:border-gray-700/60 mt-1">
-                                        <a href="{{ route('manpower-request.index') }}"
-                                            class="flex items-center justify-between px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors">
-                                            <span class="flex items-center gap-1.5">
-                                                <i class="fa-solid fa-list-check"></i>
-                                                ติดตามสถานะแบบฟอร์ม
-                                            </span>
-                                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                                        </a>
-                                    </div>
-                                @else
-                                    <button type="button" class="login-open-btn w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item">
-                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                            <i class="fa-solid fa-user-plus text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
-                                                <span>ใบขออนุมัติกำลังคน</span>
-                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-13</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบฟอร์มขออนุมัติจ้าง/โอนย้ายพนักงานใหม่ (กรุณาเข้าสู่ระบบก่อน)</p>
-                                        </div>
-                                    </button>
-                                    <button type="button" class="login-open-btn w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item border-t border-gray-50 dark:border-gray-700/40">
-                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                            <i class="fa-solid fa-clipboard-check text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
-                                                <span>แบบประเมินทดลองงาน</span>
-                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-18</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบประเมินผลการปฏิบัติงานทดลองงาน (กรุณาเข้าสู่ระบบก่อน)</p>
-                                        </div>
-                                    </button>
-                                    <button type="button" class="login-open-btn w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors group/item border-t border-gray-50 dark:border-gray-700/40">
-                                        <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0 group-hover/item:scale-110 transition-transform">
-                                            <i class="fa-solid fa-id-card-clip text-sm"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-bold text-gray-800 dark:text-gray-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 flex items-center gap-1.5">
-                                                <span>แบบประเมินผลสัมภาษณ์</span>
-                                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-mono">QF-HR-25</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">แบบประเมินผลการสัมภาษณ์ผู้สมัครงาน (กรุณาเข้าสู่ระบบก่อน)</p>
-                                        </div>
-                                    </button>
-                                    <div class="px-2 pt-2 border-t border-gray-100 dark:border-gray-700/60 mt-1">
-                                        <button type="button" class="login-open-btn w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors">
-                                            <span class="flex items-center gap-1.5">
-                                                <i class="fa-solid fa-list-check"></i>
-                                                ติดตามสถานะแบบฟอร์ม (กรุณาเข้าสู่ระบบก่อน)
-                                            </span>
-                                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                                        </button>
-                                    </div>
-                                @endauth
-                            </div>
-                        </li>
-                        <!-- <li>
-                            <a class="navbar-link px-6 py-2 text-base text-black rounded-xl shadow transition" href="{{ route('dashboard') }}">รับสมัครงาน</a>
-                        </li>
                         <li>
-                            <a class="navbar-link px-6 py-2 text-base text-black rounded-xl shadow transition" href="{{ route('dashboard') }}">อบรม / สัมมนา</a>
-                        </li> -->
-
-                        <!-- <li class="relative group">
-                            <button type="button" id="about-btn"
-                                class="navbar-link px-4 py-1 text-base text-black rounded-xl shadow flex items-center transition dropdown-toggle mr-1">
-                                เกี่ยวกับเรา
-                                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <ul id="about-menu"
-                                class="py-2 dropdown-menu absolute left-0 top-full mt-2 w-60 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 opacity-0 invisible transition-all duration-200">
-                                <li><a class="block px-4 py-2 text-red-700 hover:bg-red-100 rounded-lg" href="#">
-                                    <i class="fa-solid fa-newspaper mr-1"></i> นโยบาย/การดำเนินงาน</a>
-                                </li>
-                                <li><a class="block px-4 py-2 text-red-700 hover:bg-red-100 rounded-lg" href="#">
-                                    <i class="fa fa-phone mr-2"></i>เบอร์ติดต่อภายใน</a>
-                                </li>
-                                <li><a class="block px-4 py-2 text-red-700 hover:bg-red-100 rounded-b-lg" href="#">
-                                    <i class="fa fa-comment mr-2"></i>แสดงความคิดเห็น</a>
-                                </li>
-                            
-                    </ul>
-                        </li> -->
+                            @auth
+                                <a class="navbar-link shadow transition" href="{{ route('manpower-request.index') }}">แบบฟอร์ม</a>
+                            @else
+                                <button type="button"
+                                    class="login-open-btn navbar-link shadow transition">แบบฟอร์ม</button>
+                            @endauth
+                        </li>
                     </ul>
                 </div>
 
                 <div class="relative flex items-center gap-2 ms-3 sm:ms-4">
                     @guest
-                        <button type="button" class="login-open-btn navbar-link shadow transition">
+                        <button type="button" id="login-open-btn"
+                            class="login-open-btn navbar-link px-4 py-2 text-base text-black rounded-xl shadow transition">
                             <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Login
                         </button>
                     @endguest
                     @auth
-
+                        @php
+                            $navUserPhoto = Auth::user()->photo_user;
+                            $hasRealPhoto = $navUserPhoto && !str_contains($navUserPhoto, 'pngegg') && file_exists(public_path($navUserPhoto));
+                        @endphp
+                        <!-- Profile Trigger Button: Circular Avatar (Instagram Style - Image 2) -->
                         <button type="button" id="profile-btn"
-                            class="navbar-link p-1 text-black rounded-xl shadow flex items-center transition overflow-hidden">
-                            <div class="flex items-center gap-2">
-                                <div
-                                    class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden border border-white/10">
-                                    @if(Auth::user()->photo_user)
-                                        <img src="{{ asset(Auth::user()->photo_user) }}" alt="Avatar"
-                                            class="w-full h-full object-cover">
-                                    @else
-                                        <i class="fa-solid fa-gear text-white text-sm"></i>
-                                    @endif
-                                </div>
-                                <svg class="fill-current h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
+                            class="relative rounded-full border border-gray-300 dark:border-slate-600 p-0.5 hover:border-gray-400 dark:hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                                @if($hasRealPhoto)
+                                    <img src="{{ asset($navUserPhoto) }}" alt="Avatar" class="w-full h-full object-cover">
+                                @else
+                                    <svg class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7 0 3.75 3.75 0 017 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                                    </svg>
+                                @endif
                             </div>
                         </button>
-                        <div id="profile-menu"
-                            class="hidden-custom absolute right-0 top-full mt-3 z-50 w-64 origin-top-right rounded-xl bg-white dark:bg-[#1E2129] py-2 shadow-xl ring-1 ring-black/5 focus:outline-none border border-slate-200/80 dark:border-slate-700/85 transition-all duration-200 ease-out opacity-0 scale-95 pointer-events-none transform">
-                            <!-- Header Section -->
-                            <div class="px-4 py-4 border-b border-gray-100 dark:border-white/5 mb-2">
-                                <div class="flex items-center gap-3">
-                                    <div class="relative group">
-                                        <div
-                                            class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 p-[2px] shadow-lg shadow-red-500/20">
-                                            <div
-                                                class="w-full h-full rounded-[10px] bg-white dark:bg-[#1E2129] overflow-hidden">
-                                                @if(Auth::user()->photo_user)
-                                                    <img src="{{ asset(Auth::user()->photo_user) }}" alt="Avatar"
-                                                        class="w-full h-full object-cover transition-transform group-hover:scale-110">
-                                                @else
-                                                    <div
-                                                        class="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-800">
-                                                        <i class="fa-solid fa-user text-slate-400"></i>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#1E2129] rounded-full">
-                                        </div>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-black text-slate-800 dark:text-white line-clamp-1">
-                                            {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
-                                        </p>
-                                        <div class="flex items-center gap-1.5 mt-0.5">
-                                            <span
-                                                class="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                            <p class="text-[10px] font-bold text-red-500 uppercase tracking-wider truncate">
-                                                Authorized User
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Menu Section -->
-                            <div class="px-2 space-y-1">
+                        <!-- Clean Profile Dropdown (Exact Match to Image 2) -->
+                        <div id="profile-menu"
+                            class="hidden-custom absolute right-0 top-full mt-3 z-50 w-52 origin-top-right rounded-xl bg-white dark:bg-[#1E2129] py-1.5 shadow-xl border border-slate-100 dark:border-slate-700/80 focus:outline-none transition-all duration-200 ease-out">
+                            
+                            <!-- Top Pointer Arrow (Instagram Style) -->
+                            <div class="absolute -top-1.5 right-4 w-3 h-3 bg-white dark:bg-[#1E2129] border-t border-l border-slate-100 dark:border-slate-700/80 transform rotate-45"></div>
+
+                            <div class="relative z-10 py-1">
+                                <!-- 1. Profile -->
                                 <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
-                                    class="flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-red-600 dark:hover:text-red-500 transition-all rounded-xl group">
-                                    <div
-                                        class="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-sky-500 group-hover:scale-110 transition-transform">
-                                        <i class="fa-solid fa-user-gear text-base"></i>
-                                    </div>
-                                    <span>{{ __('Profile Settings') }}</span>
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
+                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Profile</span>
                                 </a>
 
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <a href="{{ route('logout') }}"
-                                        class="flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all rounded-xl group"
-                                        onclick="event.preventDefault(); this.closest('form').submit();">
-                                        <div
-                                            class="w-9 h-9 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
-                                            <i class="fa-solid fa-power-off text-base"></i>
-                                        </div>
-                                        <span>{{ __('Log Out') }}</span>
-                                    </a>
-                                </form>
-                            </div>
+                                <!-- 2. Saved -->
+                                <a href="{{ route('manpower-request.index') }}"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
+                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                                    </svg>
+                                    <span>Saved</span>
+                                </a>
 
-                            <!-- Footer Section -->
-                            <div
-                                class="mt-2 px-4 py-2 border-t border-gray-100 dark:border-white/5 flex justify-between items-center">
-                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Kumwell HR System
-                                </p>
-                                <span class="text-[9px] font-black text-red-500/50">v2.1</span>
+                                <!-- 3. Settings -->
+                                <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
+                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>Settings</span>
+                                </a>
+
+                                <!-- 4. Switch Accounts -->
+                                <a href="{{ route('welcome') }}"
+                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
+                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    <span>Switch Accounts</span>
+                                </a>
+
+                                <!-- Divider -->
+                                <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+
+                                <!-- 5. Log Out -->
+                                <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
+                                    @csrf
+                                    <button type="submit"
+                                        class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium cursor-pointer">
+                                        Log Out
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     @endauth
@@ -493,66 +337,18 @@
                 หน้าหลัก
             </a>
 
-            <!-- Mobile Forms Section -->
-            <div class="border-b border-gray-100 dark:border-white/10 py-2">
-                <div class="px-6 py-2 text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center justify-between">
-                    <span>แบบฟอร์ม HR</span>
-                    <span class="text-[10px] font-mono bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded">Forms</span>
-                </div>
-                @auth
-                    <a href="{{ route('manpower-request.create') }}"
-                        class="flex items-center gap-3 px-6 py-3 text-sm font-semibold text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 transition-all">
-                        <i class="fa-solid fa-user-plus text-red-500 w-5 text-center"></i>
-                        <div class="flex-1 min-w-0">
-                            <div class="truncate">ใบขออนุมัติกำลังคน</div>
-                            <div class="text-[10px] text-gray-400 dark:text-gray-500 font-mono">QF-HR-13</div>
-                        </div>
-                    </a>
-                    <a href="{{ route('probation-evaluation.create') }}"
-                        class="flex items-center gap-3 px-6 py-3 text-sm font-semibold text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 transition-all">
-                        <i class="fa-solid fa-clipboard-check text-red-500 w-5 text-center"></i>
-                        <div class="flex-1 min-w-0">
-                            <div class="truncate">แบบประเมินทดลองงาน</div>
-                            <div class="text-[10px] text-gray-400 dark:text-gray-500 font-mono">QF-HR-18</div>
-                        </div>
-                    </a>
-                    <a href="{{ route('interview-evaluation.create') }}"
-                        class="flex items-center gap-3 px-6 py-3 text-sm font-semibold text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 transition-all">
-                        <i class="fa-solid fa-id-card-clip text-red-500 w-5 text-center"></i>
-                        <div class="flex-1 min-w-0">
-                            <div class="truncate">แบบประเมินผลสัมภาษณ์</div>
-                            <div class="text-[10px] text-gray-400 dark:text-gray-500 font-mono">QF-HR-25</div>
-                        </div>
-                    </a>
-                    <a href="{{ route('manpower-request.index') }}"
-                        class="flex items-center gap-3 px-6 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-white/5 transition-all">
-                        <i class="fa-solid fa-list-check w-5 text-center"></i>
-                        <span>ติดตามสถานะแบบฟอร์ม</span>
-                    </a>
-                @else
-                    <button type="button" onclick="closeMobileMenu(); openLoginModal();"
-                        class="w-full flex items-center gap-3 px-6 py-3 text-sm font-semibold text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 transition-all text-left">
-                        <i class="fa-solid fa-user-plus text-red-500 w-5 text-center"></i>
-                        <div class="flex-1 min-w-0">
-                            <div class="truncate">ใบขออนุมัติกำลังคน</div>
-                            <div class="text-[10px] text-gray-400 dark:text-gray-500 font-mono">QF-HR-13 (กรุณาเข้าสู่ระบบ)</div>
-                        </div>
-                    </button>
-                    <button type="button" onclick="closeMobileMenu(); openLoginModal();"
-                        class="w-full flex items-center gap-3 px-6 py-3 text-sm font-semibold text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 transition-all text-left">
-                        <i class="fa-solid fa-clipboard-check text-red-500 w-5 text-center"></i>
-                        <div class="flex-1 min-w-0">
-                            <div class="truncate">แบบประเมินทดลองงาน</div>
-                            <div class="text-[10px] text-gray-400 dark:text-gray-500 font-mono">QF-HR-18 (กรุณาเข้าสู่ระบบ)</div>
-                        </div>
-                    </button>
-                    <button type="button" onclick="closeMobileMenu(); openLoginModal();"
-                        class="w-full flex items-center gap-3 px-6 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-white/5 transition-all text-left">
-                        <i class="fa-solid fa-list-check w-5 text-center"></i>
-                        <span>ติดตามสถานะแบบฟอร์ม (กรุณาเข้าสู่ระบบ)</span>
-                    </button>
-                @endauth
-            </div>
+            @auth
+                <a href="{{ route('manpower-request.index') }}"
+                    class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200"
+                    onclick="closeMobileMenu()">
+                    แบบฟอร์ม
+                </a>
+            @else
+                <button type="button" onclick="closeMobileMenu(); openLoginModal();"
+                    class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200 text-left w-full">
+                    แบบฟอร์ม
+                </button>
+            @endauth
 
             @auth
                 <a href="#services-grid"
@@ -843,14 +639,7 @@
         if (profileBtn && profileMenu) {
             profileBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
-                const isOpen = profileMenu.classList.contains('opacity-100');
-                if (!isOpen) {
-                    profileMenu.classList.remove('hidden-custom', 'hidden', 'opacity-0', 'scale-95', 'pointer-events-none');
-                    profileMenu.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
-                } else {
-                    profileMenu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
-                    profileMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
-                }
+                profileMenu.classList.toggle('hidden-custom');
             });
         }
 
@@ -889,8 +678,7 @@
         // --- Global Click Outside to Close Menus ---
         document.addEventListener('click', function (e) {
             if (profileBtn && profileMenu && !profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-                profileMenu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
-                profileMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                profileMenu.classList.add('hidden-custom');
             }
             if (formsBtn && formsMenu && !formsBtn.contains(e.target) && !formsMenu.contains(e.target)) {
                 formsMenu.classList.remove('opacity-100');
@@ -919,9 +707,11 @@
             loginCloseBtn.addEventListener('click', closeLoginModal);
             loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLoginModal(); });
-            // Auto-open if validation errors exist
+            // Auto-open if validation errors exist or redirected from login route (?login=1)
+            const urlParams = new URLSearchParams(window.location.search);
+            const shouldOpenLogin = urlParams.get('login') === '1';
             const hasErrors = {{ ($errors->has('employee_code') || $errors->has('password')) ? 'true' : 'false' }};
-            if (hasErrors) openLoginModal();
+            if (hasErrors || shouldOpenLogin) openLoginModal();
         }
     });
 </script>

@@ -66,9 +66,9 @@
                     </a>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8 sm:mt-12">
+                <div class="flex flex-wrap justify-center gap-4 sm:gap-6 mt-8 sm:mt-12">
                     @if(Auth::check() && Auth::user()->isHrOrAdmin())
-                        <div class="dropdown dropdown-bottom w-full">
+                        <div class="dropdown dropdown-bottom w-full flex-1 min-w-[280px] max-w-[400px]">
                             <div tabindex="0" role="button"
                                 class="group flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-red-500/50 hover:bg-red-50/50 dark:hover:bg-red-500/5 transition-all duration-300 shadow-sm hover:shadow-lg w-full">
 
@@ -118,7 +118,7 @@
                     @endphp
 
                     @if(HrRequests::where('approver_manager_id', Auth::id())->count() > 0)
-                        <div class="dropdown dropdown-bottom w-full">
+                        <div class="dropdown dropdown-bottom w-full flex-1 min-w-[280px] max-w-[400px]">
                             <div tabindex="0" role="button"
                                 class="group flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-red-500/50 hover:bg-red-50/50 dark:hover:bg-red-500/5 transition-all duration-300 shadow-sm hover:shadow-lg w-full">
 
@@ -154,7 +154,7 @@
                         </div>
                     @endif
 
-                    <div class="dropdown dropdown-bottom w-full">
+                    <div class="dropdown dropdown-bottom w-full flex-1 min-w-[280px] max-w-[400px]">
                         <div tabindex="0" role="button"
                             class="group flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-red-500/50 hover:bg-red-50/50 dark:hover:bg-red-500/5 transition-all duration-300 shadow-sm hover:shadow-lg w-full">
 

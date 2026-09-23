@@ -20,6 +20,11 @@ class Department extends Model
         'department_description',
     ];
 
+    public function getNameAttribute(): string
+    {
+        return (string) ($this->department_name ?: ($this->department_fullname ?: ''));
+    }
+
     public function jobPositions(): HasMany
     {
         return $this->hasMany(JobPosition::class, 'department_id', 'department_id');

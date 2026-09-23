@@ -117,7 +117,15 @@
                                     <tr>
                                         <td>#{{ $req->id }}</td>
                                         <td>{{ \Carbon\Carbon::parse($req->date)->format('d/m/Y') }}</td>
-                                        <td>{{ $req->department }} / {{ $req->section }}</td>
+                                        <td>
+                                            @php
+                                                $deptFull = trim(($req->department ?? '') . ($req->section ? ' / ' . $req->section : ''));
+                                                $deptFormatted = \App\Http\Controllers\ManpowerRequestController::formatDeptSection($req->department, $req->section);
+                                            @endphp
+                                            <span class="inline-flex items-center gap-1.5 max-w-[200px] truncate" title="{{ $deptFull }}">
+                                                <span class="truncate font-medium">{{ $deptFormatted }}</span>
+                                            </span>
+                                        </td>
                                         <td class="font-medium">{{ $req->job_title_th }}</td>
                                         <td>{{ $req->hire_type }}</td>
                                         <td>

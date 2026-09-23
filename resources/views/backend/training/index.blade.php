@@ -1,16 +1,14 @@
 @extends('layouts.app')
-@section('title', 'รายการฝึกอบรมและพัฒนาทักษะ')
-@section('content')
-    <div class="container mx-auto px-4 py-3">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-white flex-grow">
-                รายการข้อมูลการฝึกอบรม
-            </h1>
-            <a href="{{ route('backend.training.create') }}" class="btn btn-primary btn-sm w-full md:w-auto shadow-sm">
-                <i class="fa-solid fa-plus mr-1"></i> เพิ่มข้อมูล
-            </a>
-        </div>
+@section('title', 'รายการข้อมูลการฝึกอบรม')
 
+@section('header_actions')
+    <a href="{{ route('backend.training.create') }}" class="btn btn-primary btn-sm w-full sm:w-auto shadow-sm">
+        <i class="fa-solid fa-plus mr-1"></i> เพิ่มข้อมูล
+    </a>
+@endsection
+
+@section('content')
+    <div class="space-y-6">
         @if(session('success'))
             <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/10 border-l-4 border-green-500 rounded-r-xl">
                 <p class="text-sm text-green-700 dark:text-green-300 font-medium">{{ session('success') }}</p>
@@ -76,15 +74,17 @@
                                         class="btn btn-warning btn-sm btn-square text-white shadow-sm" title="แก้ไข">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    <form action="{{ route('backend.training.destroy', $training->id) }}" method="POST"
-                                        class="inline-block" onsubmit="return confirm('คุณต้องการลบข้อมูลนี้ใช่หรือไม่?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-error btn-sm btn-square text-white shadow-sm"
-                                            title="ลบ">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </form>
+                                     @if(Auth::check() && Auth::user()->canDelete())
+                                     <form action="{{ route('backend.training.destroy', $training->id) }}" method="POST"
+                                         class="inline-block" onsubmit="return confirm('คุณต้องการลบข้อมูลนี้ใช่หรือไม่?');">
+                                         @csrf
+                                         @method('DELETE')
+                                         <button type="submit" class="btn btn-error btn-sm btn-square text-white shadow-sm"
+                                             title="ลบ">
+                                             <i class="fa-solid fa-trash"></i>
+                                         </button>
+                                     </form>
+                                     @endif
                                 </td>
                             </tr>
                         @empty

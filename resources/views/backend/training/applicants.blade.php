@@ -1,24 +1,21 @@
 @extends('layouts.app')
-
 @section('title', 'จัดการผู้สมัครฝึกอบรม')
+
+@section('header_actions')
+    <a href="{{ route('backend.training.index') }}"
+        class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm">
+        <i class="fa-solid fa-arrow-left text-xs"></i>
+        กลับไปที่รายการ
+    </a>
+@endsection
 
 @section('content')
     <div class="space-y-6">
-        <div class="flex justify-between items-center">
-            <div>
-                <h2 class="text-2xl font-bold dark:text-white text-gray-800">จัดการผู้สมัครฝึกอบรม</h2>
-                @if(isset($course_name))
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">หลักสูตร: {{ $course_name }}</p>
-                @endif
+        @if(isset($course_name))
+            <div class="-mt-2 mb-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">หลักสูตร: {{ $course_name }}</p>
             </div>
-            <div class="flex gap-2">
-                <a href="{{ route('backend.training.index') }}"
-                    class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-arrow-left text-xs"></i>
-                    กลับไปที่รายการ
-                </a>
-            </div>
-        </div>
+        @endif
 
         <!-- Filter Bar -->
         <div

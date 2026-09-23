@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'เพิ่มพนักงานใหม่')
 @section('content')
-<div class="max-w-8xl mx-auto p-6 rounded-lg shadow-md border border-gray-300/40">
+<div class="max-w-8xl mx-auto p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-md border border-gray-300/40 bg-white dark:bg-gray-800">
     <form id="createUserForm" method="POST" action="{{ route('users.store') }}">
         @csrf
 
@@ -183,7 +183,7 @@
         @php
         $levelOptions = \App\Models\User::getLevelUserOptions();
         @endphp
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="form-control w-full">
                 <label class="label"><span class="label-text font-medium">ระดับพนักงาน <span
                             class="text-red-500">*</span></span></label>
@@ -198,6 +198,30 @@
                     @endforeach
                 </select>
                 @error('level_user')
+                <span class="text-sm text-red-500">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-control w-full">
+                <label class="label"><span class="label-text font-medium">สิทธิ์ในระบบ (Rule) <span
+                            class="text-red-500">*</span></span></label>
+                <select name="role"
+                    class="select select-bordered w-full dark:bg-gray-700 @error('role') select-error @enderror" required>
+                    <option value="viewer" @if(old('role', 'viewer')=='viewer') selected @endif>VIEWER (ผู้ดูข้อมูล - ดูอย่างเดียว)</option>
+                    <option value="editor" @if(old('role')=='editor') selected @endif>EDITOR (ผู้แก้ไข - ดู/เพิ่ม/แก้ไข)</option>
+                    @if(Auth::user()->canAssignAdminRole())
+                        <option value="admin" @if(old('role')=='admin') selected @endif>ADMIN (ผู้ดูแลระบบ - เข้าถึงได้ทั้งหมด)</option>
+                    @else
+                        <option value="admin" disabled class="text-gray-400 bg-gray-100 dark:bg-gray-800">ADMIN (เฉพาะฝ่าย 16 Information Communication Technology)</option>
+                    @endif
+                </select>
+                @if(!Auth::user()->canAssignAdminRole())
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+                        สิทธิ์ ADMIN กำหนดได้โดยฝ่าย 16 Information Communication Technology เท่านั้น
+                    </p>
+                @endif
+                @error('role')
                 <span class="text-sm text-red-500">{{ $message }}</span>
                 @enderror
             </div>
@@ -222,10 +246,10 @@
                 @enderror
             </div>
         </div>
-        <div class="mt-6 text-center">
-            <div class="modal-action mt-8 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <a href="{{ route('users.index') }}" class="btn">ยกเลิก</a>
-                <button type="submit" id="confirm-add-user" class="btn btn-success text-white px-8">
+        <div class="mt-6">
+            <div class="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <a href="{{ route('users.index') }}" class="btn btn-ghost w-full sm:w-auto">ยกเลิก</a>
+                <button type="submit" id="confirm-add-user" class="btn btn-success text-white w-full sm:w-auto px-8">
                     <i class="fa-solid fa-save mr-2"></i> บันทึกข้อมูล
                 </button>
             </div>

@@ -16,11 +16,9 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(): RedirectResponse
     {
-        $employees = User::active()->orderBy('emp_code')->get();
-        // return view('auth.login', compact('employees'));
-        return view('auth.login', compact('employees'));
+        return redirect()->route('welcome', ['login' => 1]);
     }
 
     /**
