@@ -526,23 +526,40 @@
                             </div>
                             <input type="text" id="customSearch" oninput="window.triggerFilter && window.triggerFilter()" onkeyup="window.triggerFilter && window.triggerFilter()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="ค้นหารายละเอียด...">
                         </div>
-                        <select id="filterType" onchange="window.triggerFilter && window.triggerFilter()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-9 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[175px]">
-                            <option value="">ทุกประเภทแบบฟอร์ม</option>
-                            <option value="ใบขออนุมัติกำลังคน">ใบขออนุมัติกำลังคน (QF-HR-13)</option>
-                            <option value="แบบประเมินทดลองงาน">แบบประเมินทดลองงาน (QF-HR-18)</option>
-                            <option value="แบบประเมินผลสัมภาษณ์">แบบประเมินผลสัมภาษณ์ (QF-HR-25)</option>
-                        </select>
-                        <select id="filterStatus" onchange="window.triggerFilter && window.triggerFilter()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-9 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[140px]">
-                            <option value="">ทุกสถานะ</option>
-                            <option value="pending">รอพิจารณา / รอลงนาม</option>
-                            <option value="approved">อนุมัติแล้ว / เสร็จสิ้น</option>
-                            <option value="rejected">ไม่อนุมัติ / ยกเลิก</option>
-                        </select>
-                        <select id="filterShare" onchange="window.triggerFilter && window.triggerFilter()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[210px]">
-                            <option value="">สถานะการแชร์ทั้งหมด</option>
-                            <option value="shared">เฉพาะรายการที่แชร์</option>
-                            <option value="not_shared">เฉพาะรายการที่ไม่ได้แชร์</option>
-                        </select>
+                        <div class="relative w-full sm:w-auto">
+                            <select id="filterType" onchange="window.triggerFilter && window.triggerFilter()" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[175px]">
+                                <option value="">ทุกประเภทแบบฟอร์ม</option>
+                                <option value="ใบขออนุมัติกำลังคน">ใบขออนุมัติกำลังคน (QF-HR-13)</option>
+                                <option value="แบบประเมินทดลองงาน">แบบประเมินทดลองงาน (QF-HR-18)</option>
+                                <option value="แบบประเมินผลสัมภาษณ์">แบบประเมินผลสัมภาษณ์ (QF-HR-25)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </div>
+                        </div>
+
+                        <div class="relative w-full sm:w-auto">
+                            <select id="filterStatus" onchange="window.triggerFilter && window.triggerFilter()" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[140px]">
+                                <option value="">ทุกสถานะ</option>
+                                <option value="pending">รอพิจารณา / รอลงนาม</option>
+                                <option value="approved">อนุมัติแล้ว / เสร็จสิ้น</option>
+                                <option value="rejected">ไม่อนุมัติ / ยกเลิก</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </div>
+                        </div>
+
+                        <div class="relative w-full sm:w-auto">
+                            <select id="filterShare" onchange="window.triggerFilter && window.triggerFilter()" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[210px]">
+                                <option value="">สถานะการแชร์ทั้งหมด</option>
+                                <option value="shared">เฉพาะรายการที่แชร์</option>
+                                <option value="not_shared">เฉพาะรายการที่ไม่ได้แชร์</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </div>
+                        </div>
                         <button type="button" onclick="window.resetFilters && window.resetFilters()" class="inline-flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/80 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer" title="ล้างค่าตัวกรองทั้งหมด">
                             <i class="fa-solid fa-rotate-left text-xs"></i>
                             <span>ล้างตัวกรอง</span>

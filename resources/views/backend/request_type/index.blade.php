@@ -1,16 +1,38 @@
 @extends('layouts.app')
-@section('title', 'ตัวเลือกการร้องขอ')
-
-@section('header_actions')
-@endsection
 
 @section('content')
-    <div class="container mx-auto px-4 py-3">
-        <button type="button" id="openCreateModal" class="btn btn-success btn-sm text-white shadow-md w-full sm:w-auto flex items-center justify-center whitespace-nowrap px-4 mb-4">
-            <i class="fa-solid fa-plus mr-2"></i> เพิ่มประเภทตัวเลือกการร้องขอ
-        </button>
+<div class="w-full">
+    <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+        
+        <!-- Header Bar Inside Frame -->
+        <div class="pb-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <nav class="flex text-xs font-semibold text-slate-500 mb-1" aria-label="Breadcrumb">
+                    <a href="{{ route('welcome') }}" class="hover:text-indigo-600 transition">หน้าหลัก</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-slate-500">Request Settings</span>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-indigo-600 dark:text-indigo-400 font-bold">ตัวเลือกการร้องขอ</span>
+                </nav>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg shadow-sm">
+                        <i class="fa-solid fa-list"></i>
+                    </div>
+                    <span>ตัวเลือกการร้องขอ</span>
+                </h1>
+            </div>
 
-        <div class=" dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
+            <div>
+                <button type="button" id="openCreateModal"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition cursor-pointer">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    เพิ่มประเภทตัวเลือกการร้องขอ
+                </button>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="table w-full">
                     <thead
@@ -78,6 +100,8 @@
             </div>
         </div>
     </div>
+    </div>
+</div>
 
 
     <div id="createModal"

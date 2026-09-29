@@ -60,7 +60,7 @@ class InterviewScheduledDepartmentNotify extends Mailable
             ? "[แจ้งเปลี่ยนแปลงเวลานัดสัมภาษณ์งาน] ตำแหน่ง {$positionName} - คุณ{$applicantName} (รอบที่ {$round})"
             : "[นัดสัมภาษณ์งาน] ตำแหน่ง {$positionName} - คุณ{$applicantName} (รอบที่ {$round})";
 
-        return $this->from($fromAddress, $fromName)
+        $mail = $this->from($fromAddress, $fromName)
                     ->replyTo($senderEmail, $senderName)
                     ->subject($subject)
                     ->view('emails.interview_scheduled_department', [
@@ -75,5 +75,26 @@ class InterviewScheduledDepartmentNotify extends Mailable
                         'positionName' => $positionName,
                         'isUpdate' => $this->isUpdate,
                     ]);
+
+        // แนบไฟล์ปฏิทิน .ics สำหรับเพิ่มลงในปฏิทิน Outlook / Google Calendar ของผู้สัมภาษณ์
+        try {
+            $icsContent = \App\Services\CalendarInviteService::generateIcs(
+                $this->interview,
+                $this->recipient?->email,
+                $this->recipient?->fullname,
+                $senderEmail,
+                $senderName
+            );
+
+            if ($icsContent) {
+                $mail->attachData($icsContent, 'interview-invite.ics', [
+                    'mime' => 'text/calendar; charset=UTF-8; method=REQUEST',
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to attach .ics calendar to InterviewScheduledDepartmentNotify: ' . $e->getMessage());
+        }
+
+        return $mail;
     }
 }

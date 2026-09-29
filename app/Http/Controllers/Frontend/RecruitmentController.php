@@ -8,6 +8,8 @@ use App\Models\Recruitment\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ApplicationReceived;
+use App\Mail\NewApplicationHaNotification;
+use App\Services\RecruitmentMailService;
 use App\Models\Recruitment\RecruitmentRequest;
 use App\Models\User;
 use App\Models\datacenter\Poster;
@@ -502,6 +504,7 @@ class RecruitmentController extends Controller
                 'application_no' => 'APP-' . strtoupper(\Illuminate\Support\Str::random(8)),
                 'status' => 'new',
                 'applied_at' => now(),
+                'remarks' => 'PDPA Consent Accepted on ' . now()->format('Y-m-d H:i:s') . ' [IP: ' . $request->ip() . ']',
             ]);
 
             // 4. Handle Education History (skip completely empty rows)
@@ -548,14 +551,14 @@ class RecruitmentController extends Controller
                 }
             }
 
-            // 6. Handle File Uploads
+            // 6. Handle File Uploads (Secure Private Storage)
             $fileTypes = [
                 'resume' => 'resume',
                 'm_resume' => 'resume',
                 'photo' => 'photo',
                 'portfolio' => 'portfolio',
             ];
-            $targetDir = public_path('files/recruitment_applicant_documents');
+            $targetDir = storage_path('app/recruitment_documents');
 
             // Ensure directory exists
             if (!file_exists($targetDir)) {
@@ -635,7 +638,32 @@ class RecruitmentController extends Controller
             }
         }
 
-        return redirect()->route('recruitment.success', $post->slug)->with('success', 'ส่งใบสมัครงานเรียบร้อยแล้ว!');
+        // ส่งอีเมลแจ้งเตือนฝ่ายทรัพยากรบุคคล (HA) เมื่อมีผู้สมัครใหม่เข้ามา
+        try {
+            $haEmail = config('recruitment.ha_notification_email', 'Kittipat.Ma@kumwell.com');
+            if (!empty($haEmail)) {
+                $haMailable = new NewApplicationHaNotification($application);
+                RecruitmentMailService::queueMailable(
+                    $haMailable,
+                    $haEmail,
+                    'ฝ่ายทรัพยากรบุคคล (HA)',
+                    'new_application_ha_notification',
+                    [
+                        'application_id' => $application->id,
+                        'application_no' => $application->application_no,
+                        'position_name' => $post->position_name ?? ($post->jobPosition?->position_name ?? $post->title),
+                        'applicant_name' => trim(($applicant->prefix ?? '') . ' ' . $applicant->first_name . ' ' . $applicant->last_name),
+                        'recipient_role' => 'HA',
+                    ]
+                );
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to queue HA notification email for new application: ' . $e->getMessage());
+        }
+
+        return redirect()->route('recruitment.success', $post->slug)
+            ->with('success', 'ส่งใบสมัครงานเรียบร้อยแล้ว!')
+            ->with('application_no', $application->application_no);
     }
 
     public function success($slug)
@@ -911,5 +939,178 @@ class RecruitmentController extends Controller
         }
 
         return response()->json($results);
+    }
+
+    /**
+     * Show applicant tracking search form (supports auto-lookup via ?app_no=...)
+     */
+    public function trackForm(Request $request)
+    {
+        $applicationNo = trim((string)$request->query('app_no', ''));
+        $application = null;
+        $applications = collect([]);
+        $searched = false;
+
+        if (!empty($applicationNo)) {
+            $application = \App\Models\Recruitment\Application::with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+                ->where('application_no', strtoupper($applicationNo))
+                ->first();
+
+            if ($application) {
+                $searched = true;
+                if ($application->applicant_id) {
+                    $applications = \App\Models\Recruitment\Application::with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+                        ->where('applicant_id', $application->applicant_id)
+                        ->orderBy('id', 'desc')
+                        ->get();
+                } else {
+                    $applications = collect([$application]);
+                }
+            }
+        }
+
+        return view('frontend.recruitment.track', [
+            'applicationNo' => $applicationNo,
+            'application' => $application,
+            'applications' => $applications,
+            'searched' => $searched,
+        ]);
+    }
+
+    /**
+     * Process tracking request and display current status (allows either application_no OR phone/email)
+     */
+    public function trackStatus(Request $request)
+    {
+        $appNoInput = trim((string)$request->input('application_no', ''));
+        $identifierInput = trim((string)$request->input('identifier', ''));
+
+        // Check if at least one input is provided
+        if (empty($appNoInput) && empty($identifierInput)) {
+            return back()->withInput()->withErrors([
+                'search_error' => 'กรุณากรอกข้อมูลอย่างใดอย่างหนึ่ง: เลขที่ใบสมัคร หรือ เบอร์โทรศัพท์ หรือ อีเมล'
+            ]);
+        }
+
+        $selectedApp = null;
+        $allApplications = collect([]);
+
+        // Case 1: Application No is provided
+        if (!empty($appNoInput)) {
+            $cleanAppNo = strtoupper($appNoInput);
+
+            // Look up by application_no
+            $app = \App\Models\Recruitment\Application::with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+                ->where('application_no', $cleanAppNo)
+                ->first();
+
+            if ($app) {
+                // If identifier is also provided, verify match
+                if (!empty($identifierInput)) {
+                    $applicant = $app->applicant;
+                    $appEmail = strtolower(trim($applicant->email ?? ''));
+                    $appPhone = preg_replace('/[^0-9]/', '', $applicant->phone ?? '');
+                    $inputClean = preg_replace('/[^0-9]/', '', $identifierInput);
+                    $identLower = strtolower($identifierInput);
+
+                    $isEmailMatch = ($identLower === $appEmail);
+                    $isPhoneMatch = (!empty($appPhone) && !empty($inputClean) && (str_ends_with($appPhone, $inputClean) || $appPhone === $inputClean));
+
+                    if (!$isEmailMatch && !$isPhoneMatch) {
+                        return back()->withInput()->withErrors([
+                            'identifier' => 'ข้อมูลเบอร์โทรศัพท์/อีเมลไม่ตรงกับใบสมัครนี้'
+                        ]);
+                    }
+                }
+
+                $selectedApp = $app;
+                // Also load all other applications of this applicant if available
+                if ($app->applicant_id) {
+                    $allApplications = \App\Models\Recruitment\Application::with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+                        ->where('applicant_id', $app->applicant_id)
+                        ->orderBy('id', 'desc')
+                        ->get();
+                } else {
+                    $allApplications = collect([$app]);
+                }
+            } else {
+                // If not found as application_no, check if user entered phone or email in this box
+                if (empty($identifierInput)) {
+                    $identifierInput = $appNoInput;
+                    $appNoInput = '';
+                } else {
+                    return back()->withInput()->withErrors([
+                        'application_no' => 'ไม่พบข้อมูลใบสมัครเลขที่นี้ กรุณาตรวจสอบความถูกต้อง'
+                    ]);
+                }
+            }
+        }
+
+        // Case 2: Identifier (Phone or Email) is provided (or fallback from appNoInput)
+        if (!$selectedApp && !empty($identifierInput)) {
+            $identLower = strtolower($identifierInput);
+            $cleanDigits = preg_replace('/[^0-9]/', '', $identifierInput);
+
+            // First check if identifierInput was actually an application_no (e.g. user pasted APP-... into phone/email box)
+            $byAppNo = \App\Models\Recruitment\Application::with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+                ->where('application_no', strtoupper($identifierInput))
+                ->first();
+
+            if ($byAppNo) {
+                $selectedApp = $byAppNo;
+                if ($byAppNo->applicant_id) {
+                    $allApplications = \App\Models\Recruitment\Application::with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+                        ->where('applicant_id', $byAppNo->applicant_id)
+                        ->orderBy('id', 'desc')
+                        ->get();
+                } else {
+                    $allApplications = collect([$byAppNo]);
+                }
+            } else {
+                // Search by email or phone
+                $allApplications = \App\Models\Recruitment\Application::with(['applicant', 'jobPost.jobPosition', 'jobPost.department'])
+                    ->whereHas('applicant', function($q) use ($identLower, $cleanDigits) {
+                        $q->where(function($subQ) use ($identLower, $cleanDigits) {
+                            if (str_contains($identLower, '@')) {
+                                $subQ->where('email', $identLower);
+                            } else {
+                                if (!empty($cleanDigits) && strlen($cleanDigits) >= 4) {
+                                    $subQ->whereRaw("REPLACE(REPLACE(REPLACE(phone, '-', ''), ' ', ''), '+66', '0') LIKE ?", ["%{$cleanDigits}%"]);
+                                }
+                                $subQ->orWhere('email', $identLower);
+                            }
+                        });
+                    })
+                    ->orderBy('id', 'desc')
+                    ->get();
+
+                if ($allApplications->isEmpty()) {
+                    return back()->withInput()->withErrors([
+                        'identifier' => 'ไม่พบข้อมูลการสมัครงานที่ตรงกับเลขที่ใบสมัคร หรือเบอร์โทรศัพท์/อีเมลนี้'
+                    ]);
+                }
+
+                // If user selected a specific application via select_id query or input
+                $selectId = $request->input('select_id');
+                if ($selectId) {
+                    $selectedApp = $allApplications->firstWhere('id', $selectId) ?? $allApplications->first();
+                } else {
+                    $selectedApp = $allApplications->first();
+                }
+            }
+        }
+
+        if (!$selectedApp) {
+            return back()->withInput()->withErrors([
+                'search_error' => 'ไม่พบข้อมูลใบสมัคร กรุณาตรวจสอบเลขที่ใบสมัคร หรือเบอร์โทรศัพท์/อีเมล'
+            ]);
+        }
+
+        return view('frontend.recruitment.track', [
+            'applicationNo' => $selectedApp->application_no,
+            'application' => $selectedApp,
+            'applications' => $allApplications,
+            'searched' => true,
+        ]);
     }
 }

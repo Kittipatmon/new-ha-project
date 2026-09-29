@@ -54,7 +54,29 @@ class MailLogController extends Controller
 
         $logs = $query->get();
 
-        return view('backend.recruitment.mail_logs.index', compact('logs', 'stats'));
+        // Group logs by Position Name (matching Image 1 expandable row layout)
+        $groupedLogs = $logs->groupBy(function ($log) {
+            return $log->position_name ?: 'ทั่วไป / ระบบทดสอบ';
+        })->map(function ($group, $positionName) {
+            return (object) [
+                'position_name' => $positionName,
+                'logs' => $group,
+                'total_count' => $group->count(),
+                'sent_count' => $group->where('status', 'sent')->count(),
+                'failed_count' => $group->where('status', 'failed')->count(),
+                'queued_count' => $group->where('status', 'queued')->count(),
+                'skipped_count' => $group->where('status', 'skipped')->count(),
+                'latest_log' => $group->first(),
+                'latest_sent_at' => $group->max('created_at'),
+                'channels' => $group->pluck('channel')->unique()->values()->all(),
+                'recipients_count' => $group->pluck('recipient_email')->unique()->count(),
+                'mail_types_count' => $group->pluck('mail_type')->unique()->count(),
+            ];
+        })->sortByDesc(function ($group) {
+            return $group->latest_sent_at ? $group->latest_sent_at->timestamp : 0;
+        })->values();
+
+        return view('backend.recruitment.mail_logs.index', compact('logs', 'groupedLogs', 'stats'));
     }
 
     /**

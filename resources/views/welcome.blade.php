@@ -112,7 +112,7 @@
     @endif
 
     <!-- ==================== HERO ==================== -->
-    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-0 md:pb-2">
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-22 md:pt-24 pb-0 md:pb-2">
         <div class="relative w-full {{ $hasCustomHero ? 'aspect-[16/6] sm:aspect-[21/8] md:aspect-[24/8] min-h-[135px] max-h-[440px]' : 'h-[280px] sm:h-[350px] md:h-[450px]' }} rounded-xl sm:rounded-2xl overflow-hidden shadow-sm group">
 
             @if ($hasCustomHero)

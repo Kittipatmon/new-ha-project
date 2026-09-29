@@ -54,7 +54,7 @@ class InterviewScheduled extends Mailable
             ? "[แจ้งเปลี่ยนแปลงวันเวลานัดสัมภาษณ์งาน] ตำแหน่ง {$positionName} (รอบที่ {$round})"
             : "เชิญเข้าร่วมสัมภาษณ์งาน ตำแหน่ง {$positionName}";
 
-        return $this->from($fromAddress, $fromName)
+        $mail = $this->from($fromAddress, $fromName)
                     ->replyTo($senderEmail, $senderName)
                     ->subject($subject)
                     ->view('emails.interview_scheduled', [
@@ -65,5 +65,28 @@ class InterviewScheduled extends Mailable
                         'senderPosition' => $senderPosition,
                         'isUpdate' => $this->isUpdate,
                     ]);
+
+        // แนบไฟล์ปฏิทิน .ics สำหรับกดเพิ่มลง Google Calendar, Outlook, Apple Calendar ได้ทันที
+        try {
+            $applicant = $this->interview->application?->applicant;
+            $applicantName = $applicant ? trim($applicant->first_name . ' ' . $applicant->last_name) : null;
+            $icsContent = \App\Services\CalendarInviteService::generateIcs(
+                $this->interview,
+                $applicant?->email,
+                $applicantName,
+                $senderEmail,
+                $senderName
+            );
+
+            if ($icsContent) {
+                $mail->attachData($icsContent, 'interview-invite.ics', [
+                    'mime' => 'text/calendar; charset=UTF-8; method=REQUEST',
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to attach .ics calendar to InterviewScheduled: ' . $e->getMessage());
+        }
+
+        return $mail;
     }
 }

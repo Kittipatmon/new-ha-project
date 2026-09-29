@@ -3,12 +3,23 @@
 namespace App\Models\Recruitment;
 
 use App\Models\User;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JobPost extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'recruitment';
+    public string $auditModuleName = 'ระบบสรรหาบุคลากร (ประกาศงาน)';
+
+    public function getAuditTitle(): string
+    {
+        return "ประกาศรับสมัครงาน: {$this->position_name}";
+    }
+
     protected $table = 'recruitment_job_posts';
 
     protected $fillable = [

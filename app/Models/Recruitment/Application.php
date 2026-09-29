@@ -3,12 +3,23 @@
 namespace App\Models\Recruitment;
 
 use App\Models\User;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Application extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'recruitment';
+    public string $auditModuleName = 'ระบบสรรหาบุคลากร (ใบสมัคร)';
+
+    public function getAuditTitle(): string
+    {
+        return "ใบสมัครงาน: {$this->application_no}";
+    }
+
     protected $table = 'recruitment_applications';
 
     protected $fillable = [
@@ -107,39 +118,57 @@ class Application extends Model
     }
 
     /**
-     * Get Tailwind CSS badge classes for the status
+     * Get Tailwind CSS badge classes for the status (vibrant pill style matching Image 2)
      */
     public function getStatusBadgeClassAttribute(): string
     {
         return match ($this->status) {
-            'submitted', 'new' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-            'screening_failed', 'rejected' => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-            'dept_review' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-            'dept_rejected', 'interview_failed' => 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border-rose-200 dark:border-rose-800',
-            'interview' => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-            'interview_scheduled' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-            'interview_completed' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-            'passed_selection', 'selection_approved' => 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300 border-teal-200 dark:border-teal-800',
-            'offered' => 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
-            'hired' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-            default => 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+            'submitted', 'new' => 'bg-[#fffbeb] text-[#b45309] border-[#fde68a] dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+            'screening_failed', 'interview_failed', 'rejected' => 'bg-[#fff1f2] text-[#be123c] border-[#fecdd3] dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+            'dept_review' => 'bg-[#eff6ff] text-[#1d4ed8] border-[#bfdbfe] dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+            'dept_rejected' => 'bg-[#fff7ed] text-[#c2410c] border-[#fed7aa] dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800',
+            'interview', 'interview_scheduled' => 'bg-[#faf5ff] text-[#7e22ce] border-[#e9d5ff] dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
+            'interview_completed' => 'bg-[#eef2ff] text-[#4338ca] border-[#c7d2fe] dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
+            'passed_selection', 'selection_approved' => 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0] dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+            'offered' => 'bg-[#f0fdfa] text-[#0f766e] border-[#99f6e4] dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800',
+            'hired' => 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0] dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+            default => 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
         };
     }
 
     /**
-     * Get the active workflow step (1 to 7)
+     * Get FontAwesome icon class for the status
+     */
+    public function getStatusIconAttribute(): string
+    {
+        return match ($this->status) {
+            'submitted', 'new' => 'fa-regular fa-clock text-[#d97706]',
+            'dept_review' => 'fa-solid fa-user-clock text-[#2563eb]',
+            'dept_rejected' => 'fa-solid fa-arrow-rotate-left text-[#ea580c]',
+            'interview', 'interview_scheduled' => 'fa-regular fa-calendar-check text-[#9333ea]',
+            'interview_completed' => 'fa-solid fa-clipboard-check text-[#4f46e5]',
+            'passed_selection', 'selection_approved' => 'fa-solid fa-circle-check text-[#059669]',
+            'offered' => 'fa-solid fa-file-signature text-[#0d9488]',
+            'hired' => 'fa-solid fa-circle-check text-[#059669]',
+            'screening_failed', 'interview_failed', 'rejected' => 'fa-solid fa-circle-xmark text-[#e11d48]',
+            default => 'fa-solid fa-circle-info text-slate-500',
+        };
+    }
+
+    /**
+     * Get the active workflow step (1 to 8)
      */
     public function getWorkflowStepAttribute(): int
     {
         return match ($this->status) {
-            'submitted', 'new' => 1,
-            'screening_failed' => 1,
+            'submitted', 'new', 'screening_failed' => 1,
             'dept_review', 'dept_rejected' => 2,
-            'interview', 'interview_scheduled' => 3,
-            'interview_completed', 'interview_failed' => 4,
-            'passed_selection', 'selection_approved' => 5,
-            'offered' => 6,
-            'hired' => 7,
+            'interview' => 3,
+            'interview_scheduled' => 4,
+            'interview_completed', 'interview_failed' => 5,
+            'passed_selection', 'selection_approved' => 6,
+            'offered' => 7,
+            'hired' => 8,
             default => 1,
         };
     }

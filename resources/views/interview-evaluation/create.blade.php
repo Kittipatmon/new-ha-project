@@ -168,6 +168,107 @@
                 ];
               }
             }
+
+            // ตรวจสอบแบบประเมินเดิมที่เคยบันทึกไว้ (สำหรับกรณีบันทึกแยกส่วน Partial Save)
+            $existingEvaluation = $existingEvaluation ?? null;
+            if ($existingEvaluation) {
+              $prefillCandidate = [
+                'name' => $existingEvaluation->candidate_name,
+                'prefix' => $existingEvaluation->candidate_prefix ?? '',
+                'position' => $existingEvaluation->position_applied ?? '',
+                'department' => $existingEvaluation->department ?? '',
+                'division' => $existingEvaluation->division ?? '',
+                'interview_times' => $existingEvaluation->interview_times ?? 1,
+                'evaluation_date' => $existingEvaluation->evaluation_date ? $existingEvaluation->evaluation_date->format('Y-m-d') : date('Y-m-d'),
+              ];
+            }
+            $existingScores = $existingScores ?? ($existingEvaluation ? $existingEvaluation->scores->keyBy('item_no') : collect([]));
+            $existingHrEvaluated = $existingEvaluation ? $existingEvaluation->isHrEvaluated() : false;
+            $existingDeptEvaluated = $existingEvaluation ? $existingEvaluation->isDeptEvaluated() : false;
+
+            // 5. Determine who has the permission/position to sign
+            $currentUser = auth()->user();
+            $userDeptName = $currentUser?->department?->department_name ?: ($currentUser?->department?->department_fullname ?: '');
+            $userPosition = (string)($currentUser?->position ?? '');
+
+            // ตรวจสอบว่าผู้ใช้สังกัดฝ่ายบุคคล (HR) หรือไม่ (Dept 14/15: HAMS / HAM - Human Assets Management):
+            $isHrDept = ((int)$currentUser?->dept_id === 15 || (int)$currentUser?->department_id === 15 
+                        || (int)$currentUser?->dept_id === 14 || (int)$currentUser?->department_id === 14 
+                        || (strcasecmp($userDeptName, 'HAM') === 0) 
+                        || (strcasecmp($userDeptName, 'HAMS') === 0) 
+                        || (strcasecmp($userDeptName, 'HR') === 0) 
+                        || ($userDeptName === 'Human Assets Management')
+                        || preg_match('/(Human\s*Assets|HAM|HAMS|ฝ่ายทรัพยากรบุคคล|ฝ่ายบุคคล)/ui', $userDeptName));
+
+            $isHrPos = preg_match('/\b(HR|Recruitment)\b|(ทรัพยากรบุคคล|เจ้าหน้าที่บุคคล|สรรหา|human\s*resource)/ui', $userPosition);
+            $isSystemAdmin = ((int)($currentUser?->level_user ?? -1) === 0 || in_array(strtolower((string)($currentUser?->role ?? '')), ['admin', 'superadmin', 'administrator']));
+
+            // สิทธิ์ลงชื่อฝ่ายบุคคล (HR): ต้องเป็นฝ่ายบุคคล หรือ System Admin เท่านั้น
+            $canSignHr = $currentUser && ($isHrDept || $isHrPos || $isSystemAdmin);
+
+            // ตรวจสอบว่าผู้ใช้เป็นต้นสังกัด หรือกรรมการสัมภาษณ์หรือไม่:
+            $targetInterview = $foundInterview ?? $prefillInterview ?? null;
+            $targetApp = $foundApp ?? $prefillApplication ?? $targetInterview?->application ?? null;
+
+            $isAssignedInterviewer = false;
+            if ($targetInterview && $currentUser) {
+              if ($targetInterview->interviewer_id && $targetInterview->interviewer_id == $currentUser->id) {
+                $isAssignedInterviewer = true;
+              }
+              if ($targetInterview->relationLoaded('interviewers') || method_exists($targetInterview, 'interviewers')) {
+                try {
+                  if ($targetInterview->interviewers && $targetInterview->interviewers->contains('id', $currentUser->id)) {
+                    $isAssignedInterviewer = true;
+                  }
+                } catch (\Throwable $e) {}
+              }
+            }
+
+            $jobDeptId = $targetApp?->jobPost?->department_id ?? null;
+            $jobDeptName = $targetApp?->jobPost?->department?->department_name 
+                        ?: ($targetApp?->jobPost?->department?->department_fullname ?: '');
+
+            $isSameDepartment = false;
+            if ($currentUser && $jobDeptId && ($currentUser->department_id == $jobDeptId || $currentUser->dept_id == $jobDeptId)) {
+              $isSameDepartment = true;
+            }
+            if ($currentUser && $jobDeptName && $userDeptName && (strcasecmp($jobDeptName, $userDeptName) === 0 || str_contains($userDeptName, $jobDeptName) || str_contains($jobDeptName, $userDeptName))) {
+              $isSameDepartment = true;
+            }
+
+            if ($targetInterview || $targetApp) {
+              $canSignDept = $currentUser && ($isAssignedInterviewer || $isSameDepartment || $isSystemAdmin);
+            } else {
+              $canSignDept = $currentUser && (!$isHrDept && !$isHrPos || $isSystemAdmin);
+            }
+
+            // ถ้าผู้ใช้เป็นฝ่ายบุคคลเพียวๆ (ไม่ได้เป็นกรรมการสัมภาษณ์ของเคสนี้) จะไม่มีสิทธิ์ลงชื่อในช่องต้นสังกัด
+            if (($isHrDept || $isHrPos) && !$isAssignedInterviewer && !$isSystemAdmin) {
+              $canSignDept = false;
+            }
+
+            // ตัวแปรขั้นตอนและการอนุญาต
+            $activePhase = $activePhase ?? ($existingEvaluation && $existingEvaluation->status === 'completed' ? 'completed' : ($existingEvaluation && $existingEvaluation->status === 'pending_dept' && !empty($existingEvaluation->hr_evaluator_name) ? 'dept_eval' : 'hr_eval'));
+            if (request()->has('phase')) {
+              $p = request()->get('phase');
+              if (in_array($p, ['hr', 'dept', 'completed'])) {
+                $activePhase = ($p === 'hr' ? 'hr_eval' : ($p === 'dept' ? 'dept_eval' : 'completed'));
+              }
+            }
+
+            $isHrUser = $isHrUser ?? ($canSignHr ?? false);
+            $isDeptUser = $isDeptUser ?? ($canSignDept ?? false);
+            $isSystemAdmin = $isSystemAdmin ?? false;
+
+            // สิทธิ์การประเมินในคอลัมน์ (ห้ามประเมินในช่องของคนอื่นอย่างเด็ดขาด):
+            // 1. ฝ่ายบุคคลประเมินได้เฉพาะตอน activePhase == 'hr_eval'
+            // 2. ต้นสังกัดประเมินได้เฉพาะตอน activePhase == 'dept_eval'
+            $isHrColumnEditable = ($activePhase === 'hr_eval' && ($canSignHr || $isSystemAdmin));
+            $isDeptColumnEditable = ($activePhase === 'dept_eval' && ($canSignDept || $isSystemAdmin));
+            if ($isSystemAdmin && request()->has('edit_all')) {
+              $isHrColumnEditable = true;
+              $isDeptColumnEditable = true;
+            }
           @endphp
 
           <datalist id="employee_names">
@@ -226,14 +327,104 @@
           <form action="{{ route('interview-evaluation.store') }}" method="POST" id="interviewEvaluationForm">
             @csrf
             
-            <input type="hidden" name="interview_id" value="{{ $interviewId ?? request('interview_id') }}">
-            <input type="hidden" name="application_id" value="{{ $applicationId ?? request('application_id') }}">
+            <input type="hidden" name="evaluation_id" value="{{ $existingEvaluation?->id }}">
+            <input type="hidden" name="interview_id" value="{{ $interviewId ?? request('interview_id') ?? $existingEvaluation?->interview_id }}">
+            <input type="hidden" name="application_id" value="{{ $applicationId ?? request('application_id') ?? $existingEvaluation?->application_id }}">
             <input type="hidden" name="return_url" value="{{ $returnUrl ?? request('return_url') }}">
+            <input type="hidden" name="active_phase" id="active_phase" value="{{ $activePhase }}">
 
             <!-- All Pages Wrapper -->
             <div class="hr-form-container">
             <!-- PAGE Paper Container -->
             <div class="hr-form-paper">
+
+            <!-- 2-Step Workflow Progress Visual Banner -->
+            <div class="mb-6 bg-slate-50 dark:bg-gray-800/80 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-xs">
+              <div class="flex items-center justify-between gap-3 max-w-xl mx-auto">
+                <!-- Step 1: HR -->
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 transition-all {{ !empty($existingEvaluation?->hr_evaluator_name) ? 'bg-emerald-600 text-white shadow-sm' : ($activePhase === 'hr_eval' ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/50 shadow-sm' : 'bg-gray-200 text-gray-600') }}">
+                    @if(!empty($existingEvaluation?->hr_evaluator_name))
+                      <i class="fa-solid fa-check text-sm"></i>
+                    @else
+                      1
+                    @endif
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-xs font-bold text-gray-900 dark:text-white truncate">ขั้นตอนที่ 1: ฝ่ายบุคคล</div>
+                    <div class="text-[11px] truncate">
+                      @if(!empty($existingEvaluation?->hr_evaluator_name))
+                        <span class="text-emerald-700 dark:text-emerald-400 font-semibold">✓ ลงชื่อและส่งต่อแล้ว</span>
+                      @elseif($activePhase === 'hr_eval')
+                        <span class="text-blue-600 dark:text-blue-400 font-bold animate-pulse">● กำลังประเมิน & ลงชื่อ</span>
+                      @else
+                        <span class="text-gray-400">รอประเมิน</span>
+                      @endif
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Connector Line -->
+                <div class="flex-1 h-0.5 max-w-[70px] bg-gray-200 dark:bg-gray-700 relative shrink-0">
+                  <div class="h-0.5 bg-emerald-500 transition-all duration-300 {{ !empty($existingEvaluation?->hr_evaluator_name) ? 'w-full' : 'w-0' }}"></div>
+                </div>
+
+                <!-- Step 2: Department -->
+                <div class="flex items-center gap-3 flex-1 justify-end min-w-0">
+                  <div class="text-right min-w-0">
+                    <div class="text-xs font-bold text-gray-900 dark:text-white truncate">ขั้นตอนที่ 2: ต้นสังกัด</div>
+                    <div class="text-[11px] truncate">
+                      @if($activePhase === 'completed' || !empty($existingEvaluation?->dept_evaluator_name))
+                        <span class="text-emerald-700 dark:text-emerald-400 font-semibold">✓ เสร็จสมบูรณ์</span>
+                      @elseif($activePhase === 'dept_eval')
+                        <span class="text-purple-600 dark:text-purple-400 font-bold animate-pulse">● กำลังประเมิน & ลงชื่อ</span>
+                      @else
+                        <span class="text-gray-400">🔒 รอดำเนินการ</span>
+                      @endif
+                    </div>
+                  </div>
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 transition-all {{ ($activePhase === 'completed' || !empty($existingEvaluation?->dept_evaluator_name)) ? 'bg-emerald-600 text-white shadow-sm' : ($activePhase === 'dept_eval' ? 'bg-purple-600 text-white ring-4 ring-purple-100 dark:ring-purple-900/50 shadow-sm' : 'bg-gray-100 text-gray-400') }}">
+                    @if($activePhase === 'completed' || !empty($existingEvaluation?->dept_evaluator_name))
+                      <i class="fa-solid fa-check text-sm"></i>
+                    @else
+                      2
+                    @endif
+                  </div>
+                </div>
+              </div>
+
+              <!-- Phase Guidance Alert -->
+              <div class="mt-3.5 pt-3 border-t border-gray-200/60 dark:border-gray-700/60 text-xs">
+                @if($activePhase === 'hr_eval')
+                  <div class="flex items-start gap-2.5 text-blue-900 dark:text-blue-200 bg-blue-50/80 dark:bg-blue-950/40 p-3 rounded-xl border border-blue-200/80 dark:border-blue-900/50">
+                    <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 text-sm shrink-0"></i>
+                    <div class="leading-relaxed">
+                      <strong class="font-bold text-blue-950 dark:text-blue-100">ขั้นตอนของฝ่ายบุคคล (HR):</strong> เจ้าหน้าที่ฝ่ายบุคคลต้องให้คะแนนในคอลัมน์ <strong>"❶ ฝ่ายบุคคล"</strong> ให้ครบทั้ง 10 ข้อ และ <strong>กดปุ่มลงชื่อ</strong> ก่อน จึงจะสามารถกดบันทึกส่งต่อให้ต้นสังกัดประเมินต่อได้
+                      <div class="mt-1 text-[11px] text-blue-700 dark:text-blue-300 font-medium">
+                        <i class="fa-solid fa-lock text-[10px] mr-1"></i>ช่องประเมินและลายเซ็นของต้นสังกัดจะถูกล็อคไว้ ไม่สามารถประเมินข้ามช่องของกันและกันได้
+                      </div>
+                    </div>
+                  </div>
+                @elseif($activePhase === 'dept_eval')
+                  <div class="flex items-start gap-2.5 text-purple-900 dark:text-purple-200 bg-purple-50/80 dark:bg-purple-950/40 p-3 rounded-xl border border-purple-200/80 dark:border-purple-900/50">
+                    <i class="fa-solid fa-clock-rotate-left text-purple-600 mt-0.5 text-sm shrink-0"></i>
+                    <div class="leading-relaxed">
+                      <strong class="font-bold text-purple-950 dark:text-purple-100">ขั้นตอนของต้นสังกัด (Department):</strong> ฝ่ายบุคคลได้ประเมิน ({{ $existingEvaluation?->total_hr_score ?? 0 }}/40 คะแนน) และลงชื่อส่งต่อมาแล้ว กรุณาให้คะแนนในคอลัมน์ <strong>"❷ ต้นสังกัด"</strong> ให้ครบทั้ง 10 ข้อ สรุปผลการสัมภาษณ์ และ <strong>กดปุ่มลงชื่อ</strong> ก่อนส่งผลประเมิน
+                      <div class="mt-1 text-[11px] text-purple-700 dark:text-purple-300 font-medium">
+                        <i class="fa-solid fa-lock text-[10px] mr-1"></i>คะแนนและลายเซ็นของฝ่ายบุคคลถูกล็อคไว้ ไม่สามารถแก้ไขได้
+                      </div>
+                    </div>
+                  </div>
+                @elseif($activePhase === 'completed')
+                  <div class="flex items-start gap-2.5 text-emerald-900 dark:text-emerald-200 bg-emerald-50/80 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200/80 dark:border-emerald-900/50">
+                    <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5 text-sm shrink-0"></i>
+                    <div class="leading-relaxed">
+                      <strong class="font-bold text-emerald-950 dark:text-emerald-100">การประเมินเสร็จสมบูรณ์แล้ว:</strong> แบบประเมินนี้ได้รับการประเมินและลงชื่อจากทั้งฝ่ายบุคคลและต้นสังกัดครบถ้วนแล้ว (คะแนนเฉลี่ย: <strong>{{ $existingEvaluation?->average_score ?? 0 }}/40</strong> • สรุปผล: <strong>{{ $existingEvaluation?->summary_result_label ?? '-' }}</strong>)
+                    </div>
+                  </div>
+                @endif
+              </div>
+            </div>
         
         <!-- Header Section -->
         <div class="text-center mb-6">
@@ -304,19 +495,43 @@
               <tr class="border-b border-black divide-x divide-black bg-gray-50 text-xs">
                 <th class="py-2 px-1 w-10 text-center font-bold align-middle" rowspan="2">ลำดับ</th>
                 <th class="py-2 px-3 text-center font-bold align-middle" rowspan="2">หัวข้อในการพิจารณา</th>
-                <th class="py-1 px-1 font-bold text-center border-b border-black w-36 sm:w-44" colspan="4">❶ ฝ่ายบุคคล</th>
-                <th class="py-1 px-1 font-bold text-center border-b border-black w-36 sm:w-44" colspan="4">❷ ต้นสังกัด</th>
+                <th class="py-1.5 px-1 font-bold text-center border-b border-black w-36 sm:w-44 {{ $isHrColumnEditable ? 'bg-blue-50/80 text-blue-950' : 'bg-gray-100/70 text-gray-700' }}" colspan="4">
+                  <div class="flex flex-col items-center justify-center gap-0.5">
+                    <span class="font-bold">❶ ฝ่ายบุคคล</span>
+                    @if($isHrColumnEditable)
+                      <span class="inline-flex items-center gap-1 text-[10px] bg-blue-600 text-white font-semibold px-2 py-0.2 rounded-full shadow-xs">● กำลังประเมิน</span>
+                    @elseif(!empty($existingEvaluation?->hr_evaluator_name))
+                      <span class="inline-flex items-center gap-0.5 text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.2 rounded border border-emerald-300">✓ ลงชื่อแล้ว (ล็อค)</span>
+                    @else
+                      <span class="inline-flex items-center gap-0.5 text-[10px] bg-gray-200 text-gray-600 font-medium px-1.5 py-0.2 rounded">🔒 ล็อค</span>
+                    @endif
+                  </div>
+                </th>
+                <th class="py-1.5 px-1 font-bold text-center border-b border-black w-36 sm:w-44 {{ $isDeptColumnEditable ? 'bg-purple-50/80 text-purple-950' : 'bg-gray-100/70 text-gray-700' }}" colspan="4">
+                  <div class="flex flex-col items-center justify-center gap-0.5">
+                    <span class="font-bold">❷ ต้นสังกัด</span>
+                    @if($isDeptColumnEditable)
+                      <span class="inline-flex items-center gap-1 text-[10px] bg-purple-600 text-white font-semibold px-2 py-0.2 rounded-full shadow-xs">● กำลังประเมิน</span>
+                    @elseif($activePhase === 'hr_eval')
+                      <span class="inline-flex items-center gap-0.5 text-[10px] bg-amber-100 text-amber-800 font-medium px-1.5 py-0.2 rounded border border-amber-300">🔒 รอฝ่ายบุคคลส่งต่อ</span>
+                    @elseif(!empty($existingEvaluation?->dept_evaluator_name))
+                      <span class="inline-flex items-center gap-0.5 text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.2 rounded border border-emerald-300">✓ ลงชื่อแล้ว</span>
+                    @else
+                      <span class="inline-flex items-center gap-0.5 text-[10px] bg-gray-200 text-gray-600 font-medium px-1.5 py-0.2 rounded">🔒 ล็อค</span>
+                    @endif
+                  </div>
+                </th>
               </tr>
               <tr class="border-b border-black divide-x divide-black bg-gray-50 text-[11px] sm:text-xs">
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 border-l border-black">ปรับปรุง<br><span class="font-bold">1</span></th>
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11">พอใช้<br><span class="font-bold">2</span></th>
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11">ดี<br><span class="font-bold">3</span></th>
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11">ดีมาก<br><span class="font-bold">4</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 border-l border-black {{ $isHrColumnEditable ? 'bg-blue-50/40' : '' }}">ปรับปรุง<br><span class="font-bold">1</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 {{ $isHrColumnEditable ? 'bg-blue-50/40' : '' }}">พอใช้<br><span class="font-bold">2</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 {{ $isHrColumnEditable ? 'bg-blue-50/40' : '' }}">ดี<br><span class="font-bold">3</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 {{ $isHrColumnEditable ? 'bg-blue-50/40' : '' }}">ดีมาก<br><span class="font-bold">4</span></th>
                 
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 border-l border-black">ปรับปรุง<br><span class="font-bold">1</span></th>
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11">พอใช้<br><span class="font-bold">2</span></th>
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11">ดี<br><span class="font-bold">3</span></th>
-                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11">ดีมาก<br><span class="font-bold">4</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 border-l border-black {{ $isDeptColumnEditable ? 'bg-purple-50/40' : '' }}">ปรับปรุง<br><span class="font-bold">1</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 {{ $isDeptColumnEditable ? 'bg-purple-50/40' : '' }}">พอใช้<br><span class="font-bold">2</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 {{ $isDeptColumnEditable ? 'bg-purple-50/40' : '' }}">ดี<br><span class="font-bold">3</span></th>
+                <th class="py-1 px-0.5 font-normal text-center w-9 sm:w-11 {{ $isDeptColumnEditable ? 'bg-purple-50/40' : '' }}">ดีมาก<br><span class="font-bold">4</span></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-black">
@@ -337,39 +552,65 @@
                     @endif
                   </td>
 
-                  <!-- HR Rating 1-4 -->
+                  <!-- HR Rating 1-4 (ฝ่ายบุคคล) -->
                   @for($score = 1; $score <= 4; $score++)
-                    <td class="p-0 text-center align-middle">
-                      <input type="radio" name="hr_score[{{ $index }}]" value="{{ $score }}" class="hr-rating form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent cursor-pointer @error("hr_score.{$index}") ring-2 ring-red-500 border-red-500 text-red-500 @enderror" data-item="{{ $index }}" data-score="{{ $score }}" {{ old("hr_score.{$index}") == $score ? 'checked' : '' }}>
+                    @php
+                      $valHr = old("hr_score.{$index}", $existingScores[$index]->hr_score ?? null);
+                    @endphp
+                    <td class="p-0 text-center align-middle {{ !$isHrColumnEditable ? 'bg-gray-100/50 cursor-not-allowed' : 'hover:bg-blue-50/50' }}" title="{{ !$isHrColumnEditable ? 'ช่องฝ่ายบุคคล (ล็อค - ไม่สามารถแก้ไขได้)' : '' }}">
+                      <input type="radio" 
+                             name="hr_score[{{ $index }}]" 
+                             value="{{ $score }}" 
+                             class="hr-rating form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent {{ $isHrColumnEditable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75' }} @error("hr_score.{$index}") ring-2 ring-red-500 border-red-500 text-red-500 @enderror" 
+                             data-item="{{ $index }}" 
+                             data-score="{{ $score }}" 
+                             {{ (string)$valHr === (string)$score ? 'checked' : '' }}
+                             {{ !$isHrColumnEditable ? 'disabled' : '' }}>
                     </td>
                   @endfor
+                  @if(!$isHrColumnEditable && !empty($existingScores[$index]->hr_score))
+                    <input type="hidden" name="hr_score[{{ $index }}]" value="{{ $existingScores[$index]->hr_score }}">
+                  @endif
 
-                  <!-- Dept Rating 1-4 -->
+                  <!-- Dept Rating 1-4 (ต้นสังกัด) -->
                   @for($score = 1; $score <= 4; $score++)
-                    <td class="p-0 text-center align-middle">
-                      <input type="radio" name="dept_score[{{ $index }}]" value="{{ $score }}" class="dept-rating form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent cursor-pointer @error("dept_score.{$index}") ring-2 ring-red-500 border-red-500 text-red-500 @enderror" data-item="{{ $index }}" data-score="{{ $score }}" {{ old("dept_score.{$index}") == $score ? 'checked' : '' }}>
+                    @php
+                      $valDept = old("dept_score.{$index}", $existingScores[$index]->dept_score ?? null);
+                    @endphp
+                    <td class="p-0 text-center align-middle {{ !$isDeptColumnEditable ? 'bg-gray-100/50 cursor-not-allowed' : 'hover:bg-purple-50/50' }}" title="{{ !$isDeptColumnEditable ? ($activePhase === 'hr_eval' ? 'ช่องต้นสังกัด (ล็อค - รอฝ่ายบุคคลประเมินและส่งต่อก่อน)' : 'ช่องต้นสังกัด (ล็อค - ไม่สามารถแก้ไขได้)') : '' }}">
+                      <input type="radio" 
+                             name="dept_score[{{ $index }}]" 
+                             value="{{ $score }}" 
+                             class="dept-rating form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent {{ $isDeptColumnEditable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75' }} @error("dept_score.{$index}") ring-2 ring-red-500 border-red-500 text-red-500 @enderror" 
+                             data-item="{{ $index }}" 
+                             data-score="{{ $score }}" 
+                             {{ (string)$valDept === (string)$score ? 'checked' : '' }}
+                             {{ !$isDeptColumnEditable ? 'disabled' : '' }}>
                     </td>
                   @endfor
+                  @if(!$isDeptColumnEditable && !empty($existingScores[$index]->dept_score))
+                    <input type="hidden" name="dept_score[{{ $index }}]" value="{{ $existingScores[$index]->dept_score }}">
+                  @endif
                 </tr>
               @endforeach
 
               <!-- Subtotal Row -->
               <tr class="divide-x divide-black bg-gray-50 font-bold">
                 <td colspan="2" class="py-2 px-4 text-center">รวมคะแนนแต่ละหัวข้อ</td>
-                <td colspan="4" class="py-2 px-2 text-center"><span id="sum_hr_display">0</span> คะแนน</td>
-                <td colspan="4" class="py-2 px-2 text-center"><span id="sum_dept_display">0</span> คะแนน</td>
+                <td colspan="4" class="py-2 px-2 text-center {{ $isHrColumnEditable ? 'bg-blue-50/60' : '' }}"><span id="sum_hr_display">{{ $existingEvaluation?->total_hr_score ?? 0 }}</span> คะแนน</td>
+                <td colspan="4" class="py-2 px-2 text-center {{ $isDeptColumnEditable ? 'bg-purple-50/60' : '' }}"><span id="sum_dept_display">{{ $existingEvaluation?->total_dept_score ?? 0 }}</span> คะแนน</td>
               </tr>
 
               <!-- Total Grand Row -->
               <tr class="divide-x divide-black bg-gray-50 font-bold">
                 <td colspan="2" class="py-2 px-4 text-center">รวมคะแนนทั้งหมด</td>
-                <td colspan="8" class="py-2 px-4 text-left"><span id="grand_total_display">0</span> คะแนน</td>
+                <td colspan="8" class="py-2 px-4 text-left"><span id="grand_total_display">{{ $existingEvaluation?->grand_total_score ?? 0 }}</span> คะแนน</td>
               </tr>
 
               <!-- Average Score Row -->
               <tr class="divide-x divide-black bg-gray-50 font-bold">
                 <td colspan="2" class="py-2 px-4 text-center">คะแนนรวม (คะแนน 1+2 หารสอง)</td>
-                <td colspan="8" class="py-2 px-4 text-left"><span id="average_score_display">0</span> คะแนน</td>
+                <td colspan="8" class="py-2 px-4 text-left"><span id="average_score_display">{{ $existingEvaluation?->average_score ?? 0 }}</span> คะแนน</td>
               </tr>
             </tbody>
           </table>
@@ -379,34 +620,93 @@
         <div class="mb-6 text-sm text-black">
           <div class="flex items-start">
             <span class="whitespace-nowrap font-bold mr-2 mt-1">หมายเหตุ :</span>
-            <textarea name="remarks" rows="2" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-1 border-t-0 border-l-0 border-r-0 focus:ring-0 resize-none leading-relaxed" placeholder="ข้อความหมายเหตุเพิ่มเติม..."></textarea>
+            <textarea name="remarks" rows="2" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-1 border-t-0 border-l-0 border-r-0 focus:ring-0 resize-none leading-relaxed" placeholder="ข้อความหมายเหตุเพิ่มเติม...">{{ old('remarks', $existingEvaluation?->remarks) }}</textarea>
           </div>
         </div>
 
         <!-- Summary Result Selection Section -->
-        <div class="mb-8 p-4 border border-gray-400 rounded text-sm text-black space-y-3">
-          <div class="font-bold mb-2">สรุปผลการสัมภาษณ์ :</div>
+        <div class="mb-8 p-4 border border-gray-400 rounded text-sm text-black space-y-3 {{ $activePhase === 'hr_eval' && !$isSystemAdmin ? 'bg-gray-50/70 text-gray-500' : '' }}">
+          <div class="flex items-center justify-between">
+            <div class="font-bold">สรุปผลการสัมภาษณ์ : <span class="text-red-500 {{ $activePhase === 'hr_eval' ? 'hidden' : '' }}">*</span></div>
+            @if($activePhase === 'hr_eval' && !$isSystemAdmin)
+              <span class="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-medium">
+                <i class="fa-solid fa-lock text-[10px] mr-1"></i>สรุปผลจะดำเนินการในขั้นตอนที่ 2 โดยต้นสังกัด
+              </span>
+            @endif
+          </div>
           
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input type="radio" name="summary_result" value="hire" id="result_hire" class="summary-result-radio form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent">
+          @php
+            $currentSummary = old('summary_result', $existingEvaluation?->summary_result);
+            $isSummaryDisabled = ($activePhase === 'hr_eval' && !$isSystemAdmin);
+          @endphp
+          <label class="flex items-center space-x-3 {{ $isSummaryDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }}">
+            <input type="radio" name="summary_result" value="hire" id="result_hire" class="summary-result-radio form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent" {{ $currentSummary === 'hire' ? 'checked' : '' }} {{ $isSummaryDisabled ? 'disabled' : '' }}>
             <span>ควรว่าจ้างในตำแหน่งที่สมัคร (30 – 40 คะแนน)</span>
           </label>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input type="radio" name="summary_result" value="reserve" id="result_reserve" class="summary-result-radio form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent">
+          <label class="flex items-center space-x-3 {{ $isSummaryDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }}">
+            <input type="radio" name="summary_result" value="reserve" id="result_reserve" class="summary-result-radio form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent" {{ $currentSummary === 'reserve' ? 'checked' : '' }} {{ $isSummaryDisabled ? 'disabled' : '' }}>
             <span>ควรสำรองไว้กรณีมีการร้องขอพนักงาน (20 – 29 คะแนน)</span>
           </label>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input type="radio" name="summary_result" value="reject" id="result_reject" class="summary-result-radio form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent">
+          <label class="flex items-center space-x-3 {{ $isSummaryDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }}">
+            <input type="radio" name="summary_result" value="reject" id="result_reject" class="summary-result-radio form-radio h-4 w-4 text-gray-900 border-gray-400 focus:ring-0 bg-transparent" {{ $currentSummary === 'reject' ? 'checked' : '' }} {{ $isSummaryDisabled ? 'disabled' : '' }}>
             <span>ปฏิเสธการว่าจ้างเป็นพนักงาน (ต่ำกว่า 20 คะแนน)</span>
           </label>
+
+          @if($isSummaryDisabled && !empty($currentSummary))
+            <input type="hidden" name="summary_result" value="{{ $currentSummary }}">
+          @endif
         </div>
 
-        <!-- Signatures Section -->
+        <!-- Signatures Section with Mandatory Role Buttons -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-black pt-4">
-          <!-- HR Signatory -->
-          <div class="flex flex-col items-center space-y-3">
+          @php
+            $hasHrSigned = !empty(old('hr_evaluator_name', $existingEvaluation?->hr_evaluator_name));
+            $hasDeptSigned = !empty(old('dept_evaluator_name', $existingEvaluation?->dept_evaluator_name));
+          @endphp
+
+          <!-- HR Signatory Box -->
+          <div id="hr_signature_box" class="flex flex-col items-center space-y-3 p-4 rounded-xl border {{ $activePhase === 'hr_eval' ? 'border-blue-300 bg-blue-50/20' : 'border-gray-300 bg-gray-50/40' }} relative">
+            <input type="hidden" name="hr_is_signed" id="hr_is_signed" value="{{ $hasHrSigned ? '1' : '0' }}">
+            
+            <div class="w-full flex items-center justify-between mb-1">
+              <span class="text-xs font-bold text-gray-700 flex items-center gap-1">
+                <span>ฝ่ายบุคคล (HR)</span>
+                @if($activePhase === 'hr_eval')
+                  <span class="text-red-500 font-bold">* ต้องลงชื่อก่อนส่ง</span>
+                @endif
+              </span>
+              @if($hasHrSigned)
+                <span id="hr_signed_badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                  <i class="fa-solid fa-circle-check text-emerald-600"></i> ลงชื่อแล้ว
+                </span>
+              @else
+                <span id="hr_signed_badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-red-100 text-red-800 font-bold border border-red-200">
+                  <i class="fa-solid fa-triangle-exclamation text-red-600"></i> ยังไม่ลงชื่อ
+                </span>
+              @endif
+            </div>
+
+            <!-- Action button for HR signature (Required before submission) -->
+            @if($activePhase === 'hr_eval')
+              <div class="w-full my-2">
+                @if($canSignHr)
+                  <button type="button" 
+                          id="hr_sign_btn" 
+                          onclick="signHrNow()" 
+                          class="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer ring-2 ring-blue-300 focus:outline-none">
+                    <i class="fa-solid fa-signature text-sm"></i>
+                    <span id="hr_sign_btn_text">{{ $hasHrSigned ? '✍️ กดเพื่อลงชื่อใหม่ / ยืนยันอีกครั้ง' : '✍️ กดลงชื่อ ฝ่ายบุคคล (บังคับก่อนส่ง)' }}</span>
+                  </button>
+                @else
+                  <div class="p-2.5 bg-gray-100 border border-gray-300 rounded-xl text-center text-xs text-gray-500">
+                    <i class="fa-solid fa-lock mr-1"></i> เฉพาะเจ้าหน้าที่ฝ่ายบุคคลเท่านั้นที่สามารถลงชื่อในช่องนี้ได้
+                  </div>
+                @endif
+              </div>
+            @endif
+
             <div class="flex items-end w-full">
               <span class="mr-2 font-medium">ลงชื่อ</span>
               <input type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
@@ -415,24 +715,88 @@
             
             <div class="flex items-center w-full relative group">
               <span class="font-medium">(</span>
-              <input type="text" name="hr_evaluator_name" id="hr_evaluator_name" list="employee_names" class="text-center flex-grow min-w-0 bg-transparent focus:outline-none border-none focus:ring-0 placeholder-gray-400 text-sm font-medium" placeholder="พิมพ์ชื่อเพื่อค้นหา..." value="{{ old('hr_evaluator_name') }}">
-              <button type="button" onclick="document.getElementById('hr_evaluator_name').value = '{{ auth()->user()->firstname }} {{ auth()->user()->lastname }}'; if(document.getElementsByName('hr_position')[0]) document.getElementsByName('hr_position')[0].value = 'ฝ่ายทรัพยากรบุคคล';" class="absolute right-4 px-2 py-0.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-[10px] shadow-sm transition cursor-pointer" title="คลิกเพื่อลงชื่อของคุณ">✍️ ลงชื่อ</button>
+              <input type="text" 
+                     name="hr_evaluator_name" 
+                     id="hr_evaluator_name" 
+                     list="employee_names" 
+                     class="text-center flex-grow min-w-0 bg-transparent focus:outline-none border-none focus:ring-0 placeholder-gray-400 text-sm font-semibold text-gray-900 {{ $activePhase !== 'hr_eval' && !$isSystemAdmin ? 'cursor-not-allowed pointer-events-none' : '' }}" 
+                     placeholder="คลิกปุ่มลงชื่อด้านบน หรือพิมพ์ชื่อ..." 
+                     value="{{ old('hr_evaluator_name', $existingEvaluation?->hr_evaluator_name) }}"
+                     {{ $activePhase !== 'hr_eval' && !$isSystemAdmin ? 'readonly' : '' }}>
               <span class="font-medium">)</span>
             </div>
 
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium whitespace-nowrap">ตำแหน่ง</span>
-              <input type="text" name="hr_position" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs" value="{{ old('hr_position') }}">
+              <input type="text" 
+                     name="hr_position" 
+                     id="hr_position"
+                     class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs {{ $activePhase !== 'hr_eval' && !$isSystemAdmin ? 'cursor-not-allowed pointer-events-none' : '' }}" 
+                     value="{{ old('hr_position', $existingEvaluation?->hr_position) }}"
+                     placeholder="ระบุตำแหน่ง..."
+                     {{ $activePhase !== 'hr_eval' && !$isSystemAdmin ? 'readonly' : '' }}>
             </div>
 
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium whitespace-nowrap">วัน/เดือน/ปี</span>
-              <input type="text" name="hr_signed_date" class="datepicker-th flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs" value="{{ old('hr_signed_date', date('Y-m-d')) }}">
+              <input type="text" 
+                     name="hr_signed_date" 
+                     id="hr_signed_date"
+                     class="datepicker-th flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs {{ $activePhase !== 'hr_eval' && !$isSystemAdmin ? 'cursor-not-allowed pointer-events-none' : '' }}" 
+                     value="{{ old('hr_signed_date', $existingEvaluation?->hr_signed_date ? $existingEvaluation->hr_signed_date->format('Y-m-d') : date('Y-m-d')) }}"
+                     {{ $activePhase !== 'hr_eval' && !$isSystemAdmin ? 'readonly' : '' }}>
             </div>
           </div>
 
-          <!-- Department Signatory -->
-          <div class="flex flex-col items-center space-y-3">
+          <!-- Department Signatory Box -->
+          <div id="dept_signature_box" class="flex flex-col items-center space-y-3 p-4 rounded-xl border {{ $activePhase === 'dept_eval' ? 'border-purple-300 bg-purple-50/20' : 'border-gray-300 bg-gray-50/40' }} relative">
+            <input type="hidden" name="dept_is_signed" id="dept_is_signed" value="{{ $hasDeptSigned ? '1' : '0' }}">
+            
+            <div class="w-full flex items-center justify-between mb-1">
+              <span class="text-xs font-bold text-gray-700 flex items-center gap-1">
+                <span>ต้นสังกัด (Department)</span>
+                @if($activePhase === 'dept_eval')
+                  <span class="text-red-500 font-bold">* ต้องลงชื่อก่อนส่ง</span>
+                @endif
+              </span>
+              @if($hasDeptSigned)
+                <span id="dept_signed_badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                  <i class="fa-solid fa-circle-check text-emerald-600"></i> ลงชื่อแล้ว
+                </span>
+              @elseif($activePhase === 'hr_eval')
+                <span id="dept_signed_badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-gray-100 text-gray-500 font-medium border border-gray-200">
+                  <i class="fa-solid fa-lock text-gray-400"></i> รอดำเนินการ
+                </span>
+              @else
+                <span id="dept_signed_badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-red-100 text-red-800 font-bold border border-red-200">
+                  <i class="fa-solid fa-triangle-exclamation text-red-600"></i> ยังไม่ลงชื่อ
+                </span>
+              @endif
+            </div>
+
+            <!-- Action button for Dept signature (Required before submission in Phase 2) -->
+            @if($activePhase === 'dept_eval')
+              <div class="w-full my-2">
+                @if($canSignDept)
+                  <button type="button" 
+                          id="dept_sign_btn" 
+                          onclick="signDeptNow()" 
+                          class="w-full py-2.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer ring-2 ring-purple-300 focus:outline-none">
+                    <i class="fa-solid fa-signature text-sm"></i>
+                    <span id="dept_sign_btn_text">{{ $hasDeptSigned ? '✍️ กดเพื่อลงชื่อใหม่ / ยืนยันอีกครั้ง' : '✍️ กดลงชื่อ ต้นสังกัด (บังคับก่อนส่ง)' }}</span>
+                  </button>
+                @else
+                  <div class="p-2.5 bg-gray-100 border border-gray-300 rounded-xl text-center text-xs text-gray-500">
+                    <i class="fa-solid fa-lock mr-1"></i> เฉพาะผู้แทนต้นสังกัดหรือกรรมการสัมภาษณ์เท่านั้นที่สามารถลงชื่อได้
+                  </div>
+                @endif
+              </div>
+            @elseif($activePhase === 'hr_eval')
+              <div class="w-full my-2 p-2.5 bg-gray-100/90 border border-dashed border-gray-300 rounded-xl text-center text-xs text-gray-500">
+                <i class="fa-solid fa-lock mr-1 text-gray-400"></i> ต้นสังกัดจะสามารถลงชื่อได้หลังจากฝ่ายบุคคลส่งต่อ
+              </div>
+            @endif
+
             <div class="flex items-end w-full">
               <span class="mr-2 font-medium">ลงชื่อ</span>
               <input type="text" class="flex-grow min-w-0 border-b border-dashed border-gray-400 bg-transparent focus:outline-none py-0 focus:ring-0 text-center" readonly>
@@ -441,19 +805,36 @@
             
             <div class="flex items-center w-full relative group">
               <span class="font-medium">(</span>
-              <input type="text" name="dept_evaluator_name" id="dept_evaluator_name" list="employee_names" class="text-center flex-grow min-w-0 bg-transparent focus:outline-none border-none focus:ring-0 placeholder-gray-400 text-sm font-medium" placeholder="พิมพ์ชื่อเพื่อค้นหา..." value="{{ old('dept_evaluator_name') }}">
-              <button type="button" onclick="document.getElementById('dept_evaluator_name').value = '{{ auth()->user()->firstname }} {{ auth()->user()->lastname }}'; if(document.getElementsByName('dept_position')[0] && !document.getElementsByName('dept_position')[0].value) document.getElementsByName('dept_position')[0].value = '{{ auth()->user()->position ?? 'หัวหน้าแผนก' }}';" class="absolute right-4 px-2 py-0.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-[10px] shadow-sm transition cursor-pointer" title="คลิกเพื่อลงชื่อของคุณ">✍️ ลงชื่อ</button>
+              <input type="text" 
+                     name="dept_evaluator_name" 
+                     id="dept_evaluator_name" 
+                     list="employee_names" 
+                     class="text-center flex-grow min-w-0 bg-transparent focus:outline-none border-none focus:ring-0 placeholder-gray-400 text-sm font-semibold text-gray-900 {{ $activePhase !== 'dept_eval' && !$isSystemAdmin ? 'cursor-not-allowed pointer-events-none' : '' }}" 
+                     placeholder="{{ $activePhase === 'hr_eval' ? 'รอฝ่ายบุคคลส่งต่อ...' : 'คลิกปุ่มลงชื่อด้านบน หรือพิมพ์ชื่อ...' }}" 
+                     value="{{ old('dept_evaluator_name', $existingEvaluation?->dept_evaluator_name) }}"
+                     {{ $activePhase !== 'dept_eval' && !$isSystemAdmin ? 'readonly' : '' }}>
               <span class="font-medium">)</span>
             </div>
 
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium whitespace-nowrap">ตำแหน่ง</span>
-              <input type="text" name="dept_position" class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs" value="{{ old('dept_position') }}">
+              <input type="text" 
+                     name="dept_position" 
+                     id="dept_position"
+                     class="flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs {{ $activePhase !== 'dept_eval' && !$isSystemAdmin ? 'cursor-not-allowed pointer-events-none' : '' }}" 
+                     value="{{ old('dept_position', $existingEvaluation?->dept_position) }}"
+                     placeholder="ระบุตำแหน่ง..."
+                     {{ $activePhase !== 'dept_eval' && !$isSystemAdmin ? 'readonly' : '' }}>
             </div>
 
             <div class="flex items-center w-full">
               <span class="mr-2 font-medium whitespace-nowrap">วัน/เดือน/ปี</span>
-              <input type="text" name="dept_signed_date" class="datepicker-th flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs" value="{{ old('dept_signed_date', date('Y-m-d')) }}">
+              <input type="text" 
+                     name="dept_signed_date" 
+                     id="dept_signed_date"
+                     class="datepicker-th flex-grow min-w-0 border-b border-gray-400 bg-transparent focus:outline-none px-2 py-0 border-t-0 border-l-0 border-r-0 focus:ring-0 text-center text-xs {{ $activePhase !== 'dept_eval' && !$isSystemAdmin ? 'cursor-not-allowed pointer-events-none' : '' }}" 
+                     value="{{ old('dept_signed_date', $existingEvaluation?->dept_signed_date ? $existingEvaluation->dept_signed_date->format('Y-m-d') : date('Y-m-d')) }}"
+                     {{ $activePhase !== 'dept_eval' && !$isSystemAdmin ? 'readonly' : '' }}>
             </div>
           </div>
         </div>
@@ -464,14 +845,30 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end space-x-3 print:hidden">
-          <a href="{{ route('admin.interview-evaluations.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition shadow-sm">
+        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end items-center space-x-3 print:hidden">
+          @php
+            $cancelUrl = $returnUrl ?? request('return_url') ?? route('admin.interview-evaluations.index');
+          @endphp
+          <a href="{{ $cancelUrl }}" class="px-5 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition shadow-xs">
             ยกเลิก
           </a>
-          <button type="submit" id="submitBtn" class="px-5 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition flex items-center space-x-1.5 cursor-pointer">
-            <i class="fa-solid fa-floppy-disk text-xs"></i>
-            <span>บันทึกข้อมูล</span>
-          </button>
+
+          @if($activePhase === 'hr_eval')
+            <button type="submit" id="submitBtn" class="px-7 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 transition flex items-center space-x-2 cursor-pointer">
+              <i class="fa-solid fa-paper-plane text-xs"></i>
+              <span>🚀 บันทึกและส่งต่อให้ต้นสังกัดประเมิน</span>
+            </button>
+          @elseif($activePhase === 'dept_eval')
+            <button type="submit" id="submitBtn" class="px-7 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 transition flex items-center space-x-2 cursor-pointer">
+              <i class="fa-solid fa-circle-check text-xs"></i>
+              <span>✅ บันทึกผลการประเมิน (เสร็จสมบูรณ์)</span>
+            </button>
+          @else
+            <button type="submit" id="submitBtn" class="px-7 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-slate-900 hover:bg-black focus:outline-none transition flex items-center space-x-2 cursor-pointer">
+              <i class="fa-solid fa-floppy-disk text-xs"></i>
+              <span>บันทึกแก้ไขข้อมูลแบบประเมิน</span>
+            </button>
+          @endif
         </div>
 
       </div>
@@ -495,6 +892,7 @@
       }
 
       flatpickr(".datepicker-th", {
+        disableMobile: true,
         locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : "th",
         altInput: true,
         altFormat: "d/m/Y",
@@ -650,29 +1048,35 @@
       function calculateScores() {
         let hrTotal = 0;
         let deptTotal = 0;
+        let hrCount = 0;
+        let deptCount = 0;
 
         document.querySelectorAll('.hr-rating:checked').forEach(el => {
           hrTotal += parseInt(el.value) || 0;
+          hrCount++;
         });
 
         document.querySelectorAll('.dept-rating:checked').forEach(el => {
           deptTotal += parseInt(el.value) || 0;
+          deptCount++;
         });
 
         const grandTotal = hrTotal + deptTotal;
-        const avgScore = (grandTotal / 2).toFixed(1);
+        const bothEvaluated = (hrCount > 0 && deptCount > 0);
+        const avgScore = bothEvaluated ? (grandTotal / 2).toFixed(1) : (hrCount > 0 ? (hrTotal / 2).toFixed(1) : (deptTotal / 2).toFixed(1));
 
         document.getElementById('sum_hr_display').innerText = hrTotal;
         document.getElementById('sum_dept_display').innerText = deptTotal;
         document.getElementById('grand_total_display').innerText = grandTotal;
-        document.getElementById('average_score_display').innerText = avgScore;
+        document.getElementById('average_score_display').innerText = (hrCount === 10 && deptCount === 10) ? avgScore : (avgScore + (hrCount === 0 || deptCount === 0 ? ' (รอประเมินอีกฝ่าย)' : ''));
 
         // Auto select summary result based on score criteria
-        if (avgScore >= 30) {
+        const scoreForEval = parseFloat(avgScore);
+        if (scoreForEval >= 30) {
           document.getElementById('result_hire').checked = true;
-        } else if (avgScore >= 20) {
+        } else if (scoreForEval >= 20) {
           document.getElementById('result_reserve').checked = true;
-        } else if (avgScore > 0) {
+        } else if (scoreForEval > 0) {
           document.getElementById('result_reject').checked = true;
         }
       }
@@ -713,13 +1117,108 @@
               el.classList.remove('ring-2', 'ring-red-500', 'border-red-500', 'text-red-500');
             });
           }
-        });
-      });
+      // Functions for Signing (ฝ่ายบุคคล & ต้นสังกัด)
+      window.signHrNow = function() {
+        const userName = "{{ auth()->user() ? (auth()->user()->firstname . ' ' . auth()->user()->lastname) : 'เจ้าหน้าที่ฝ่ายบุคคล' }}";
+        const userPosition = "{{ auth()->user()?->position ?: 'ฝ่ายทรัพยากรบุคคล' }}";
+        const todayDate = new Date().toISOString().split('T')[0];
 
-      // Client-side Validation: Highlight errors in RED like Image 1
+        const nameInp = document.getElementById('hr_evaluator_name');
+        const posInp = document.getElementById('hr_position');
+        const dateInp = document.getElementById('hr_signed_date');
+        const signedFlag = document.getElementById('hr_is_signed');
+        const badge = document.getElementById('hr_signed_badge');
+        const btnText = document.getElementById('hr_sign_btn_text');
+
+        if (nameInp) nameInp.value = userName;
+        if (posInp && (!posInp.value || posInp.value.trim() === '')) posInp.value = userPosition;
+        if (dateInp) {
+          dateInp.value = todayDate;
+          if (dateInp._flatpickr) {
+            dateInp._flatpickr.setDate(todayDate, true);
+          }
+        }
+        if (signedFlag) signedFlag.value = '1';
+
+        if (badge) {
+          badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] bg-emerald-100 text-emerald-800 font-bold border border-emerald-300';
+          badge.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> ลงชื่อแล้ว (' + userName + ')';
+        }
+        if (btnText) {
+          btnText.innerText = '✍️ ลงชื่อเรียบร้อยแล้ว (กดเพื่อยืนยันใหม่)';
+        }
+
+        const hrBox = document.getElementById('hr_signature_box');
+        if (hrBox) {
+          hrBox.classList.remove('border-red-400', 'ring-2', 'ring-red-400');
+          hrBox.classList.add('border-emerald-400', 'bg-emerald-50/20');
+        }
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'ฝ่ายบุคคลลงชื่อเรียบร้อยแล้ว',
+          text: userName + ' (' + (posInp ? posInp.value : userPosition) + ')',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+      };
+
+      window.signDeptNow = function() {
+        const userName = "{{ auth()->user() ? (auth()->user()->firstname . ' ' . auth()->user()->lastname) : 'หัวหน้าแผนก/ผู้แทนต้นสังกัด' }}";
+        const userPosition = "{{ auth()->user()?->position ?: 'ต้นสังกัด' }}";
+        const todayDate = new Date().toISOString().split('T')[0];
+
+        const nameInp = document.getElementById('dept_evaluator_name');
+        const posInp = document.getElementById('dept_position');
+        const dateInp = document.getElementById('dept_signed_date');
+        const signedFlag = document.getElementById('dept_is_signed');
+        const badge = document.getElementById('dept_signed_badge');
+        const btnText = document.getElementById('dept_sign_btn_text');
+
+        if (nameInp) nameInp.value = userName;
+        if (posInp && (!posInp.value || posInp.value.trim() === '')) posInp.value = userPosition;
+        if (dateInp) {
+          dateInp.value = todayDate;
+          if (dateInp._flatpickr) {
+            dateInp._flatpickr.setDate(todayDate, true);
+          }
+        }
+        if (signedFlag) signedFlag.value = '1';
+
+        if (badge) {
+          badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] bg-emerald-100 text-emerald-800 font-bold border border-emerald-300';
+          badge.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> ลงชื่อแล้ว (' + userName + ')';
+        }
+        if (btnText) {
+          btnText.innerText = '✍️ ลงชื่อเรียบร้อยแล้ว (กดเพื่อยืนยันใหม่)';
+        }
+
+        const deptBox = document.getElementById('dept_signature_box');
+        if (deptBox) {
+          deptBox.classList.remove('border-red-400', 'ring-2', 'ring-red-400');
+          deptBox.classList.add('border-emerald-400', 'bg-emerald-50/20');
+        }
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'ต้นสังกัดลงชื่อเรียบร้อยแล้ว',
+          text: userName + ' (' + (posInp ? posInp.value : userPosition) + ')',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+      };
+
+      // Client-side Validation: Highlight errors and enforce signature
       function validateAndHighlightErrors() {
         let hasError = false;
         let firstErrorElement = null;
+        const activePhase = '{{ $activePhase }}';
 
         // 1. Candidate Prefix
         const prefixRadios = document.querySelectorAll('input[name="candidate_prefix"]');
@@ -775,18 +1274,113 @@
           if (!firstErrorElement) firstErrorElement = dateInput;
         }
 
-        // 7. Matrix Rating Scores (Topics 1 to 10)
-        for (let i = 1; i <= 10; i++) {
-          const hrRadios = document.querySelectorAll(`input[name="hr_score[${i}]"]`);
-          const deptRadios = document.querySelectorAll(`input[name="dept_score[${i}]"]`);
-          const hrChecked = Array.from(hrRadios).some(r => r.checked);
-          const deptChecked = Array.from(deptRadios).some(r => r.checked);
-
-          if (!hrChecked && !deptChecked) {
+        // 7. Matrix Rating Scores by Phase
+        if (activePhase === 'hr_eval') {
+          // ฝ่ายบุคคลต้องให้คะแนนครบทั้ง 10 ข้อ
+          let hrMissing = 0;
+          for (let i = 1; i <= 10; i++) {
+            const checked = document.querySelector(`input[name="hr_score[${i}]"]:checked`);
+            if (!checked) {
+              hrMissing++;
+              document.querySelectorAll(`input[name="hr_score[${i}]"]`).forEach(r => r.classList.add('ring-2', 'ring-red-500', 'border-red-500', 'text-red-500'));
+              if (!firstErrorElement) firstErrorElement = document.querySelectorAll(`input[name="hr_score[${i}]"]`)[0];
+            }
+          }
+          if (hrMissing > 0) {
             hasError = true;
-            hrRadios.forEach(r => r.classList.add('ring-2', 'ring-red-500', 'border-red-500', 'text-red-500'));
-            deptRadios.forEach(r => r.classList.add('ring-2', 'ring-red-500', 'border-red-500', 'text-red-500'));
-            if (!firstErrorElement) firstErrorElement = hrRadios[0];
+            Swal.fire({
+              icon: 'warning',
+              title: 'กรุณาประเมินคะแนนให้ครบถ้วน',
+              text: 'เจ้าหน้าที่ฝ่ายบุคคลต้องให้คะแนนในคอลัมน์ "❶ ฝ่ายบุคคล" ให้ครบทั้ง 10 หัวข้อ (ขาดอีก ' + hrMissing + ' หัวข้อ)',
+              confirmButtonColor: '#2563eb',
+              confirmButtonText: 'ตกลง'
+            });
+            if (firstErrorElement) firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+          }
+
+          // ฝ่ายบุคคลต้องกดลงชื่อก่อนส่ง
+          const hrSignedName = (document.getElementById('hr_evaluator_name')?.value || '').trim();
+          if (!hrSignedName) {
+            hasError = true;
+            const hrBox = document.getElementById('hr_signature_box');
+            if (hrBox) {
+              hrBox.classList.add('border-red-400', 'ring-2', 'ring-red-400');
+              hrBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            Swal.fire({
+              icon: 'warning',
+              title: 'ฝ่ายบุคคลต้องลงชื่อก่อนส่ง',
+              html: '<div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">ฝ่ายบุคคลต้องกดปุ่ม <strong class="text-blue-600 font-bold">"✍️ กดลงชื่อ ฝ่ายบุคคล"</strong> ก่อนที่จะสามารถบันทึกและส่งต่อให้ต้นสังกัดประเมินต่อได้</div>',
+              confirmButtonColor: '#2563eb',
+              confirmButtonText: 'ไปที่จุดลงชื่อ'
+            }).then(() => {
+              const signBtn = document.getElementById('hr_sign_btn');
+              if (signBtn) signBtn.focus();
+            });
+            return false;
+          }
+        } else if (activePhase === 'dept_eval') {
+          // ต้นสังกัดต้องให้คะแนนครบทั้ง 10 ข้อ
+          let deptMissing = 0;
+          for (let i = 1; i <= 10; i++) {
+            const checked = document.querySelector(`input[name="dept_score[${i}]"]:checked`);
+            if (!checked) {
+              deptMissing++;
+              document.querySelectorAll(`input[name="dept_score[${i}]"]`).forEach(r => r.classList.add('ring-2', 'ring-red-500', 'border-red-500', 'text-red-500'));
+              if (!firstErrorElement) firstErrorElement = document.querySelectorAll(`input[name="dept_score[${i}]"]`)[0];
+            }
+          }
+          if (deptMissing > 0) {
+            hasError = true;
+            Swal.fire({
+              icon: 'warning',
+              title: 'กรุณาประเมินคะแนนให้ครบถ้วน',
+              text: 'ต้นสังกัดต้องให้คะแนนในคอลัมน์ "❷ ต้นสังกัด" ให้ครบทั้ง 10 หัวข้อ (ขาดอีก ' + deptMissing + ' หัวข้อ)',
+              confirmButtonColor: '#7c3aed',
+              confirmButtonText: 'ตกลง'
+            });
+            if (firstErrorElement) firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+          }
+
+          // สรุปผลการสัมภาษณ์
+          const summaryChecked = document.querySelector('input[name="summary_result"]:checked');
+          if (!summaryChecked) {
+            hasError = true;
+            Swal.fire({
+              icon: 'warning',
+              title: 'กรุณาสรุปผลการสัมภาษณ์',
+              text: 'กรุณาเลือกผลสรุปการสัมภาษณ์ (ควรว่าจ้าง / ควรสำรอง / ปฏิเสธการว่าจ้าง)',
+              confirmButtonColor: '#7c3aed',
+              confirmButtonText: 'ตกลง'
+            }).then(() => {
+              const hireEl = document.getElementById('result_hire');
+              if (hireEl) hireEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+            return false;
+          }
+
+          // ต้นสังกัดต้องกดลงชื่อก่อนส่ง
+          const deptSignedName = (document.getElementById('dept_evaluator_name')?.value || '').trim();
+          if (!deptSignedName) {
+            hasError = true;
+            const deptBox = document.getElementById('dept_signature_box');
+            if (deptBox) {
+              deptBox.classList.add('border-red-400', 'ring-2', 'ring-red-400');
+              deptBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            Swal.fire({
+              icon: 'warning',
+              title: 'ต้นสังกัดต้องลงชื่อก่อนส่ง',
+              html: '<div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">ต้นสังกัดต้องกดปุ่ม <strong class="text-purple-600 font-bold">"✍️ กดลงชื่อ ต้นสังกัด"</strong> ก่อนที่จะสามารถบันทึกและสรุปผลการประเมินได้</div>',
+              confirmButtonColor: '#7c3aed',
+              confirmButtonText: 'ไปที่จุดลงชื่อ'
+            }).then(() => {
+              const signBtn = document.getElementById('dept_sign_btn');
+              if (signBtn) signBtn.focus();
+            });
+            return false;
           }
         }
 
@@ -798,7 +1392,7 @@
         return !hasError;
       }
 
-      // Form Submit Handling
+      // Form Submit Handling with dynamic confirmation
       const evalForm = document.getElementById('interviewEvaluationForm');
       if (evalForm) {
         let isSubmitting = false;
@@ -812,19 +1406,38 @@
             return;
           }
 
-          // If all required fields are filled, ask confirmation
           e.preventDefault();
           const nameVal = (candidateInput ? candidateInput.value : '').trim();
+          const activePhase = '{{ $activePhase }}';
+
+          let confirmTitle = 'ยืนยันการบันทึกแบบประเมิน?';
+          let confirmHtml = '';
+          let confirmBtnText = '<i class="fa-solid fa-paper-plane mr-1.5"></i> ใช่, บันทึกข้อมูล';
+          let confirmBtnColor = '#000000';
+
+          if (activePhase === 'hr_eval') {
+            confirmTitle = 'ยืนยันส่งต่อให้ต้นสังกัดประเมินต่อ?';
+            confirmHtml = '<div class="text-sm text-gray-600 leading-relaxed">คุณได้ประเมินคะแนนฝ่ายบุคคลครบ 10 ข้อและ <strong>ลงชื่อเรียบร้อยแล้ว</strong><br>ต้องการบันทึกและ <strong class="text-blue-600 font-bold">ส่งต่อให้ต้นสังกัดประเมินต่อ</strong> ใช่หรือไม่?</div>';
+            confirmBtnText = '<i class="fa-solid fa-paper-plane mr-1.5"></i> ใช่, บันทึกและส่งต่อ';
+            confirmBtnColor = '#2563eb';
+          } else if (activePhase === 'dept_eval') {
+            confirmTitle = 'ยืนยันบันทึกผลการประเมิน (เสร็จสมบูรณ์)?';
+            confirmHtml = '<div class="text-sm text-gray-600 leading-relaxed">คุณได้ประเมินคะแนนต้นสังกัด สรุปผลการว่าจ้าง และ <strong>ลงชื่อเรียบร้อยแล้ว</strong><br>แบบประเมินนี้จะถูกบันทึกเป็น <strong class="text-emerald-600 font-bold">เสร็จสมบูรณ์ทั้งสองฝ่าย</strong> ใช่หรือไม่?</div>';
+            confirmBtnText = '<i class="fa-solid fa-circle-check mr-1.5"></i> ใช่, บันทึกผลประเมิน';
+            confirmBtnColor = '#059669';
+          } else {
+            confirmHtml = '<div class="text-sm text-gray-600 leading-relaxed">คุณต้องการบันทึกแก้ไข <strong>แบบประเมินผลการสัมภาษณ์ผู้สมัครงาน (QF-HR-25)</strong> สำหรับ <strong class="text-gray-900">' + nameVal + '</strong> ใช่หรือไม่?</div>';
+          }
 
           Swal.fire({
-            title: 'ยืนยันการบันทึกแบบประเมิน?',
-            html: '<div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">คุณต้องการบันทึก <strong>แบบประเมินผลการสัมภาษณ์ผู้สมัครงาน (QF-HR-25)</strong> สำหรับ <strong class="text-gray-900">' + nameVal + '</strong> ใช่หรือไม่?</div>',
+            title: confirmTitle,
+            html: confirmHtml,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#000000',
+            confirmButtonColor: confirmBtnColor,
             cancelButtonColor: '#9ca3af',
-            confirmButtonText: '<i class="fa-solid fa-paper-plane mr-1.5"></i> ใช่, บันทึกข้อมูล',
-            cancelButtonText: 'ยกเลิก',
+            confirmButtonText: confirmBtnText,
+            cancelButtonText: 'ตรวจสอบอีกครั้ง',
             reverseButtons: true,
             customClass: {
               popup: 'rounded-2xl shadow-xl',

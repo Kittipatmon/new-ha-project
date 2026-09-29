@@ -1,113 +1,49 @@
-<!DOCTYPE html>
-<html>
+@extends('emails.layouts.master', [
+    'themeColor' => '#dc2626',
+    'titleColor' => '#b91c1c',
+    'emailTitle' => 'ยืนยันการรับสมัครงาน'
+])
 
-<head>
-    <meta charset="utf-8">
-    <title>ยืนยันการรับสมัครงาน</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
+@section('subject', 'ยืนยันการรับสมัครงาน - ' . ($application->jobPost->position_name ?? 'Kumwell'))
 
-        body {
-            font-family: 'Sarabun', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f9;
-        }
+@section('content')
+    <p class="greeting">เรียน คุณ{{ $application->applicant->first_name }} {{ $application->applicant->last_name }}</p>
 
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            background: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
+    <div class="message-body">
+        <p>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน) ได้รับใบสมัครงานของคุณในตำแหน่ง <strong style="color: #0284c7;">{{ $application->jobPost->position_name }}</strong> เรียบร้อยแล้ว</p>
 
-        .header {
-            background-color: #D71920;
-            padding: 30px 20px;
-            text-align: center;
-            color: white;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .greeting {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #1f2937;
-        }
-
-        .job-title {
-            font-weight: 600;
-            color: #4f46e5;
-        }
-
-        .info-card {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .footer {
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #9ca3af;
-            background-color: #f9fafb;
-            border-top: 1px solid #e5e7eb;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="{{ $message->embed(public_path('images/logos/th-kumwell-logo.png')) }}" alt="Kumwell Logo"
-                style="height: 40px; margin-bottom: 15px;">
-            <h1>ยืนยันการรับสมัครงาน</h1>
+        <!-- Blue Highlight Card requested by user -->
+        <div class="highlight-box" style="background-color: #f0f9ff; border: 1.5px solid #bae6fd; border-left: 5px solid #0284c7; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
+            <span style="display: inline-block; background-color: #e0f2fe; color: #0369a1; font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px;">
+                ✓ ได้รับข้อมูลใบสมัครเรียบร้อยแล้ว
+            </span>
+            <p style="margin: 4px 0;"><strong>ตำแหน่งงานที่สมัคร:</strong> <span style="color: #0284c7; font-weight: 700;">{{ $application->jobPost->position_name }}</span></p>
+            @if(!empty($application->jobPost->department?->department_name))
+                <p style="margin: 4px 0;"><strong>สังกัด/แผนก:</strong> {{ $application->jobPost->department->department_name }}</p>
+            @endif
+            <p style="margin: 4px 0;"><strong>เลขที่ใบสมัคร:</strong> {{ $application->application_no }}</p>
+            <p style="margin: 4px 0;"><strong>วันที่สมัคร:</strong> {{ $application->applied_at ? $application->applied_at->format('d/m/Y H:i') : date('d/m/Y H:i') }} น.</p>
         </div>
-        <div class="content">
-            <p class="greeting">เรียน คุณ{{ $application->applicant->first_name }}
-                {{ $application->applicant->last_name }},
-            </p>
 
-            <p>บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน) ได้รับใบสมัครของคุณในตำแหน่ง <span
-                    class="job-title">{{ $application->jobPost->position_name }}</span> เรียบร้อยแล้ว</p>
+        <p>ขณะนี้ฝ่ายทรัพยากรบุคคล (HA) กำลังดำเนินการตรวจสอบคุณสมบัติของผู้สมัคร หากประวัติและคุณสมบัติของท่านผ่านการพิจารณาเบื้องต้น เจ้าหน้าที่จะติดต่อกลับเพื่อประสานงานนัดหมายสัมภาษณ์งานในลำดับถัดไป</p>
 
-            <div class="info-card">
-                <p style="margin: 0;"><strong>เลขที่ใบสมัคร:</strong> {{ $application->application_no }}</p>
-                <p style="margin: 5px 0 0 0;"><strong>วันที่สมัคร:</strong>
-                    {{ $application->applied_at->format('d/m/Y H:i') }} น.</p>
+        <div class="notice-card" style="background-color: #fff7ed; border: 1px solid #ffedd5; border-left: 4px solid #dc2626; border-radius: 8px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: #9a3412;">
+            <strong style="color: #b91c1c;">📌 คำแนะนำสำหรับผู้สมัคร:</strong>
+            <div style="margin-top: 4px;">
+                • ท่านสามารถนำเลขที่ใบสมัคร <strong>{{ $application->application_no }}</strong> ตรวจสอบความคืบหน้าได้ตลอดเวลา<br>
+                • โปรดเตรียมความพร้อมในการรับสายโทรศัพท์หรือตรวจสอบอีเมลสำหรับการติดต่อจากฝ่ายทรัพยากรบุคคล
             </div>
-
-            <p>ขณะนี้ฝ่ายทรัพยากรบุคคลกำลังดำเนินการพิจารณาคุณสมบัติของท่าน
-                หากคุณสมบัติของท่านตรงตามความต้องการของทางบริษัท
-                เจ้าหน้าที่จะติดต่อกลับเพื่อขอนัดหมายสัมภาษณ์ในลำดับถัดไป</p>
-
-            <p>ขอขอบคุณที่ให้ความสนใจร่วมงานกับครอบครัว Kumwell</p>
-
-            <p>ขอแสดงความนับถือ,<br>
-                <strong>ฝ่ายทรัพยากรบุคคล</strong><br>
-                คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)
-            </p>
         </div>
-        <div class="footer">
-            &copy; {{ date('Y') + 543 }} Kumwell Corporation Public Company Limited.
-        </div>
+
+        @if(Route::has('frontend.recruitment.track'))
+            <div style="text-align: center; margin: 24px 0;">
+                <a href="{{ route('frontend.recruitment.track') }}" class="track-btn" target="_blank"
+                    style="display: inline-block; background-color: #dc2626; color: #ffffff !important; text-decoration: none; font-weight: 600; font-size: 13px; padding: 10px 22px; border-radius: 8px;">
+                    🔍 ตรวจสอบสถานะใบสมัครงานออนไลน์
+                </a>
+            </div>
+        @endif
+
+        <p style="margin-top: 20px;">ขอขอบพระคุณที่ให้ความสนใจร่วมงานกับครอบครัว Kumwell</p>
     </div>
-</body>
-
-</html>
+@endsection

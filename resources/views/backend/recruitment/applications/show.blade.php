@@ -23,8 +23,9 @@
                         <h2 class="text-2xl font-bold dark:text-white text-gray-800">
                             {{ $application->applicant->full_name }}
                         </h2>
-                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $application->status_badge_class }}">
-                            {{ $application->status_label }}
+                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold border shadow-2xs {{ $application->status_badge_class }}">
+                            <i class="{{ $application->status_icon }} text-xs"></i>
+                            <span>{{ $application->status_label }}</span>
                         </span>
                     </div>
                     <p class="text-xs text-gray-400 mt-1">
@@ -49,6 +50,7 @@
         <!-- ==================== RECRUITMENT WORKFLOW STEPPER ==================== -->
         @php
             $currentStep = $application->workflow_step;
+            $isHired = ($application->status === 'hired');
             $steps = [
                 1 => ['name' => '1. ตรวจสอบคุณสมบัติ (HA)', 'desc' => 'HA คัดกรองข้อมูลผู้สมัคร', 'icon' => 'fa-clipboard-check'],
                 2 => ['name' => '2. หัวหน้าแผนกพิจารณา', 'desc' => 'ส่งรายชื่อให้หัวหน้าแผนก', 'icon' => 'fa-user-tie'],
@@ -56,25 +58,105 @@
                 4 => ['name' => '4. สัมภาษณ์ & ประเมินผล', 'desc' => 'ดำเนินการสัมภาษณ์และให้คะแนน', 'icon' => 'fa-pen-to-square'],
                 5 => ['name' => '5. อนุมัติการคัดเลือก', 'desc' => 'กดอนุมัติผ่านการคัดเลือก', 'icon' => 'fa-circle-check'],
                 6 => ['name' => '6. ยื่นข้อเสนอ (Offer)', 'desc' => 'HA ติดต่อแจ้งผลผู้สมัคร', 'icon' => 'fa-handshake'],
-                7 => ['name' => '7. กำหนดวันเริ่มงาน', 'desc' => 'รับเข้าทำงานเสร็จสมบูรณ์', 'icon' => 'fa-building-user'],
+                7 => ['name' => '7. กำหนดวันเริ่มงานและส่งแจ้งผู้สมัคร', 'desc' => 'กำหนดวันเริ่มงานและส่งแจ้งผู้สมัคร', 'icon' => 'fa-calendar-check'],
+                8 => ['name' => '8. เสร็จการทำงาน (บรรจุงาน)', 'desc' => 'รับเข้าทำงานเสร็จสมบูรณ์', 'icon' => 'fa-building-user'],
             ];
+
+            // Helper to find log for specific status
+            $findLog = function($statuses) use ($application) {
+                $statuses = (array) $statuses;
+                return $application->statusLogs
+                    ->whereIn('new_status', $statuses)
+                    ->sortByDesc('created_at')
+                    ->first();
+            };
+
+            // Step 1: ตรวจสอบคุณสมบัติ (HA)
+            $step1Date = $application->screened_at ?? $findLog(['dept_review', 'interview', 'interview_scheduled'])?->created_at;
+            $step1User = $application->screener?->fullname 
+                ?? ($application->screener?->firstname ? trim($application->screener->firstname . ' ' . $application->screener->lastname) : null)
+                ?? $findLog(['dept_review'])?->user?->fullname
+                ?? ($step1Date ? 'ฝ่าย HA' : null);
+
+            // Step 2: หัวหน้าแผนกพิจารณา
+            $step2Date = $application->dept_reviewed_at ?? $findLog(['interview', 'interview_scheduled'])?->created_at;
+            $step2User = $application->deptReviewer?->fullname
+                ?? ($application->deptReviewer?->firstname ? trim($application->deptReviewer->firstname . ' ' . $application->deptReviewer->lastname) : null)
+                ?? $findLog(['interview', 'interview_scheduled'])?->user?->fullname
+                ?? ($step2Date ? 'หัวหน้าแผนก' : null);
+
+            // Step 3: นัดสัมภาษณ์
+            $firstInterview = $application->interviews->sortBy('created_at')->first();
+            $step3Date = $firstInterview?->created_at ?? $findLog(['interview_scheduled', 'interview_completed'])?->created_at;
+            $step3User = $findLog(['interview_scheduled'])?->user?->fullname
+                ?? $firstInterview?->interviewer?->fullname
+                ?? ($step3Date ? 'ฝ่าย HA' : null);
+
+            // Step 4: สัมภาษณ์ & ประเมินผล
+            $completedInterview = $application->interviews->where('status', 'completed')->sortByDesc('updated_at')->first();
+            $step4Date = $completedInterview?->updated_at ?? $findLog(['interview_completed', 'passed_selection', 'selection_approved'])?->created_at;
+            $step4User = $completedInterview?->interviewers?->first()?->fullname 
+                ?? $findLog(['interview_completed'])?->user?->fullname
+                ?? ($step4Date ? 'ผู้สัมภาษณ์' : null);
+
+            // Step 5: อนุมัติการคัดเลือก
+            $step5Date = $application->final_result_at ?? $findLog(['passed_selection', 'selection_approved', 'offered', 'hired'])?->created_at;
+            $step5User = $findLog(['passed_selection', 'selection_approved'])?->user?->fullname 
+                ?? ($step5Date ? 'ผู้อนุมัติ' : null);
+
+            // Step 6: ยื่นข้อเสนอ (Offer)
+            $step6Log = $findLog(['offered', 'hired']);
+            $step6Date = $step6Log?->created_at;
+            $step6User = $step6Log?->user?->fullname ?? ($step6Date ? 'ฝ่าย HA' : null);
+
+            // Step 7: กำหนดวันเริ่มงานและส่งแจ้งผู้สมัคร
+            $step7Log = $findLog(['hired']);
+            $step7Date = $step7Log?->created_at ?? ($application->onboarding_date ? $application->onboarding_date : null);
+            $step7User = $step7Log?->user?->fullname ?? ($step7Date ? 'ฝ่าย HA' : null);
+
+            // Step 8: เสร็จการทำงาน (บรรจุงาน)
+            $step8Date = $application->onboarding_date ?? $step7Date;
+            $step8User = $application->onboarding_date ? 'เริ่มงาน ' . $application->onboarding_date->format('d/m/Y') : ($step7User ?? 'ฝ่าย HA');
+
+            $stepApprovalInfo = [
+                1 => ['date' => $step1Date, 'user' => $step1User, 'role' => 'HA'],
+                2 => ['date' => $step2Date, 'user' => $step2User, 'role' => 'หัวหน้าแผนก'],
+                3 => ['date' => $step3Date, 'user' => $step3User, 'role' => 'HA'],
+                4 => ['date' => $step4Date, 'user' => $step4User, 'role' => 'ผู้สัมภาษณ์'],
+                5 => ['date' => $step5Date, 'user' => $step5User, 'role' => 'ผู้อนุมัติ'],
+                6 => ['date' => $step6Date, 'user' => $step6User, 'role' => 'HA'],
+                7 => ['date' => $step7Date, 'user' => $step7User, 'role' => 'HA'],
+                8 => ['date' => $step8Date, 'user' => $step8User, 'role' => 'HA'],
+            ];
+
+            $stepCount = count($steps);
+            $progressPercent = $isHired ? 100 : min(100, max(0, (($currentStep - 1) / max(1, $stepCount - 1)) * 100));
         @endphp
-        <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 sm:p-6 overflow-x-auto">
-            <div class="min-w-[760px]">
-                <div class="flex items-center justify-between relative">
+        <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-slate-300 dark:border-slate-700 p-4 sm:p-6 overflow-x-auto">
+            <div class="min-w-[960px]">
+                <div class="flex items-start justify-between relative">
                     {{-- Background line (gray track) --}}
-                    <div class="absolute left-[48px] right-[48px] top-5 h-1 bg-gray-200 dark:bg-gray-700 rounded-full" style="z-index: 1;"></div>
+                    <div class="absolute left-[48px] right-[48px] top-6 h-1 bg-gray-200 dark:bg-gray-700 rounded-full" style="z-index: 1;"></div>
                     {{-- Active Progress line (colored) --}}
-                    <div class="absolute left-[48px] top-5 h-1 bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 rounded-full transition-all duration-500"
-                         style="z-index: 2; width: calc({{ min(100, max(0, (($currentStep - 1) / 6) * 100)) }}% - 96px * {{ min(100, max(0, (($currentStep - 1) / 6) * 100)) / 100 }});"></div>
+                    <div class="absolute left-[48px] top-6 h-1 bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 rounded-full transition-all duration-500"
+                         style="z-index: 2; width: calc({{ $progressPercent }}% - 96px * {{ $progressPercent / 100 }});"></div>
 
                     @foreach($steps as $sIndex => $sData)
                         @php
-                            $isCompleted = $sIndex < $currentStep;
-                            $isActive = $sIndex === $currentStep;
-                            $isPending = $sIndex > $currentStep;
+                            if ($isHired) {
+                                $isCompleted = true;
+                                $isActive = false;
+                                $isPending = false;
+                            } else {
+                                $isCompleted = $sIndex < $currentStep;
+                                $isActive = $sIndex === $currentStep;
+                                $isPending = $sIndex > $currentStep;
+                            }
+                            $stepInfo = $stepApprovalInfo[$sIndex] ?? [];
+                            $apprDate = $stepInfo['date'] ?? null;
+                            $apprUser = $stepInfo['user'] ?? null;
                         @endphp
-                        <div class="flex flex-col items-center text-center w-24" style="position: relative; z-index: 5;">
+                        <div class="flex flex-col items-center text-center w-28 sm:w-32" style="position: relative; z-index: 5;">
                             {{-- White background ring to mask the line behind the circle --}}
                             <div class="w-12 h-12 rounded-2xl bg-white dark:bg-kumwell-card flex items-center justify-center p-[3px]">
                                 <div class="w-full h-full rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300 shadow-sm
@@ -94,6 +176,45 @@
                                 @else text-gray-400 @endif">
                                 {{ $sData['name'] }}
                             </span>
+
+                            {{-- Approval Time & Approver Badge --}}
+                            @if($isCompleted)
+                                <div class="mt-1.5 flex flex-col items-center w-full px-1">
+                                    <span class="inline-flex items-center gap-1 text-[9.5px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800 px-1.5 py-0.5 rounded shadow-xs" title="ผ่านการอนุมัติเมื่อ: {{ $apprDate ? (is_a($apprDate, 'DateTimeInterface') ? $apprDate->format('d/m/Y H:i') : $apprDate) : '-' }}">
+                                        <i class="fa-solid fa-check text-[8px]"></i>
+                                        <span>{{ $sIndex === 8 && $application->onboarding_date ? 'เริ่มงาน ' . $application->onboarding_date->format('d/m/y') : ($apprDate ? (is_a($apprDate, 'DateTimeInterface') ? $apprDate->format('d/m/y H:i') : (string)$apprDate) : 'อนุมัติแล้ว') }}</span>
+                                    </span>
+                                    @if(!empty($apprUser))
+                                        <span class="text-[9.5px] text-gray-600 dark:text-gray-300 mt-1 max-w-[120px] truncate block font-medium" title="ผู้อนุมัติ: {{ $apprUser }}">
+                                            <i class="fa-solid {{ $sIndex === 8 ? 'fa-building-circle-check' : 'fa-user-check' }} text-[8.5px] text-emerald-600 mr-0.5"></i>{{ $sIndex === 8 ? 'บรรจุงานเสร็จสมบูรณ์' : $apprUser }}
+                                        </span>
+                                    @endif
+                                </div>
+                            @elseif($isActive)
+                                <div class="mt-1.5 flex flex-col items-center w-full px-1">
+                                    <span class="inline-flex items-center gap-1 text-[9.5px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded shadow-xs">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                                        <span>กำลังดำเนินการ</span>
+                                    </span>
+                                    @if($sIndex === 1 && $application->applied_at)
+                                        <span class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 font-normal" title="ส่งใบสมัครเมื่อ {{ $application->applied_at->format('d/m/Y H:i') }}">
+                                            ยื่น: {{ $application->applied_at->format('d/m/y H:i') }}
+                                        </span>
+                                    @elseif($sIndex === 6)
+                                        <span class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 font-normal">รอส่ง Offer</span>
+                                    @elseif($sIndex === 7)
+                                        <span class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 font-normal">
+                                            {{ $application->onboarding_date ? 'แผนกเสนอ: ' . $application->onboarding_date->format('d/m/y') : 'รอกำหนดวันเริ่มงาน' }}
+                                        </span>
+                                    @else
+                                        <span class="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 font-normal">รอการพิจารณา</span>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="mt-1.5 flex flex-col items-center w-full">
+                                    <span class="text-[9.5px] text-gray-300 dark:text-gray-600 font-normal">รอดำเนินการ</span>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -196,7 +317,7 @@
                 @endphp
 
                 <!-- 5-Step Stepper Navigation Bar (Matching Picture 2) -->
-                <div class="bg-white dark:bg-kumwell-card p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto">
+                <div class="bg-white dark:bg-kumwell-card p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-300 dark:border-slate-700 overflow-x-auto">
                     <div class="flex items-center justify-between min-w-[720px] lg:min-w-0 px-1 gap-2">
                         <!-- Step 1 -->
                         <button type="button" @click="currentSheet = 1" class="flex items-center gap-3 group text-left cursor-pointer transition-all">
@@ -1131,7 +1252,7 @@
                                     @if($resumeDocs->isNotEmpty())
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             @foreach($resumeDocs as $rDoc)
-                                                @php $rUrl = $resolveFilePath($rDoc->file_path); @endphp
+                                                @php $rUrl = !empty($rDoc->id) ? route('recruitment.documents.show', $rDoc->id) : $resolveFilePath($rDoc->file_path); @endphp
                                                 <a href="{{ $rUrl ?: 'javascript:void(0)' }}" target="_blank" rel="noopener noreferrer"
                                                     class="flex items-center justify-between p-3 bg-red-50/60 rounded-xl border border-red-200 hover:border-[#B21F24] transition-all group shadow-2xs">
                                                     <div class="flex items-center gap-2.5 min-w-0">
@@ -1629,7 +1750,7 @@
                                 </p>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     @forelse($allAppDocs as $doc)
-                                        @php $dUrl = $resolveFilePath($doc->file_path); @endphp
+                                        @php $dUrl = !empty($doc->id) ? route('recruitment.documents.show', $doc->id) : $resolveFilePath($doc->file_path); @endphp
                                         <a href="{{ $dUrl ?: 'javascript:void(0)' }}" target="_blank" rel="noopener noreferrer"
                                             class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-[#B21F24] transition-all group shadow-2xs">
                                             <div class="flex items-center gap-2.5 min-w-0">
@@ -1679,8 +1800,8 @@
 
                 @if($isHa)
                     <!-- Status Logs Accordion / Card (เฉพาะ HA และ Admin) -->
-                    <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-                        <h3 class="text-base font-bold text-gray-800 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-2 flex items-center gap-2">
+                    <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-slate-300 dark:border-slate-700 p-6">
+                        <h3 class="text-base font-bold text-gray-800 dark:text-white mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-clock-rotate-left text-kumwell-red"></i> ประวัติการดำเนินการ (Status Logs)
                         </h3>
                         <div class="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-gray-100 dark:before:bg-gray-800">
@@ -1702,8 +1823,8 @@
                     </div>
 
                     <!-- Previous Applications History (เฉพาะ HA และ Admin) -->
-                    <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-                        <h3 class="text-base font-bold text-gray-800 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-800 pb-2 flex items-center gap-2">
+                    <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-slate-300 dark:border-slate-700 p-6">
+                        <h3 class="text-base font-bold text-gray-800 dark:text-white mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-history text-kumwell-red"></i> ประวัติการสมัครเดิมของผู้สมัครนี้
                         </h3>
                         <div class="space-y-3">
@@ -1746,13 +1867,14 @@
             <!-- Actions (Right) -->
             <div class="xl:col-span-4 space-y-6">
                 <!-- ==================== CURRENT WORKFLOW ACTION CENTER ==================== -->
-                <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
+                <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-slate-300 dark:border-slate-700 p-6">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-700 pb-3">
                         <h3 class="text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
                             <i class="fa-solid fa-bolt text-amber-500"></i> การดำเนินการขั้นตอนนี้
                         </h3>
-                        <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {{ $application->status_badge_class }}">
-                            {{ $application->status_label }}
+                        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs {{ $application->status_badge_class }}">
+                            <i class="{{ $application->status_icon }} text-[10px]"></i>
+                            <span>{{ $application->status_label }}</span>
                         </span>
                     </div>
 
@@ -1858,6 +1980,8 @@
                                 <i class="fa-solid fa-calendar-check mr-1 text-purple-600"></i> HA ติดต่อนัดสัมภาษณ์และส่งอีเมลแจ้งผู้สมัครเรียบร้อยแล้ว
                             </div>
                             @php
+                                $lastInterview = $application->interviews->sortBy('interview_round')->last();
+                                $isLastInterviewCompleted = !$lastInterview || ($lastInterview->status === 'completed' || $lastInterview->evaluation);
                                 $latestScheduled = $application->interviews->where('status', 'scheduled')->last() ?? $application->interviews->last();
                                 $latestScheduledData = null;
                                 if ($latestScheduled) {
@@ -1878,11 +2002,48 @@
                                     ];
                                 }
                             @endphp
+                            @php
+                                $scheduledEvaluation = $latestScheduled?->evaluation 
+                                    ?? \App\Models\InterviewEvaluation::where('interview_id', $latestScheduled?->id)
+                                        ->orWhere(function($q) use ($application, $latestScheduled) {
+                                            $q->where('application_id', $application->id)
+                                              ->where('interview_times', $latestScheduled?->interview_round ?? 1);
+                                        })->latest()->first();
+                            @endphp
+
                             @if($latestScheduled)
-                                <a href="{{ route('interview-evaluation.create', ['interview_id' => $latestScheduled->id, 'application_id' => $application->id, 'return_url' => url()->current()]) }}"
-                                    class="w-full bg-kumwell-red hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-red-500/20 transition-all active:scale-98 cursor-pointer">
-                                    <i class="fa-solid fa-file-signature"></i> บันทึกคะแนนแบบประเมินผลการสัมภาษณ์ (รอบที่ {{ $latestScheduled->interview_round }})
-                                </a>
+                                @if($scheduledEvaluation && $scheduledEvaluation->status === 'pending_dept')
+                                    <div class="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                                        <div class="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                                            <i class="fa-solid fa-clock-rotate-left"></i> HR ให้คะแนนแล้ว ({{ $scheduledEvaluation->total_hr_score }}/40)
+                                        </div>
+                                        <p class="text-[11px] text-amber-700 dark:text-amber-400">
+                                            อยู่ระหว่างรอ <strong>หัวหน้าแผนก / ต้นสังกัด</strong> ตรวจสอบและให้คะแนนเพื่อสรุปผล
+                                        </p>
+                                    </div>
+                                    <a href="{{ route('interview-evaluation.create', ['interview_id' => $latestScheduled->id, 'application_id' => $application->id, 'return_url' => url()->current()]) }}"
+                                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all active:scale-98 cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square"></i> @if($isDeptManager) ✍️ ต้นสังกัด: บันทึกคะแนนสัมภาษณ์ @else ✏️ เข้าดู/แก้ไขแบบประเมินผล @endif
+                                    </a>
+                                @elseif($scheduledEvaluation && $scheduledEvaluation->status === 'pending_hr')
+                                    <div class="p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-1">
+                                        <div class="font-bold flex items-center gap-1.5 text-blue-800 dark:text-blue-300">
+                                            <i class="fa-solid fa-clock-rotate-left"></i> ต้นสังกัดให้คะแนนแล้ว ({{ $scheduledEvaluation->total_dept_score }}/40)
+                                        </div>
+                                        <p class="text-[11px] text-blue-700 dark:text-blue-400">
+                                            อยู่ระหว่างรอฝ่าย <strong>HA / ฝ่ายบุคคล</strong> ตรวจสอบและให้คะแนนเพื่อสรุปผล
+                                        </p>
+                                    </div>
+                                    <a href="{{ route('interview-evaluation.create', ['interview_id' => $latestScheduled->id, 'application_id' => $application->id, 'return_url' => url()->current()]) }}"
+                                        class="w-full bg-kumwell-red hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-red-500/20 transition-all active:scale-98 cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square"></i> @if($isHa) ✍️ ฝ่ายบุคคล: บันทึกคะแนนสัมภาษณ์ @else ✏️ เข้าดู/แก้ไขแบบประเมินผล @endif
+                                    </a>
+                                @else
+                                    <a href="{{ route('interview-evaluation.create', ['interview_id' => $latestScheduled->id, 'application_id' => $application->id, 'return_url' => url()->current()]) }}"
+                                        class="w-full bg-kumwell-red hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-red-500/20 transition-all active:scale-98 cursor-pointer">
+                                        <i class="fa-solid fa-file-signature"></i> บันทึกคะแนนแบบประเมินผลการสัมภาษณ์ (รอบที่ {{ $latestScheduled->interview_round }})
+                                    </a>
+                                @endif
                             @endif
                             @if($isHa)
                                 @if($latestScheduledData)
@@ -1891,10 +2052,13 @@
                                         <i class="fa-solid fa-clock-rotate-left"></i> ปรับเวลานัดสัมภาษณ์ (รอบที่ {{ $latestScheduled->interview_round }})
                                     </button>
                                 @endif
-                                <button type="button" onclick="openCreateInterviewModal()"
-                                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-600/20 transition-all active:scale-98 cursor-pointer">
-                                    <i class="fa-solid fa-plus"></i> นัดสัมภาษณ์รอบใหม่ (รอบที่ {{ $application->interviews->count() + 1 }})
-                                </button>
+                                {{-- นัดสัมภาษณ์รอบใหม่ จะแสดงเมื่อสัมภาษณ์และประเมินผลรอบปัจจุบันเสร็จแล้วเท่านั้น --}}
+                                @if($isLastInterviewCompleted)
+                                    <button type="button" onclick="openCreateInterviewModal()"
+                                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-600/20 transition-all active:scale-98 cursor-pointer">
+                                        <i class="fa-solid fa-plus"></i> นัดสัมภาษณ์รอบใหม่ (รอบที่ {{ $application->interviews->count() + 1 }})
+                                    </button>
+                                @endif
                             @endif
                         </div>
 
@@ -1916,6 +2080,12 @@
                                     class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 dark:text-rose-300 font-bold py-2.5 px-4 rounded-xl border border-rose-200 dark:border-rose-800 transition-all text-xs flex items-center justify-center gap-2 cursor-pointer">
                                     <i class="fa-solid fa-rotate-left"></i> ไม่ผ่าน: ส่งกลับให้ HA พิจารณาคนอื่น
                                 </button>
+                                @if($isHa)
+                                    <button type="button" onclick="openCreateInterviewModal()"
+                                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-600/20 transition-all active:scale-98 cursor-pointer">
+                                        <i class="fa-solid fa-plus"></i> นัดสัมภาษณ์รอบใหม่ (รอบที่ {{ $application->interviews->count() + 1 }})
+                                    </button>
+                                @endif
                             @else
                                 <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-center text-xs text-slate-500 dark:text-slate-400 font-medium border border-dashed border-slate-200 dark:border-slate-700">
                                     <i class="fa-solid fa-clock mr-1 text-indigo-500"></i>
@@ -1932,30 +2102,96 @@
                             </div>
                         </div>
 
-                    {{-- Step 5 & 6: ผ่านการคัดเลือก / ยื่น Offer --}}
-                    @elseif(in_array($application->status, ['passed_selection', 'selection_approved', 'offered']))
+                    {{-- Step 5: ผ่านการคัดเลือก (รอฝ่าย HA กดยื่นข้อเสนอ) --}}
+                    @elseif(in_array($application->status, ['passed_selection', 'selection_approved']))
                         <div class="space-y-3">
                             <div class="p-3 bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 rounded-xl text-xs text-teal-900 dark:text-teal-300">
-                                <i class="fa-solid fa-trophy mr-1"></i> ผู้สมัคร <strong>ผ่านการคัดเลือก</strong> เรียบร้อยแล้ว
+                                <i class="fa-solid fa-trophy mr-1 text-teal-600"></i> ผู้สมัคร <strong>ผ่านการคัดเลือก</strong> เรียบร้อยแล้ว
                             </div>
                             @if($isHa)
-                                @if($application->status !== 'offered')
-                                    <form action="{{ route('backend.recruitment.applications.update-status', $application->id) }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="status" value="offered">
-                                        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md shadow-cyan-600/20 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer">
-                                            <i class="fa-solid fa-envelope-circle-check"></i> HA แจ้งติดต่อผู้สมัคร / ยื่น Offer
-                                        </button>
-                                    </form>
+                                <form action="{{ route('backend.recruitment.applications.update-status', $application->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="status" value="offered">
+                                    <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-cyan-600/25 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer active:scale-98">
+                                        <i class="fa-solid fa-paper-plane"></i> กดยื่นข้อเสนอ (ส่งอีเมลแจ้งผู้สมัครว่าผ่าน)
+                                    </button>
+                                </form>
+                            @else
+                                <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-center text-xs text-slate-500 dark:text-slate-400 font-medium border border-dashed border-slate-200 dark:border-slate-700">
+                                    <i class="fa-solid fa-clock mr-1 text-cyan-500"></i>
+                                    ผ่านการคัดเลือกแล้ว รอฝ่าย <strong>HA</strong> กดยื่นข้อเสนอและส่งอีเมลแจ้งผู้สมัคร
+                                </div>
+                            @endif
+                        </div>
+
+                    {{-- Step 6: ยื่นข้อเสนอ / ต่อรองข้อเสนอ (Offered) --}}
+                    @elseif($application->status === 'offered')
+                        <div class="space-y-3">
+                            <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded-xl text-xs text-cyan-900 dark:text-cyan-300">
+                                <i class="fa-solid fa-handshake mr-1.5 text-cyan-600"></i> อยู่ในขั้นตอน <strong>ยื่นข้อเสนอ / ต่อรองข้อเสนอ (Offer)</strong>
+                            </div>
+
+                            {{-- สำหรับหัวหน้าแผนก (Department Head) --}}
+                            @if($isDeptManager && !$isHa)
+                                @if($application->onboarding_date)
+                                    <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs space-y-1.5">
+                                        <div class="font-bold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-calendar-check text-indigo-600"></i> กำหนดวันเริ่มงานส่งให้ฝ่าย HA แล้ว
+                                        </div>
+                                        <div class="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                                            วันที่: {{ $application->onboarding_date->format('d/m/Y') }}
+                                        </div>
+                                        <div class="text-[11px] text-indigo-600 dark:text-indigo-400">
+                                            ✓ ส่งข้อมูลให้ฝ่าย HA เรียบร้อยแล้ว (รอ HA กดส่งยืนยันให้ผู้สมัคร)
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="openModal('deptOnboardingModal')"
+                                        class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 dark:text-indigo-300 font-semibold py-2 px-3 rounded-xl border border-indigo-200 dark:border-indigo-800 text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <i class="fa-solid fa-pen-to-square"></i> แก้ไขวันเริ่มงานที่เสนอ
+                                    </button>
+                                @else
+                                    <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
+                                        <i class="fa-solid fa-clock mr-1 text-amber-600"></i> เมื่อต่อรองข้อเสนอเรียบร้อย ให้หัวหน้าแผนกกำหนดวันทำงานเพื่อส่งให้ฝ่าย HA
+                                    </div>
+                                    <button type="button" onclick="openModal('deptOnboardingModal')"
+                                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer active:scale-98">
+                                        <i class="fa-solid fa-calendar-days"></i> กำหนดวันทำงาน (ส่งให้ฝ่าย HA)
+                                    </button>
                                 @endif
-                                <button type="button" onclick="openModal('onboardingModal')"
-                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer">
-                                    <i class="fa-solid fa-calendar-check"></i> กำหนดวันทำงาน (รับเข้าทำงาน - Hired)
-                                </button>
+
+                            {{-- สำหรับฝ่าย HA --}}
+                            @elseif($isHa)
+                                @if($application->onboarding_date)
+                                    <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs space-y-1.5">
+                                        <div class="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-user-check text-emerald-600"></i> หัวหน้าแผนกกำหนดวันเริ่มงานส่งมาแล้ว
+                                        </div>
+                                        <div class="text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                                            วันที่เริ่มงาน: {{ $application->onboarding_date->format('d/m/Y') }}
+                                        </div>
+                                        <div class="text-[11px] text-emerald-600 dark:text-emerald-400">
+                                            ฝ่าย HA ตรวจสอบความถูกต้อง แล้วกดส่งแจ้งผู้สมัครเพื่อยืนยันการรับเข้าทำงาน
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="openModal('onboardingModal')"
+                                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer active:scale-98">
+                                        <i class="fa-solid fa-paper-plane"></i> HA กดส่งให้ผู้สมัคร (รับเข้าทำงาน - Hired)
+                                    </button>
+                                @else
+                                    <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
+                                        <i class="fa-solid fa-hourglass-half mr-1 text-amber-600"></i> อยู่ระหว่างรอหัวหน้าแผนกกำหนดวันทำงานส่งมาให้ HA (หรือ HA สามารถระบุวันและกดส่งให้ผู้สมัครได้ทันที)
+                                    </div>
+                                    <button type="button" onclick="openModal('onboardingModal')"
+                                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer active:scale-98">
+                                        <i class="fa-solid fa-calendar-check"></i> กำหนดวันทำงานและกดส่งให้ผู้สมัคร (Hired)
+                                    </button>
+                                @endif
+
+                            {{-- ผู้ใช้อื่นๆ --}}
                             @else
                                 <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-center text-xs text-slate-500 dark:text-slate-400 font-medium border border-dashed border-slate-200 dark:border-slate-700">
                                     <i class="fa-solid fa-handshake mr-1.5 text-cyan-500"></i>
-                                    อยู่ระหว่างฝ่าย <strong>HA</strong> ติดต่อยื่นข้อเสนอและกำหนดวันเริ่มงาน
+                                    อยู่ระหว่างหัวหน้าแผนกและฝ่าย HA กำหนดวันเริ่มงานและส่งแจ้งผู้สมัคร
                                 </div>
                             @endif
                         </div>
@@ -1986,7 +2222,7 @@
 
                     <!-- Collapsible Manual Status Form (เฉพาะฝ่าย HA เท่านั้น) -->
                     @if(Auth::check() && Auth::user()->isHrOrAdmin())
-                        <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <details class="group">
                                 <summary class="text-xs font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer flex items-center justify-between select-none">
                                     <span><i class="fa-solid fa-sliders mr-1"></i> ปรับเปลี่ยนสถานะด้วยตนเอง (Manual - เฉพาะ HA)</span>
@@ -2024,22 +2260,28 @@
                 </div>
 
                 <!-- Interview Management -->
-                <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8">
-                    <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-800 pb-2">
+                <div class="bg-white dark:bg-kumwell-card rounded-2xl shadow-sm border border-slate-300 dark:border-slate-700 p-8">
+                    <div class="flex justify-between items-center mb-6 border-b border-slate-200 dark:border-slate-700 pb-2">
                         <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
                             <i class="fa-solid fa-calendar-check text-kumwell-red"></i> การสัมภาษณ์
                         </h3>
                         @if($isHa)
-                            <button onclick="openModal('scheduleModal')" 
-                                class="text-xs font-bold text-kumwell-red hover:text-red-700 underline transition-all cursor-pointer">
-                                + นัดสัมภาษณ์
-                            </button>
+                            @php
+                                $lastInterviewForHeader = $application->interviews->sortBy('interview_round')->last();
+                                $canScheduleFromHeader = !$lastInterviewForHeader || ($lastInterviewForHeader->status === 'completed' || $lastInterviewForHeader->evaluation);
+                            @endphp
+                            @if($canScheduleFromHeader)
+                                <button onclick="openCreateInterviewModal()" 
+                                    class="text-xs font-bold text-kumwell-red hover:text-red-700 underline transition-all cursor-pointer">
+                                    + นัดสัมภาษณ์
+                                </button>
+                            @endif
                         @endif
                     </div>
 
                     <div class="space-y-4">
                         @forelse($application->interviews as $interview)
-                            <div class="p-4 bg-gray-50 dark:bg-kumwell-dark rounded-xl border border-gray-100 dark:border-gray-700 group">
+                            <div class="p-4 bg-gray-50 dark:bg-kumwell-dark rounded-xl border border-slate-300 dark:border-slate-700 group">
                                 <div class="flex justify-between items-start mb-2">
                                     <div>
                                         <span class="text-[10px] font-bold text-kumwell-red uppercase px-2 py-0.5 bg-red-50 dark:bg-red-500/10 rounded-full">รอบที่ {{ $interview->interview_round }}</span>
@@ -2124,7 +2366,15 @@
                                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
                                                 <i class="fa-solid fa-clipboard-check text-emerald-500"></i> ผลประเมินสัมภาษณ์ (QF-HR-15)
                                             </span>
-                                            @if($cardEvaluation->summary_result === 'hire')
+                                            @if($cardEvaluation->status === 'pending_dept')
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
+                                                    ⏳ รอต้นสังกัดประเมิน
+                                                </span>
+                                            @elseif($cardEvaluation->status === 'pending_hr')
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400">
+                                                    ⏳ รอฝ่ายบุคคลประเมิน
+                                                </span>
+                                            @elseif($cardEvaluation->summary_result === 'hire')
                                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
                                                     ✓ ควรว่าจ้าง
                                                 </span>
@@ -2142,31 +2392,49 @@
                                         <div class="grid grid-cols-3 gap-1.5 text-center">
                                             <div class="p-2 bg-white dark:bg-kumwell-card rounded-lg border border-gray-100 dark:border-gray-800">
                                                 <p class="text-[8px] text-gray-400 uppercase">HR</p>
-                                                <p class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ $cardEvaluation->total_hr_score ?? '-' }}/40</p>
+                                                <p class="text-xs font-bold {{ $cardEvaluation->total_hr_score !== null ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 italic' }}">
+                                                    {{ $cardEvaluation->total_hr_score !== null ? $cardEvaluation->total_hr_score . '/40' : 'รอประเมิน' }}
+                                                </p>
                                             </div>
                                             <div class="p-2 bg-white dark:bg-kumwell-card rounded-lg border border-gray-100 dark:border-gray-800">
                                                 <p class="text-[8px] text-gray-400 uppercase">ต้นสังกัด</p>
-                                                <p class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ $cardEvaluation->total_dept_score ?? '-' }}/40</p>
+                                                <p class="text-xs font-bold {{ $cardEvaluation->total_dept_score !== null ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 italic' }}">
+                                                    {{ $cardEvaluation->total_dept_score !== null ? $cardEvaluation->total_dept_score . '/40' : 'รอประเมิน' }}
+                                                </p>
                                             </div>
                                             <div class="p-2 bg-white dark:bg-kumwell-card rounded-lg border border-gray-100 dark:border-gray-800">
                                                 <p class="text-[8px] text-gray-400 uppercase">เฉลี่ย</p>
-                                                <p class="text-xs font-bold text-kumwell-red">{{ $cardEvaluation->average_score ?? '-' }}/40</p>
+                                                <p class="text-xs font-bold {{ $cardEvaluation->average_score ? 'text-kumwell-red' : 'text-gray-400 italic' }}">
+                                                    {{ $cardEvaluation->average_score ? $cardEvaluation->average_score . '/40' : '-' }}
+                                                </p>
                                             </div>
                                         </div>
 
                                         <div class="flex items-center gap-1.5 pt-1">
-                                            <a href="{{ route('interview-evaluation.show', $cardEvaluation->id) }}" target="_blank"
-                                                class="flex-1 text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-[10px] font-semibold py-1.5 px-2 rounded-lg transition">
-                                                <i class="fa-solid fa-file-lines mr-1"></i> ดูแบบประเมิน
-                                            </a>
-                                            <a href="{{ route('interview-evaluation.pdf', $cardEvaluation->id) }}" target="_blank"
-                                                class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 text-[10px] font-semibold rounded-lg transition" title="ดาวน์โหลด PDF">
-                                                <i class="fa-solid fa-file-pdf"></i>
-                                            </a>
-                                            <a href="{{ route('interview-evaluation.create', ['interview_id' => $interview->id, 'application_id' => $application->id, 'return_url' => url()->current()]) }}"
-                                                class="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] font-semibold rounded-lg transition border border-gray-200 dark:border-gray-700" title="ประเมินเพิ่มเติม / ปรับปรุง">
-                                                <i class="fa-solid fa-pen"></i>
-                                            </a>
+                                            @if(in_array($cardEvaluation->status, ['pending_dept', 'pending_hr']))
+                                                <a href="{{ route('interview-evaluation.create', ['interview_id' => $interview->id, 'application_id' => $application->id, 'return_url' => url()->current()]) }}"
+                                                    class="flex-1 text-center bg-kumwell-red hover:bg-red-700 text-white text-[11px] font-bold py-2 px-3 rounded-lg transition-all shadow-md shadow-red-500/20 flex items-center justify-center gap-1.5">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                    <span>{{ $cardEvaluation->status === 'pending_dept' ? 'ต้นสังกัด: บันทึกคะแนนต่อ' : 'ฝ่ายบุคคล: บันทึกคะแนนต่อ' }}</span>
+                                                </a>
+                                                <a href="{{ route('interview-evaluation.show', $cardEvaluation->id) }}" target="_blank"
+                                                    class="px-2.5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10px] font-semibold rounded-lg transition" title="ดูแบบร่าง">
+                                                    <i class="fa-solid fa-file-lines"></i>
+                                                </a>
+                                            @else
+                                                <a href="{{ route('interview-evaluation.show', $cardEvaluation->id) }}" target="_blank"
+                                                    class="flex-1 text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-[10px] font-semibold py-1.5 px-2 rounded-lg transition">
+                                                    <i class="fa-solid fa-file-lines mr-1"></i> ดูแบบประเมิน
+                                                </a>
+                                                <a href="{{ route('interview-evaluation.pdf', $cardEvaluation->id) }}" target="_blank"
+                                                    class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 text-[10px] font-semibold rounded-lg transition" title="ดาวน์โหลด PDF">
+                                                    <i class="fa-solid fa-file-pdf"></i>
+                                                </a>
+                                                <a href="{{ route('interview-evaluation.create', ['interview_id' => $interview->id, 'application_id' => $application->id, 'return_url' => url()->current()]) }}"
+                                                    class="px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] font-semibold rounded-lg transition border border-gray-200 dark:border-gray-700" title="ประเมินเพิ่มเติม / ปรับปรุง">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </a>
+                                            @endif
                                         </div>
                                     </div>
                                 @elseif($interview->status == 'completed' && $interview->scores->count() > 0)
@@ -2497,7 +2765,58 @@
         </div>
     </div>
 
-    <!-- Onboarding Date Modal -->
+    <!-- Department Head Onboarding Date Modal -->
+    <div id="deptOnboardingModal" class="fixed inset-0 z-[60] hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('deptOnboardingModal')"></div>
+            
+            <div class="relative bg-white dark:bg-kumwell-card rounded-3xl shadow-2xl w-full max-w-md transform transition-all animate-modal-in">
+                <div class="bg-indigo-600 p-6 text-white flex justify-between items-center rounded-t-3xl">
+                    <h3 class="text-xl font-bold flex items-center gap-3">
+                        <i class="fa-solid fa-calendar-days"></i> กำหนดวันทำงาน (ส่งให้ฝ่าย HA)
+                    </h3>
+                    <button onclick="closeModal('deptOnboardingModal')" class="text-white/80 hover:text-white">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                
+                <form action="{{ route('backend.recruitment.applications.update-status', $application->id) }}" method="POST" class="p-8 space-y-5">
+                    @csrf
+                    <input type="hidden" name="status" value="offered">
+                    
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs text-indigo-900 dark:text-indigo-300 leading-relaxed">
+                        <i class="fa-solid fa-circle-info mr-1 text-indigo-600"></i>
+                        ระบุวันที่ต้องการให้ผู้สมัครเริ่มปฏิบัติงาน จากนั้นระบบจะส่งข้อมูลวันเริ่มงานไปยังฝ่าย HA เพื่อตรวจสอบและกดส่งแจ้งผู้สมัครอย่างเป็นทางการ
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ระบุวันเริ่มงานที่ต้องการ (Start Date) <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <input type="text" id="dept_onboarding_date" name="onboarding_date" required min="{{ date('Y-m-d') }}" value="{{ $application->onboarding_date ? $application->onboarding_date->format('Y-m-d') : '' }}"
+                                placeholder="เลือกวันเริ่มงาน..." readonly
+                                class="datepicker-th w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold cursor-pointer">
+                            <i class="fa-regular fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">บันทึกข้อสรุปการต่อรอง / เงื่อนไขเพิ่มเติม</label>
+                        <textarea name="note" rows="3" placeholder="ระบุรายละเอียด เช่น ตกลงเริ่มงานวันจันทร์, อุปกรณ์หรือคอมพิวเตอร์ที่ต้องจัดเตรียม..."
+                            class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all"></textarea>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-indigo-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-paper-plane"></i> บันทึกวันทำงานและส่งให้ฝ่าย HA
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- HA Onboarding Confirm & Send to Applicant Modal -->
     <div id="onboardingModal" class="fixed inset-0 z-[60] hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('onboardingModal')"></div>
@@ -2505,7 +2824,7 @@
             <div class="relative bg-white dark:bg-kumwell-card rounded-3xl shadow-2xl w-full max-w-md transform transition-all animate-modal-in">
                 <div class="bg-emerald-600 p-6 text-white flex justify-between items-center rounded-t-3xl">
                     <h3 class="text-xl font-bold flex items-center gap-3">
-                        <i class="fa-solid fa-calendar-check"></i> กำหนดวันเริ่มงาน (รับเข้าทำงาน)
+                        <i class="fa-solid fa-calendar-check"></i> กำหนดวันเริ่มงานและส่งแจ้งผู้สมัคร (Hired)
                     </h3>
                     <button onclick="closeModal('onboardingModal')" class="text-white/80 hover:text-white">
                         <i class="fa-solid fa-xmark text-xl"></i>
@@ -2516,22 +2835,38 @@
                     @csrf
                     <input type="hidden" name="status" value="hired">
                     
+                    @if($application->onboarding_date)
+                        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-900 dark:text-emerald-300">
+                            <i class="fa-solid fa-user-tie mr-1 text-emerald-600"></i>
+                            หัวหน้าแผนกเสนอวันเริ่มงาน: <strong>{{ $application->onboarding_date->format('d/m/Y') }}</strong>
+                        </div>
+                    @endif
+
                     <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ระบุวันเริ่มงาน (Onboarding Date)</label>
-                        <input type="date" name="onboarding_date" required value="{{ $application->onboarding_date ? $application->onboarding_date->format('Y-m-d') : date('Y-m-d') }}"
-                            class="w-full bg-gray-50 dark:bg-kumwell-dark border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500/20 transition-all font-semibold">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ยืนยันวันเริ่มงาน (Onboarding Date) <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <input type="text" id="onboarding_date" name="onboarding_date" required value="{{ $application->onboarding_date ? $application->onboarding_date->format('Y-m-d') : date('Y-m-d') }}"
+                                placeholder="เลือกวันเริ่มงาน..." readonly
+                                class="datepicker-th w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-emerald-500/20 transition-all font-semibold cursor-pointer">
+                            <i class="fa-regular fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
+                        </div>
                     </div>
 
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">บันทึกเพิ่มเติม / เงื่อนไข</label>
                         <textarea name="note" rows="3" placeholder="ระบุรายละเอียด เช่น แผนกที่สังกัด, เอกสารที่ต้องนำมาในวันแรก..."
-                            class="w-full bg-gray-50 dark:bg-kumwell-dark border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500/20 transition-all"></textarea>
+                            class="w-full bg-gray-50 dark:bg-kumwell-dark border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500/20 transition-all"></textarea>
+                    </div>
+
+                    <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-900 dark:text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane text-amber-600 text-sm"></i>
+                        <span>เมื่อกดส่ง ระบบจะส่งอีเมลแจ้งผลการรับเข้าทำงานพร้อมวันเริ่มงานไปยังผู้สมัครทันที</span>
                     </div>
 
                     <div class="pt-2">
                         <button type="submit"
-                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-emerald-500/30 transition-all active:scale-95 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-check"></i> บันทึกรับเข้าทำงาน (Hired)
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-emerald-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-circle-check"></i> ยืนยันรับเข้าทำงานและส่งแจ้งผู้สมัคร (Hired)
                         </button>
                     </div>
                 </form>
@@ -2592,37 +2927,152 @@
     <script>
         let fpDate = null;
 
-        function initDatepicker() {
-            const dateInput = document.getElementById('interview_date');
-            if (!dateInput || fpDate) return;
+        function formatHeaderBuddhistYear(instance) {
+            setTimeout(function() {
+                if (!instance || !instance.calendarContainer) return;
+                let cYear = instance.currentYear;
+                if (cYear > 2400) {
+                    cYear -= 543;
+                }
+                const bYear = cYear + 543;
+                const curYearElem = instance.calendarContainer.querySelector('.flatpickr-current-month .cur-year');
+                if (curYearElem) {
+                    curYearElem.value = bYear;
+                }
+                const numYearInputs = instance.calendarContainer.querySelectorAll('.cur-year');
+                numYearInputs.forEach(function(inp) {
+                    inp.value = bYear;
+                });
+            }, 10);
+        }
 
-            if (typeof flatpickr !== 'undefined') {
+        function initThaiDatepickers() {
+            if (typeof flatpickr === 'undefined') return;
+
+            if (flatpickr.l10ns && flatpickr.l10ns.th) {
+                flatpickr.localize(flatpickr.l10ns.th);
+            }
+            const thLocale = (flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : 'th';
+
+            // 1. Schedule Interview date picker
+            const dateInput = document.getElementById('interview_date');
+            if (dateInput && !fpDate) {
                 try {
-                    let localeObj = 'default';
-                    if (window.flatpickr && window.flatpickr.l10ns && window.flatpickr.l10ns.th) {
-                        localeObj = window.flatpickr.l10ns.th;
-                    }
                     fpDate = flatpickr(dateInput, {
                         dateFormat: "Y-m-d",
                         altInput: true,
                         altFormat: "d/m/Y",
                         defaultDate: dateInput.value || null,
                         altInputClass: "w-full bg-gray-50 dark:bg-kumwell-dark border-none rounded-xl px-3 py-2 pr-7 text-xs focus:ring-2 focus:ring-kumwell-red/20 transition-all cursor-pointer font-medium text-gray-700 dark:text-gray-200",
-                        locale: localeObj,
+                        locale: thLocale,
                         disableMobile: true,
                         clickOpens: true,
                         allowInput: false,
                         static: false,
                         position: "auto",
-                        appendTo: document.getElementById('scheduleModal')
+                        appendTo: document.getElementById('scheduleModal'),
+                        parseDate: function(dateStr, formatStr) {
+                            if (typeof dateStr === 'string' && dateStr.includes('/')) {
+                                const parts = dateStr.split('/');
+                                if (parts.length === 3) {
+                                    let day = parseInt(parts[0], 10);
+                                    let month = parseInt(parts[1], 10) - 1;
+                                    let year = parseInt(parts[2], 10);
+                                    if (year > 2400) year -= 543;
+                                    return new Date(year, month, day);
+                                }
+                            }
+                            return flatpickr.parseDate(dateStr, formatStr);
+                        },
+                        formatDate: function(date, formatStr, locale) {
+                            if (formatStr === 'd/m/Y') {
+                                const day = String(date.getDate()).padStart(2, '0');
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                let year = date.getFullYear();
+                                if (year < 2400) year += 543;
+                                return day + '/' + month + '/' + year;
+                            }
+                            return flatpickr.formatDate(date, formatStr, locale);
+                        },
+                        onReady: function(selectedDates, dateStr, instance) {
+                            formatHeaderBuddhistYear(instance);
+                        },
+                        onMonthChange: function(selectedDates, dateStr, instance) { formatHeaderBuddhistYear(instance); },
+                        onYearChange: function(selectedDates, dateStr, instance) { formatHeaderBuddhistYear(instance); },
+                        onOpen: function(selectedDates, dateStr, instance) { formatHeaderBuddhistYear(instance); }
                     });
                 } catch (e) {
-                    console.warn('Flatpickr init warning:', e);
+                    console.warn('Flatpickr init warning (interview_date):', e);
                     fallbackNativeDate(dateInput);
                 }
-            } else {
-                fallbackNativeDate(dateInput);
             }
+
+            // 2. Onboarding modals & all other .datepicker-th inputs
+            document.querySelectorAll('.datepicker-th').forEach(function(el) {
+                if (el._flatpickr) return;
+                try {
+                    const minD = el.getAttribute('min') || null;
+                    const defaultD = el.value || null;
+                    const ringColorClass = el.classList.contains('focus:ring-indigo-500/20') ? 'focus:ring-indigo-500/20' : 'focus:ring-emerald-500/20';
+                    const modalParent = el.closest('#onboardingModal') || el.closest('#deptOnboardingModal') || null;
+
+                    flatpickr(el, {
+                        dateFormat: "Y-m-d",
+                        altInput: true,
+                        altFormat: "d/m/Y",
+                        defaultDate: defaultD,
+                        minDate: minD,
+                        locale: thLocale,
+                        disableMobile: true,
+                        clickOpens: true,
+                        allowInput: false,
+                        static: false,
+                        position: "auto",
+                        appendTo: modalParent || document.body,
+                        parseDate: function(dateStr, formatStr) {
+                            if (typeof dateStr === 'string' && dateStr.includes('/')) {
+                                const parts = dateStr.split('/');
+                                if (parts.length === 3) {
+                                    let day = parseInt(parts[0], 10);
+                                    let month = parseInt(parts[1], 10) - 1;
+                                    let year = parseInt(parts[2], 10);
+                                    if (year > 2400) year -= 543;
+                                    return new Date(year, month, day);
+                                }
+                            }
+                            return flatpickr.parseDate(dateStr, formatStr);
+                        },
+                        formatDate: function(date, formatStr, locale) {
+                            if (formatStr === 'd/m/Y') {
+                                const day = String(date.getDate()).padStart(2, '0');
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                let year = date.getFullYear();
+                                if (year < 2400) year += 543;
+                                return day + '/' + month + '/' + year;
+                            }
+                            return flatpickr.formatDate(date, formatStr, locale);
+                        },
+                        onReady: function(selectedDates, dateStr, instance) {
+                            if (instance.altInput) {
+                                instance.altInput.className = instance.input.className;
+                                instance.altInput.classList.remove('datepicker-th');
+                                instance.altInput.classList.add('flatpickr-input', ringColorClass);
+                                instance.altInput.placeholder = instance.input.placeholder || 'เลือกวันที่...';
+                            }
+                            formatHeaderBuddhistYear(instance);
+                        },
+                        onMonthChange: function(selectedDates, dateStr, instance) { formatHeaderBuddhistYear(instance); },
+                        onYearChange: function(selectedDates, dateStr, instance) { formatHeaderBuddhistYear(instance); },
+                        onOpen: function(selectedDates, dateStr, instance) { formatHeaderBuddhistYear(instance); }
+                    });
+                } catch (e) {
+                    console.warn('Flatpickr init warning (.datepicker-th):', e);
+                }
+            });
+        }
+
+        function initDatepicker() {
+            initThaiDatepickers();
         }
 
         function fallbackNativeDate(el) {
@@ -2658,9 +3108,9 @@
         }
 
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initDatepicker);
+            document.addEventListener('DOMContentLoaded', initThaiDatepickers);
         } else {
-            initDatepicker();
+            initThaiDatepickers();
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -2746,8 +3196,26 @@
 
         const nextInterviewRound = {{ $application->interviews->count() + 1 }};
         const latestScheduledInterviewData = @json($latestScheduledData ?? null);
+        @php
+            $chkLastInterview = $application->interviews->sortBy('interview_round')->last();
+            $chkCanSchedule = !$chkLastInterview || ($chkLastInterview->status === 'completed' || $chkLastInterview->evaluation);
+            $pendingRoundNum = $chkLastInterview ? $chkLastInterview->interview_round : 1;
+        @endphp
+        const canScheduleNewRound = {{ $chkCanSchedule ? 'true' : 'false' }};
+        const currentPendingRound = {{ $pendingRoundNum }};
 
         function openCreateInterviewModal() {
+            if (!canScheduleNewRound && {{ $application->interviews->count() > 0 ? 'true' : 'false' }}) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ยังไม่สามารถนัดสัมภาษณ์รอบใหม่ได้',
+                    text: 'กรุณาบันทึกแบบประเมินผลการสัมภาษณ์รอบที่ ' + currentPendingRound + ' ให้เสร็จสิ้นก่อน จึงจะสามารถนัดสัมภาษณ์รอบใหม่ได้',
+                    confirmButtonColor: '#e11d48',
+                    confirmButtonText: 'เข้าใจแล้ว'
+                });
+                return;
+            }
+
             initDatepicker();
 
             const modalIdInput = document.getElementById('modal_interview_id');
@@ -2911,6 +3379,10 @@
                 closeInterviewerDropdown();
                 setTimeout(() => {
                     initDatepicker();
+                }, 50);
+            } else if (id === 'onboardingModal' || id === 'deptOnboardingModal') {
+                setTimeout(() => {
+                    initThaiDatepickers();
                 }, 50);
             }
         }

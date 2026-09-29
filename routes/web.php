@@ -116,10 +116,17 @@ Route::get('/recruitment/reports', [App\Http\Controllers\Frontend\RecruitmentCon
 Route::get('/recruitment/reports/{id}', [App\Http\Controllers\Frontend\RecruitmentController::class, 'requestShow'])->name('recruitment.request_show')->middleware('auth');
 Route::get('/recruitment/job/{slug}', [App\Http\Controllers\Frontend\RecruitmentController::class, 'show'])->name('recruitment.show');
 Route::get('/recruitment/apply/{slug}', [App\Http\Controllers\Frontend\RecruitmentController::class, 'apply'])->name('recruitment.apply');
-Route::post('/recruitment/apply/{slug}', [App\Http\Controllers\Frontend\RecruitmentController::class, 'submitApplication'])->name('recruitment.submit');
+Route::post('/recruitment/apply/{slug}', [App\Http\Controllers\Frontend\RecruitmentController::class, 'submitApplication'])->name('recruitment.submit')->middleware('throttle:10,1');
 Route::get('/recruitment/success/{slug}', [App\Http\Controllers\Frontend\RecruitmentController::class, 'success'])->name('recruitment.success');
 
+// Candidate Application Status Tracking (Self-Service)
+Route::get('/recruitment/track', [App\Http\Controllers\Frontend\RecruitmentController::class, 'trackForm'])->name('recruitment.track');
+Route::post('/recruitment/track', [App\Http\Controllers\Frontend\RecruitmentController::class, 'trackStatus'])->name('recruitment.track.post')->middleware('throttle:60,1');
+
 Route::middleware('auth')->group(function () {
+    // Secure Recruitment Document & Photo Access (Role-based & Access-controlled)
+    Route::get('/recruitment/documents/{id}', [App\Http\Controllers\Backend\Recruitment\DocumentController::class, 'show'])->name('recruitment.documents.show');
+    Route::get('/recruitment/applications/{id}/photo', [App\Http\Controllers\Backend\Recruitment\DocumentController::class, 'photo'])->name('recruitment.documents.photo');
 
     // welcomeSystem
     Route::get('/welcome-system', [SystemController::class, 'welcomeSystem'])->name('welcome.system');
@@ -224,6 +231,7 @@ Route::middleware('auth')->group(function () {
         // ข้อมูลพนักงาน และประเภทผู้ใช้งาน: เฉพาะ ADMIN เท่านั้น (ห้าม EDITOR, ห้าม VIEWER)
         Route::middleware('role:admin')->group(function () {
             Route::resource('users', UserController::class);
+            Route::post('users/{id}/change-role', [UserController::class, 'updateRole'])->name('users.update_role');
             Route::resource('usertypes', UserTypeController::class);
             Route::delete('sections/{section}', [SectionController::class, 'destroy'])->name('sections.destroy');
             Route::delete('divisions/{division}', [DivisionController::class, 'destroy'])->name('divisions.destroy');
@@ -308,6 +316,30 @@ Route::middleware('auth')->group(function () {
             // Mail Logs
             Route::get('/mail-logs', [App\Http\Controllers\Backend\Recruitment\MailLogController::class, 'index'])->name('mail-logs.index');
             Route::post('/mail-logs/{log}/retry', [App\Http\Controllers\Backend\Recruitment\MailLogController::class, 'retry'])->name('mail-logs.retry');
+
+            // Email Templates Management & Live Editor
+            Route::get('/email-templates', [App\Http\Controllers\Backend\Recruitment\EmailTemplateController::class, 'index'])->name('email-templates.index');
+            Route::post('/email-templates/{key}', [App\Http\Controllers\Backend\Recruitment\EmailTemplateController::class, 'update'])->name('email-templates.update');
+            Route::post('/email-templates/{key}/reset', [App\Http\Controllers\Backend\Recruitment\EmailTemplateController::class, 'reset'])->name('email-templates.reset');
+            Route::post('/email-templates/{key}/test-send', [App\Http\Controllers\Backend\Recruitment\EmailTemplateController::class, 'testSend'])->name('email-templates.test-send');
+        });
+
+        // Microsoft 365 / Azure Entra ID Settings
+        Route::prefix('backend/settings')->name('backend.settings.')->group(function () {
+            Route::get('/microsoft', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'index'])->name('microsoft');
+            Route::post('/microsoft', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'update'])->name('microsoft.update');
+            Route::post('/microsoft/test', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'testConnection'])->name('microsoft.test');
+            Route::delete('/microsoft/users/{id}', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'disconnectUser'])->name('microsoft.disconnect-user');
+        });
+
+        // System Audit Logs & 5-Year Archive Ledger
+        Route::prefix('backend/audit-logs')->name('backend.audit-logs.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Backend\AuditLogController::class, 'index'])->name('index');
+            Route::get('/data', [App\Http\Controllers\Backend\AuditLogController::class, 'getLogsData'])->name('data');
+            Route::post('/archive', [App\Http\Controllers\Backend\AuditLogController::class, 'createArchive'])->name('archive');
+            Route::get('/archives/{id}/download', [App\Http\Controllers\Backend\AuditLogController::class, 'downloadArchive'])->name('archives.download');
+            Route::get('/archives/{id}/inspect', [App\Http\Controllers\Backend\AuditLogController::class, 'inspectArchive'])->name('archives.inspect');
+            Route::get('/{id}', [App\Http\Controllers\Backend\AuditLogController::class, 'show'])->name('show');
         });
     });
 

@@ -677,6 +677,7 @@
             }
 
             flatpickr(".datepicker-th", {
+                disableMobile: true,
                 locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : "th",
                 altInput: true,
                 altFormat: "d/m/Y",
@@ -766,6 +767,7 @@
             const fpElements = document.querySelectorAll('.datepicker-th');
             fpElements.forEach(function(el) {
                 flatpickr(el, {
+                    disableMobile: true,
                     locale: thaiLocale,
                     altInput: true,
                     altFormat: "d/m/Y",

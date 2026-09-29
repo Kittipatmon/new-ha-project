@@ -1,14 +1,35 @@
 @extends('layouts.app')
-@section('title', 'รายการข้อมูลการฝึกอบรม')
-
-@section('header_actions')
-    <a href="{{ route('backend.training.create') }}" class="btn btn-primary btn-sm w-full sm:w-auto shadow-sm">
-        <i class="fa-solid fa-plus mr-1"></i> เพิ่มข้อมูล
-    </a>
-@endsection
-
 @section('content')
-    <div class="space-y-6">
+<div class="w-full">
+    <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+        
+        <!-- Header Bar Inside Frame -->
+        <div class="pb-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <nav class="flex text-xs font-semibold text-slate-500 mb-1" aria-label="Breadcrumb">
+                    <a href="{{ route('welcome') }}" class="hover:text-indigo-600 transition">หน้าหลัก</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-slate-500">ระบบฝึกอบรมและพัฒนาทักษะ</span>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-indigo-600 dark:text-indigo-400 font-bold">รายการข้อมูลการฝึกอบรม</span>
+                </nav>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg shadow-sm">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <span>รายการข้อมูลการฝึกอบรม</span>
+                </h1>
+            </div>
+
+            <div>
+                <a href="{{ route('backend.training.create') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    เพิ่มข้อมูลการฝึกอบรม
+                </a>
+            </div>
+        </div>
+
+        <div class="space-y-6">
         @if(session('success'))
             <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/10 border-l-4 border-green-500 rounded-r-xl">
                 <p class="text-sm text-green-700 dark:text-green-300 font-medium">{{ session('success') }}</p>
@@ -105,4 +126,6 @@
             {{ $trainings->links() }}
         </div>
     </div>
+    </div>
+</div>
 @endsection

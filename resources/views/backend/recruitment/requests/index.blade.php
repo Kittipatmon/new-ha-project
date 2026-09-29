@@ -383,33 +383,57 @@
                         <input type="text" id="customSearch" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400" placeholder="ค้นหารายละเอียด...">
                     </div>
                     
-                    <select id="filterDepartment" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                        <option value="">ทุกฝ่าย / แผนก</option>
-                        @foreach($departments as $dept)
-                            <option value="{{ $dept->department_fullname }}">{{ $dept->department_fullname }}</option>
-                        @endforeach
-                    </select>
+                    <!-- Filter Department -->
+                    <div class="relative w-full sm:w-auto">
+                        <select id="filterDepartment" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
+                            <option value="">ทุกฝ่าย / แผนก</option>
+                            @foreach($departments as $dept)
+                                <option value="{{ $dept->department_fullname }}">{{ $dept->department_fullname }}</option>
+                            @endforeach
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
 
-                    <select id="filterStatus" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                        <option value="">ทุกสถานะ</option>
-                        <option value="approved">อนุมัติแล้ว</option>
-                        <option value="pending">รอพิจารณา</option>
-                        <option value="rejected">ไม่อนุมัติ</option>
-                    </select>
+                    <!-- Filter Status -->
+                    <div class="relative w-full sm:w-auto">
+                        <select id="filterStatus" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
+                            <option value="">ทุกสถานะ</option>
+                            <option value="approved">อนุมัติแล้ว</option>
+                            <option value="pending">รอพิจารณา</option>
+                            <option value="rejected">ไม่อนุมัติ</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
 
-                    <select id="filterJobPost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                        <option value="">สถานะ Job Post ทั้งหมด</option>
-                        <option value="created">สร้าง Job Post แล้ว</option>
-                        <option value="pending_create">รอ HA สร้าง Job Post</option>
-                    </select>
+                    <!-- Filter Job Post -->
+                    <div class="relative w-full sm:w-auto">
+                        <select id="filterJobPost" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
+                            <option value="">สถานะ Job Post ทั้งหมด</option>
+                            <option value="created">สร้าง Job Post แล้ว</option>
+                            <option value="pending_create">รอ HA สร้าง Job Post</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
 
-                    <select id="filterPageSize" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer" title="จำนวนรายการต่อหน้า">
-                        <option value="5">แสดง 5 รายการ</option>
-                        <option value="10" selected>แสดง 10 รายการ</option>
-                        <option value="25">แสดง 25 รายการ</option>
-                        <option value="50">แสดง 50 รายการ</option>
-                        <option value="-1">แสดงทั้งหมด</option>
-                    </select>
+                    <!-- Filter Page Size -->
+                    <div class="relative w-full sm:w-auto">
+                        <select id="filterPageSize" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer" title="จำนวนรายการต่อหน้า">
+                            <option value="5">แสดง 5 รายการ</option>
+                            <option value="10" selected>แสดง 10 รายการ</option>
+                            <option value="25">แสดง 25 รายการ</option>
+                            <option value="50">แสดง 50 รายการ</option>
+                            <option value="-1">แสดงทั้งหมด</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
 
                     <button type="button" id="btnResetFilters" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/80 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer" title="ล้างค่าตัวกรองทั้งหมด">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">

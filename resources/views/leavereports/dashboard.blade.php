@@ -1,41 +1,52 @@
 @extends('layouts.app')
-@section('title', 'Dashboard สรุปขาด ลา มาสาย')
 
 @section('content')
-    <div class="max-w-8xl mx-auto">
+<div class="w-full">
+    <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+        
+        <!-- Header Bar Inside Frame -->
+        <div class="pb-5 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <nav class="flex text-xs font-semibold text-slate-500 mb-1" aria-label="Breadcrumb">
+                    <a href="{{ route('welcome') }}" class="hover:text-indigo-600 transition">หน้าหลัก</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-slate-800 dark:text-slate-200">Dashboard สรุปขาด ลา มาสาย</span>
+                </nav>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <i class="fa-solid fa-chart-pie text-indigo-600"></i> Dashboard สรุปขาด ลา มาสาย
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    รายงานสถิติและแนวโน้มการขาด ลา มาสายของพนักงานแต่ละสายงาน
+                </p>
+            </div>
 
-        {{-- Header Section --}}
-        <div class="md:flex md:items-center md:justify-between mb-4">
-            <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-3">
                 <form action="{{ route('leavereports.import') }}" method="POST" enctype="multipart/form-data"
-                    class="flex items-center gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                    class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
                     @csrf
-                    <input type="file" name="file" accept=".xlsx,.xls,.csv" class="block w-full text-sm text-slate-500
-                                                file:mr-4 file:py-1.5 file:px-4
+                    <input type="file" name="file" accept=".xlsx,.xls,.csv" class="block w-full text-xs text-slate-500
+                                                file:mr-3 file:py-1 file:px-3
                                                 file:rounded-lg file:border-0
                                                 file:text-xs file:font-semibold
                                                 file:bg-red-50 file:text-red-700
                                                 hover:file:bg-red-100 dark:file:bg-red-900 dark:file:text-white
                                                 cursor-pointer" required>
                     <button type="submit"
-                        class="inline-flex items-center justify-center p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors tooltip"
+                        class="inline-flex items-center justify-center p-2 rounded-lg text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors tooltip cursor-pointer"
                         title="นำเข้า Excel">
-                        <i class="fas fa-file-import text-lg"></i>
+                        <i class="fas fa-file-import text-base"></i>
                     </button>
                 </form>
-            </div>
-            <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3 relative" x-data="{ open: false }">
-                <span class="h-8 w-px bg-gray-300 dark:bg-gray-600 self-center hidden md:block"></span>
 
                 {{-- Export Dropdown Button --}}
-                <div class="relative inline-block text-left">
+                <div class="relative inline-block text-left" x-data="{ open: false }">
                     <div>
                         <button type="button" @click="open = !open" @click.away="open = false"
-                            class="inline-flex justify-center items-center w-full rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                            class="inline-flex justify-center items-center w-full rounded-xl border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
                             id="menu-button" aria-expanded="true" aria-haspopup="true">
                             <i class="fas fa-file-export mr-2"></i>
                             Export
-                            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            <svg class="-mr-1 ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                 fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd"
                                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -51,17 +62,15 @@
                         x-transition:leave="transition ease-in duration-75"
                         x-transition:leave-start="transform opacity-100 scale-100"
                         x-transition:leave-end="transform opacity-0 scale-95"
-                        class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 dark:bg-gray-800 dark:border-gray-700 dark:ring-gray-700"
+                        class="origin-top-right absolute right-0 mt-2 w-40 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 dark:bg-gray-800 dark:border-gray-700 dark:ring-gray-700"
                         role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1"
                         style="display: none;">
                         <div class="py-1" role="none">
-                            {{-- PDF Option --}}
                             <a href="#"
                                 class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-red-900 group dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-red-400"
                                 role="menuitem" tabindex="-1" id="openPdfModalBtn" @click.prevent="open = false">
                                 <i class="fas fa-file-pdf mr-2 text-red-600 group-hover:text-red-700"></i> PDF
                             </a>
-                            {{-- Excel Option --}}
                             <a href="#"
                                 class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-green-900 group dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-green-400"
                                 role="menuitem" tabindex="-1" id="openExcelModalBtn" @click.prevent="open = false">
@@ -221,6 +230,8 @@
                 </table>
             </div>
         </div>
+    </div>
+</div>
         <!-- PDF Modal -->
         <div id="pdfModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
             aria-modal="true">
@@ -293,7 +304,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>

@@ -2,10 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class Training extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'training';
+    public string $auditModuleName = 'ระบบฝึกอบรม';
+
+    public function getAuditTitle(): string
+    {
+        return "หลักสูตรฝึกอบรม: {$this->details}";
+    }
+
     protected $connection = 'mysql';
 
     protected $fillable = [

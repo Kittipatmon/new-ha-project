@@ -615,26 +615,41 @@
                                 </div>
                                 <input type="text" id="candidateCustomSearch" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="ค้นหารายละเอียด...">
                             </div>
-                            <select id="candidateFilterPosition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-9 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[175px]">
-                                <option value="">ทุกตำแหน่งงาน</option>
-                                @foreach($availableJobPosts as $post)
-                                    <option value="{{ $post->title }}">{{ $post->title }}</option>
-                                @endforeach
-                            </select>
-                            <select id="candidateFilterStatus" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-9 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[150px]">
-                                <option value="">ทุกสถานะ</option>
-                                <option value="dept_review" {{ $candidateStatus === 'dept_review' ? 'selected' : '' }}>2. รอหัวหน้าแผนกพิจารณา</option>
-                                <option value="interview" {{ $candidateStatus === 'interview' ? 'selected' : '' }}>3. รอ HA กำหนดวันนัดสัมภาษณ์</option>
-                                <option value="interview_scheduled" {{ $candidateStatus === 'interview_scheduled' ? 'selected' : '' }}>4. กำหนดวันสัมภาษณ์แล้ว</option>
-                                <option value="passed" {{ $candidateStatus === 'passed' ? 'selected' : '' }}>5. ผ่านการคัดเลือก</option>
-                                <option value="rejected" {{ $candidateStatus === 'rejected' ? 'selected' : '' }}>ส่งกลับ HA / ไม่ผ่าน</option>
-                            </select>
-                            <select id="candidateFilterDepartment" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-9 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[160px]">
-                                <option value="">ทุกฝ่าย / แผนก</option>
-                                @foreach($availableDepartments as $deptTitle)
-                                    <option value="{{ $deptTitle }}">{{ $deptTitle }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="candidateFilterPosition" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[175px]">
+                                    <option value="">ทุกตำแหน่งงาน</option>
+                                    @foreach($availableJobPosts as $post)
+                                        <option value="{{ $post->title }}">{{ $post->title }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="candidateFilterStatus" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[150px]">
+                                    <option value="">ทุกสถานะ</option>
+                                    <option value="dept_review" {{ $candidateStatus === 'dept_review' ? 'selected' : '' }}>2. รอหัวหน้าแผนกพิจารณา</option>
+                                    <option value="interview" {{ $candidateStatus === 'interview' ? 'selected' : '' }}>3. รอ HA กำหนดวันนัดสัมภาษณ์</option>
+                                    <option value="interview_scheduled" {{ $candidateStatus === 'interview_scheduled' ? 'selected' : '' }}>4. กำหนดวันสัมภาษณ์แล้ว</option>
+                                    <option value="passed" {{ $candidateStatus === 'passed' ? 'selected' : '' }}>5. ผ่านการคัดเลือก</option>
+                                    <option value="rejected" {{ $candidateStatus === 'rejected' ? 'selected' : '' }}>ส่งกลับ HA / ไม่ผ่าน</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="candidateFilterDepartment" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer min-w-[160px]">
+                                    <option value="">ทุกฝ่าย / แผนก</option>
+                                    @foreach($availableDepartments as $deptTitle)
+                                        <option value="{{ $deptTitle }}">{{ $deptTitle }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
                             <button type="button" id="candidateBtnReset" class="inline-flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/80 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer" title="ล้างค่าตัวกรองทั้งหมด">
                                 <i class="fa-solid fa-rotate-left text-xs"></i>
                                 <span>ล้างตัวกรอง</span>
@@ -646,7 +661,7 @@
                             <table id="dataTableCandidates" class="display responsive nowrap w-full text-xs sm:text-sm">
                                 <thead>
                                     <tr>
-                                        <th class="all whitespace-nowrap text-center" style="width: 50px;">ID</th>
+                                        <th class="all whitespace-nowrap text-center" style="min-width: 120px;">ID</th>
                                         <th class="whitespace-nowrap text-center" style="width: 100px;">วันที่ยื่นเรื่อง</th>
                                         <th class="all whitespace-nowrap text-left" style="min-width: 150px;">ผู้สมัคร</th>
                                         <th class="all whitespace-nowrap text-left" style="min-width: 130px;">ตำแหน่งที่สมัคร</th>
@@ -731,9 +746,15 @@
                                             data-department="{{ $deptName }}"
                                             data-status="{{ $candidate->status }}">
                                             
-                                            <!-- 1. ID -->
-                                            <td data-order="{{ $candidate->id }}" class="text-center font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                                                #{{ $candidate->id }}
+                                            <!-- 1. ID (เลขที่ใบสมัคร) -->
+                                            @php
+                                                $appNo = $candidate->application_no ?: ('APP-' . str_pad($candidate->id, 5, '0', STR_PAD_LEFT));
+                                                $displayAppNo = str_starts_with($appNo, '#') ? $appNo : ('#' . $appNo);
+                                            @endphp
+                                            <td data-order="{{ $candidate->id }}" data-search="{{ $displayAppNo }} {{ $candidate->application_no }} {{ $candidate->id }}" class="text-center font-semibold whitespace-nowrap">
+                                                <a href="{{ route('backend.recruitment.applications.show', $candidate->id) }}" class="font-mono text-xs font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:underline" title="ดูรายละเอียดใบสมัคร">
+                                                    {{ $displayAppNo }}
+                                                </a>
                                             </td>
 
                                             <!-- 2. วันที่ยื่นเรื่อง -->
@@ -955,33 +976,53 @@
                                 <input type="text" id="reportCustomSearch" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400" placeholder="ค้นหารายละเอียด...">
                             </div>
                             
-                            <select id="reportFilterDepartment" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                                <option value="">ทุกฝ่าย / แผนก</option>
-                                @foreach($requestDepartments as $dept)
-                                    <option value="{{ $dept->department_fullname }}">{{ $dept->department_fullname }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="reportFilterDepartment" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
+                                    <option value="">ทุกฝ่าย / แผนก</option>
+                                    @foreach($requestDepartments as $dept)
+                                        <option value="{{ $dept->department_fullname }}">{{ $dept->department_fullname }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
 
-                            <select id="reportFilterStatus" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                                <option value="">ทุกสถานะ</option>
-                                <option value="approved">อนุมัติแล้ว</option>
-                                <option value="pending">รอพิจารณา</option>
-                                <option value="rejected">ไม่อนุมัติ</option>
-                            </select>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="reportFilterStatus" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
+                                    <option value="">ทุกสถานะ</option>
+                                    <option value="approved">อนุมัติแล้ว</option>
+                                    <option value="pending">รอพิจารณา</option>
+                                    <option value="rejected">ไม่อนุมัติ</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
 
-                            <select id="reportFilterJobPost" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                                <option value="">สถานะ Job Post ทั้งหมด</option>
-                                <option value="created">สร้าง Job Post แล้ว</option>
-                                <option value="pending_create">รอ HA สร้าง Job Post</option>
-                            </select>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="reportFilterJobPost" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
+                                    <option value="">สถานะ Job Post ทั้งหมด</option>
+                                    <option value="created">สร้าง Job Post แล้ว</option>
+                                    <option value="pending_create">รอ HA สร้าง Job Post</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
 
-                            <select id="reportFilterPageSize" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer" title="จำนวนรายการต่อหน้า">
-                                <option value="5">แสดง 5 รายการ</option>
-                                <option value="10" selected>แสดง 10 รายการ</option>
-                                <option value="25">แสดง 25 รายการ</option>
-                                <option value="50">แสดง 50 รายการ</option>
-                                <option value="-1">แสดงทั้งหมด</option>
-                            </select>
+                            <div class="relative w-full sm:w-auto">
+                                <select id="reportFilterPageSize" class="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2.5 pl-3.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer" title="จำนวนรายการต่อหน้า">
+                                    <option value="5">แสดง 5 รายการ</option>
+                                    <option value="10" selected>แสดง 10 รายการ</option>
+                                    <option value="25">แสดง 25 รายการ</option>
+                                    <option value="50">แสดง 50 รายการ</option>
+                                    <option value="-1">แสดงทั้งหมด</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                </div>
+                            </div>
 
                             <button type="button" id="reportBtnResetFilters" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/80 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer" title="ล้างค่าตัวกรองทั้งหมด">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">

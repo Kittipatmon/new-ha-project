@@ -215,12 +215,17 @@
         .dark .mobile-section-title {
             border-bottom-color: #374151;
         }
-        @media (max-width: 820px) {
+        @media (max-width: 767px) {
+            .mobile-scroll-hint {
+                display: none !important;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1024px) {
             .mobile-scroll-hint {
                 display: flex !important;
             }
         }
-        @media (min-width: 821px) {
+        @media (min-width: 1025px) {
             .mobile-scroll-hint {
                 display: none !important;
             }
@@ -525,8 +530,8 @@
                     </div>
                 </div>
 
-                <!-- Mode Switcher Toggle Pill (รองรับทุกอุปกรณ์: มือถือ, iPad, โน้ตบุ๊ก, จอคอม) -->
-                <div class="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-700/60 rounded-xl border border-slate-200 dark:border-slate-600 self-stretch sm:self-auto justify-center">
+                <!-- Mode Switcher Toggle Pill (ซ่อนบนมือถือเพื่อให้เข้าสู่โหมดกรอกง่ายทันที แสดงเฉพาะหน้าจอขนาดกลางขึ้นไป) -->
+                <div class="hidden md:flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-700/60 rounded-xl border border-slate-200 dark:border-slate-600 self-stretch sm:self-auto justify-center">
                     <button type="button" @click="viewMode = 'paper'"
                         class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
                         :class="viewMode === 'paper' ? 'bg-white dark:bg-slate-800 text-[#B21F24] shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'">
@@ -542,8 +547,8 @@
                 </div>
             </div>
 
-            <!-- Mobile & Tablet Scroll Hint (Show only when in Paper Mode) -->
-            <div x-show="viewMode === 'paper'" class="mobile-scroll-hint hidden items-center justify-between bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3.5 py-2 rounded-xl mb-3 shadow-sm">
+            <!-- Tablet Scroll Hint (แสดงเฉพาะเมื่ออยู่บนจอแท็บเล็ตและอยู่ในโหมดเอกสาร ซ่อนบนมือถือ) -->
+            <div x-show="viewMode === 'paper'" class="mobile-scroll-hint hidden md:flex items-center justify-between bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3.5 py-2 rounded-xl mb-3 shadow-sm">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-arrows-left-right text-amber-600"></i>
                     <span>สามารถเลื่อนซ้าย-ขวา เพื่อดูและกรอกแบบฟอร์มเอกสาร หรือกดปุ่ม <strong>"โหมดกรอกง่าย"</strong> ด้านบนได้</span>
@@ -616,11 +621,22 @@
                 });
 
                 function recruitmentForm() {
+                    const isMobilePhone = window.innerWidth < 768 || /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                     return {
                         step: {{ $initialStep }},
-                        viewMode: (window.innerWidth < 1024) ? 'mobile' : 'paper',
+                        viewMode: isMobilePhone ? 'mobile' : ((window.innerWidth < 1024) ? 'mobile' : 'paper'),
                         fontScale: 'sm',
                         submitting: false,
+
+                        init() {
+                            const enforceMobile = () => {
+                                if (window.innerWidth < 768 || /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                                    this.viewMode = 'mobile';
+                                }
+                            };
+                            enforceMobile();
+                            window.addEventListener('resize', enforceMobile);
+                        },
 
                         // Personal Name & Signature
                         firstName: '{{ old('first_name') }}',
@@ -1222,11 +1238,11 @@
 
                     <!-- 5 Connected Interactive Nodes -->
                     <div class="relative flex items-center justify-between px-3 pt-1 pb-0.5">
-                        <!-- Progress line background -->
-                        <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-slate-200 dark:bg-slate-700"></div>
-                        <!-- Active progress fill -->
-                        <div class="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-[#B21F24] transition-all duration-300"
-                            :style="'width: ' + ((step - 1) * 25) + '%;'"></div>
+                        <!-- Progress line track & active fill -->
+                        <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden pointer-events-none">
+                            <div class="h-full bg-[#B21F24] transition-all duration-300 rounded-full"
+                                :style="'width: ' + ((step - 1) * 25) + '%;'"></div>
+                        </div>
 
                         <!-- Step 1 Dot -->
                         <button type="button" @click="goToStep(1)" class="relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer"
@@ -4348,6 +4364,7 @@
 
         function initThaiDatepickers() {
             flatpickr(".datepicker-th", {
+                disableMobile: true,
                 locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : "th",
                 altInput: true,
                 altFormat: "d/m/Y",

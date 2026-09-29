@@ -91,58 +91,62 @@
 
             <!-- Job Title Action Bar (Matching Reference Screenshot 3 & 4) -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-                <div class="space-y-2">
-                    <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
+                <div class="space-y-2.5">
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white leading-tight">
                         {{ $post->position_name }}
                     </h1>
-                    <div class="flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center gap-2.5 flex-wrap pt-0.5">
                         @if(($post->urgency ?? 'urgent') === 'very_urgent')
-                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold border border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 shadow-xs">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 shadow-xs">
                                 <span>⚡</span> รับสมัครด่วนมาก
                             </span>
                         @elseif(($post->urgency ?? 'urgent') === 'urgent')
-                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-bold border border-red-500/40 text-[#B21F24] bg-red-50 dark:bg-red-950/40">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border border-red-500/40 text-[#B21F24] bg-red-50 dark:bg-red-950/40">
                                 <span>🔥</span> รับสมัครด่วน
                             </span>
                         @endif
-                        <span class="inline-flex items-center text-xs text-gray-400">
+                        <span class="inline-flex items-center text-xs text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-slate-700/60 px-2.5 py-1 rounded-lg">
                             <i class="fa-solid fa-building text-gray-400 mr-1.5"></i>
                             {{ $post->department->department_fullname ?? 'ทั่วไป' }}
                         </span>
                     </div>
                 </div>
 
-                <!-- Right Apply + Utilities -->
-                <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
+                <!-- Right Apply + Utilities (Responsive: Full-width CTA + 4-button grid on mobile, inline row on desktop) -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     @if($isClosedOrExpired)
                         <button type="button" onclick="showClosedAlert()"
-                            class="bg-[#B21F24] hover:bg-[#8e181c] text-white font-bold px-8 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all active:scale-[0.98] text-sm cursor-pointer" title="ตำแหน่งงานนี้ปิดรับสมัครแล้ว">
-                            สมัครงาน
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gray-400 text-white font-bold px-7 py-3 sm:py-2.5 rounded-xl sm:rounded-full shadow-sm text-sm cursor-not-allowed" title="ตำแหน่งงานนี้ปิดรับสมัครแล้ว">
+                            <i class="fa-solid fa-ban text-xs"></i>
+                            <span>ปิดรับสมัครแล้ว</span>
                         </button>
                     @else
                         <a href="{{ route('recruitment.apply', $post->slug) }}"
-                            class="bg-[#B21F24] hover:bg-[#8e181c] text-white font-bold px-8 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all active:scale-[0.98] text-sm">
-                            สมัครงาน
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#B21F24] to-red-700 hover:from-[#96181c] hover:to-red-800 text-white font-bold px-8 py-3 sm:py-2.5 rounded-xl sm:rounded-full shadow-md hover:shadow-lg transition-all active:scale-[0.98] text-sm text-center">
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                            <span>สมัครงาน</span>
                         </a>
                     @endif
 
                     <!-- Action icon buttons (Bookmark, Print, Share, Contact) -->
-                    <button type="button" onclick="alert('บันทึกตำแหน่งงานเรียบร้อยแล้ว')" 
-                        class="w-10 h-10 rounded-full border border-gray-300 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 transition-colors" title="บันทึกตำแหน่งนี้">
-                        <i class="fa-regular fa-bookmark text-sm"></i>
-                    </button>
-                    <button type="button" onclick="window.print()" 
-                        class="w-10 h-10 rounded-full border border-gray-300 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 transition-colors" title="พิมพ์">
-                        <i class="fa-solid fa-print text-sm"></i>
-                    </button>
-                    <button type="button" onclick="navigator.clipboard.writeText(window.location.href); alert('คัดลอกลิงก์เรียบร้อยแล้ว');" 
-                        class="w-10 h-10 rounded-full border border-gray-300 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 transition-colors" title="แชร์">
-                        <i class="fa-solid fa-share-nodes text-sm"></i>
-                    </button>
-                    <a href="#how-to-apply" 
-                        class="w-10 h-10 rounded-full border border-gray-300 dark:border-slate-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 transition-colors" title="สอบถามข้อมูล">
-                        <i class="fa-regular fa-comment-dots text-sm"></i>
-                    </a>
+                    <div class="grid grid-cols-4 sm:flex items-center gap-2 sm:gap-2">
+                        <button type="button" onclick="alert('บันทึกตำแหน่งงานเรียบร้อยแล้ว')" 
+                            class="h-11 sm:h-10 sm:w-10 rounded-xl sm:rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-700/60 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all shadow-2xs" title="บันทึกตำแหน่งนี้">
+                            <i class="fa-regular fa-bookmark text-sm"></i>
+                        </button>
+                        <button type="button" onclick="window.print()" 
+                            class="h-11 sm:h-10 sm:w-10 rounded-xl sm:rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-700/60 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all shadow-2xs" title="พิมพ์">
+                            <i class="fa-solid fa-print text-sm"></i>
+                        </button>
+                        <button type="button" onclick="navigator.clipboard.writeText(window.location.href); alert('คัดลอกลิงก์เรียบร้อยแล้ว');" 
+                            class="h-11 sm:h-10 sm:w-10 rounded-xl sm:rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-700/60 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all shadow-2xs" title="แชร์">
+                            <i class="fa-solid fa-share-nodes text-sm"></i>
+                        </button>
+                        <a href="#how-to-apply" 
+                            class="h-11 sm:h-10 sm:w-10 rounded-xl sm:rounded-full border border-gray-200 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-700/60 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#B21F24] hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all shadow-2xs" title="สอบถามข้อมูล">
+                            <i class="fa-regular fa-comment-dots text-sm"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
 

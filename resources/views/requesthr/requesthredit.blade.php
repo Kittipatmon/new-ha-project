@@ -257,12 +257,14 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         flatpickr("#edit_start_time", {
+            disableMobile: true,
             enableTime: true,
             noCalendar: true,
             dateFormat: "H:i",
             time_24hr: true
         });
         flatpickr("#edit_end_time", {
+            disableMobile: true,
             enableTime: true,
             noCalendar: true,
             dateFormat: "H:i",

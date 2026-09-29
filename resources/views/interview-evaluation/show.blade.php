@@ -182,12 +182,14 @@
               <span class="flex-grow min-w-0 border-b border-dashed border-gray-400 text-center font-bold text-indigo-900 py-0.5 relative flex items-center justify-center min-h-[28px]">
                 @if($evaluation->hr_evaluator_name)
                   {{ $evaluation->hr_evaluator_name }}
-                @else
+                @elseif(!empty($canSignHr))
                   <form method="POST" action="{{ route('admin.interview-evaluations.sign', $evaluation->id) }}" class="inline-flex">
                     @csrf
                     <input type="hidden" name="role" value="hr">
                     <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs shadow-sm font-medium transition cursor-pointer">✍️ คลิกเพื่อลงชื่อ (HA/HR)</button>
                   </form>
+                @else
+                  <span class="text-xs text-gray-400 italic">รอฝ่ายบุคคลลงชื่อ</span>
                 @endif
               </span>
               <span class="ml-2 text-xs font-bold text-gray-600 w-20">ฝ่ายบุคคล</span>
@@ -208,12 +210,14 @@
               <span class="flex-grow min-w-0 border-b border-dashed border-gray-400 text-center font-bold text-indigo-900 py-0.5 relative flex items-center justify-center min-h-[28px]">
                 @if($evaluation->dept_evaluator_name)
                   {{ $evaluation->dept_evaluator_name }}
-                @else
+                @elseif(!empty($canSignDept))
                   <form method="POST" action="{{ route('admin.interview-evaluations.sign', $evaluation->id) }}" class="inline-flex">
                     @csrf
                     <input type="hidden" name="role" value="dept">
                     <button type="submit" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs shadow-sm font-medium transition cursor-pointer">✍️ คลิกเพื่อลงชื่อ (ต้นสังกัด)</button>
                   </form>
+                @else
+                  <span class="text-xs text-gray-400 italic">รอต้นสังกัดลงชื่อ</span>
                 @endif
               </span>
               <span class="ml-2 text-xs font-bold text-gray-600 w-20">ต้นสังกัด</span>

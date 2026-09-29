@@ -54,6 +54,18 @@ class InterviewController extends Controller
             }
 
             if (!$isUpdate) {
+                // ตรวจสอบว่ามีรอบสัมภาษณ์ก่อนหน้าที่ยังไม่เสร็จสิ้นหรือไม่ (ต้องสัมภาษณ์และประเมินผลรอบก่อนหน้าให้เสร็จก่อน)
+                $uncompletedInterview = Interview::where('application_id', $application->id)
+                    ->where('status', 'scheduled')
+                    ->whereDoesntHave('evaluation')
+                    ->latest('interview_round')
+                    ->first();
+
+                if ($uncompletedInterview) {
+                    DB::rollBack();
+                    return back()->with('error', "ยังไม่สามารถนัดสัมภาษณ์รอบใหม่ได้ กรุณาบันทึกแบบประเมินผลการสัมภาษณ์รอบที่ {$uncompletedInterview->interview_round} ให้เสร็จสิ้นก่อน");
+                }
+
                 $interview = new Interview($validated);
                 $interview->application_id = $application->id;
                 // Set first interviewer for backward compatibility in the main table

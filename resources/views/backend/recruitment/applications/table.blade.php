@@ -117,8 +117,9 @@
                                                                 {{ $histApp->applied_at ? $histApp->applied_at->addYears(543)->format('d/m/Y H:i น.') : ($histApp->created_at ? $histApp->created_at->addYears(543)->format('d/m/Y H:i น.') : '-') }}
                                                             </td>
                                                             <td class="px-4 py-2.5 text-center whitespace-nowrap">
-                                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold {{ $histApp->status_badge_class }}">
-                                                                    {{ $histApp->status_label }}
+                                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-2xs {{ $histApp->status_badge_class }}">
+                                                                    <i class="{{ $histApp->status_icon }} text-[10px]"></i>
+                                                                    <span>{{ $histApp->status_label }}</span>
                                                                 </span>
                                                             </td>
                                                             <td class="px-4 py-2.5 text-center whitespace-nowrap">
@@ -173,7 +174,8 @@
 
                         {{-- Status --}}
                         <td class="px-5 py-3.5 text-center whitespace-nowrap">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold border shadow-2xs {{ $app->status_badge_class }}">
+                                <i class="{{ $app->status_icon }} text-[12px]"></i>
                                 <span>{{ $app->status_label }}</span>
                             </span>
                         </td>

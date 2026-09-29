@@ -126,12 +126,20 @@ class SendRecruitmentEmailJob implements ShouldQueue
                             ->subject($this->subject);
 
                     foreach ($attachmentsData as $att) {
-                        if (isset($att['contentBytes'], $att['name'])) {
-                            $message->attachData(
-                                base64_decode($att['contentBytes']),
-                                $att['name'],
-                                ['mime' => $att['contentType'] ?? 'application/octet-stream']
-                            );
+                        if (isset($att['contentBytes'])) {
+                            if (!empty($att['isInline']) && !empty($att['contentId'])) {
+                                $message->embedData(
+                                    base64_decode($att['contentBytes']),
+                                    $att['contentId'],
+                                    $att['contentType'] ?? 'image/png'
+                                );
+                            } elseif (isset($att['name'])) {
+                                $message->attachData(
+                                    base64_decode($att['contentBytes']),
+                                    $att['name'],
+                                    ['mime' => $att['contentType'] ?? 'application/octet-stream']
+                                );
+                            }
                         }
                     }
                 });

@@ -469,6 +469,7 @@
             }
 
             flatpickr(".datepicker-th", {
+                disableMobile: true,
                 locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.th) ? flatpickr.l10ns.th : "th",
                 altInput: true,
                 altFormat: "d/m/Y",

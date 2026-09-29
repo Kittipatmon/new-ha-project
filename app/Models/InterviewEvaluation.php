@@ -79,4 +79,35 @@ class InterviewEvaluation extends Model
             default => '-',
         };
     }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'completed' => 'ประเมินเสร็จสมบูรณ์',
+            'pending_dept' => 'รอต้นสังกัดประเมิน',
+            'pending_hr' => 'รอฝ่ายบุคคลประเมิน',
+            'draft' => 'ฉบับร่าง',
+            default => $this->status ?? 'รอดำเนินการ',
+        };
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return match ($this->status) {
+            'completed' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800',
+            'pending_dept' => 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-300 dark:border-amber-800',
+            'pending_hr' => 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-300 dark:border-blue-800',
+            default => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700',
+        };
+    }
+
+    public function isHrEvaluated(): bool
+    {
+        return !empty($this->hr_signed_date) || ($this->scores()->whereNotNull('hr_score')->count() >= 10);
+    }
+
+    public function isDeptEvaluated(): bool
+    {
+        return !empty($this->dept_signed_date) || ($this->scores()->whereNotNull('dept_score')->count() >= 10);
+    }
 }

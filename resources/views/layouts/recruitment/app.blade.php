@@ -45,6 +45,11 @@
             font-family: 'Prompt', 'Kanit', sans-serif !important;
         }
 
+        /* Ensure dropdown select icons never touch or overlap text */
+        select:not([multiple]):not([size]) {
+            padding-right: 2.5rem !important;
+        }
+
         /* Ensure FontAwesome icons preserve their font family */
         .fa, .fas, .far, .fal, .fab, .fa-solid, .fa-regular, .fa-light, .fa-thin, .fa-duotone, .fa-brands,
         i[class*="fa-"], i[class^="fa-"], span[class*="fa-"], span[class^="fa-"] {
@@ -163,6 +168,85 @@
         .focus\:ring-kumwell-red:focus {
             --tw-ring-color: var(--kumwell-red);
         }
+
+        /* ========================================================
+           Flatpickr Mobile & iPad Responsive Optimization
+           ======================================================== */
+        input.flatpickr-input,
+        .datepicker-th {
+            font-size: 16px !important;
+        }
+
+        @media (max-width: 640px) {
+            .flatpickr-calendar {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                margin: 0 !important;
+                width: 92vw !important;
+                max-width: 360px !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+                border-radius: 18px !important;
+                padding: 12px 8px !important;
+                z-index: 999999 !important;
+            }
+
+            .flatpickr-calendar.open::before {
+                content: "";
+                position: fixed;
+                top: -100vh;
+                left: -100vw;
+                width: 300vw;
+                height: 300vh;
+                background: rgba(15, 23, 42, 0.5);
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+                z-index: -1;
+            }
+
+            .flatpickr-calendar::before,
+            .flatpickr-calendar::after {
+                display: none !important;
+            }
+
+            .flatpickr-day {
+                max-width: none !important;
+                height: 42px !important;
+                line-height: 42px !important;
+                font-size: 15px !important;
+                font-weight: 500 !important;
+                border-radius: 10px !important;
+                margin: 2px 0 !important;
+            }
+
+            .flatpickr-current-month {
+                font-size: 110% !important;
+            }
+
+            .flatpickr-current-month .cur-month {
+                font-weight: 600 !important;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .flatpickr-calendar {
+                width: 350px !important;
+                border-radius: 14px !important;
+                padding: 10px !important;
+                box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15) !important;
+            }
+
+            .flatpickr-day {
+                height: 40px !important;
+                line-height: 40px !important;
+                font-size: 14px !important;
+            }
+
+            .flatpickr-current-month {
+                font-size: 105% !important;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.46.0/dist/apexcharts.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -171,6 +255,16 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Ensure Flatpickr globally defaults to disableMobile: true
+        if (typeof window !== 'undefined') {
+            window.addEventListener('DOMContentLoaded', function() {
+                if (typeof flatpickr !== 'undefined' && flatpickr.setDefaults) {
+                    flatpickr.setDefaults({ disableMobile: true });
+                }
+            });
+        }
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <script>

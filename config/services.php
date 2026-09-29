@@ -40,6 +40,7 @@ return [
         'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
         'tenant_id' => env('MICROSOFT_TENANT_ID', 'common'),
         'redirect_uri' => env('MICROSOFT_REDIRECT_URI', env('APP_URL', 'http://localhost:8000') . '/auth/microsoft/callback'),
+        'secret_expires_at' => env('MICROSOFT_SECRET_EXPIRES_AT'),
     ],
 
 ];

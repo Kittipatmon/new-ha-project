@@ -110,7 +110,7 @@
         // 3. Recruitment Applications (ผู้สมัครงานส่งใบสมัครเข้ามาใหม่ & ส่งแผนกพิจารณา)
         if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_applications')) {
             // A. ใบสมัครเข้ามาใหม่: แจ้งเตือนเฉพาะ HA / Admin เท่านั้น
-            if ($isCentralHr) {
+            if ($canManageRecruitment) {
                 $newApplications = \App\Models\Recruitment\Application::with(['applicant', 'jobPost'])
                     ->whereIn('status', ['new', 'submitted'])
                     ->latest('applied_at')

@@ -138,6 +138,22 @@
         }
         .dark .section-card { background: #1f2937; color: #f1f5f9; border-color: #374151; }
 
+        /* ── Status badges ─────────────────────── */
+        .badge { 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.85rem; 
+            border-radius: 9999px; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            letter-spacing: 0.02em; 
+            white-space: nowrap;
+        }
+        .badge-blue   { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+        .dark .badge-blue { background: rgba(30, 58, 138, 0.35); color: #93c5fd; border-color: rgba(59, 130, 246, 0.35); }
+
         /* ── DataTable layout and spacing ─────────────────── */
         table.dataTable { 
             border-collapse: separate !important; 
@@ -369,7 +385,7 @@
 
                     <!-- Job Post Filter (List ตำแหน่งเปิดรับสมัคร / ทั้งหมด) -->
                     <div class="relative w-full sm:w-auto">
-                        <select id="filterJobPost" class="bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs">
+                        <select id="filterJobPost" class="appearance-none bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3.5 pr-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs">
                             <option value="">ทุกตำแหน่งงาน</option>
                             @if(isset($openJobPosts) && $openJobPosts->count() > 0)
                                 <optgroup label="🟢 ตำแหน่งที่ยังเปิดรับสมัครอยู่">
@@ -390,21 +406,27 @@
                                 </optgroup>
                             @endif
                         </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
                     </div>
                     
                     <!-- Department Select -->
                     <div class="relative w-full sm:w-auto">
-                        <select id="filterDepartment" class="bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs">
+                        <select id="filterDepartment" class="appearance-none bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3.5 pr-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs">
                             <option value="">ทุกฝ่าย / แผนก</option>
                             @foreach($departments as $dept)
                                 <option value="{{ $dept->department_fullname }}">{{ $dept->department_fullname }}</option>
                             @endforeach
                         </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
                     </div>
 
                     <!-- Status Select -->
                     <div class="relative w-full sm:w-auto">
-                        <select id="filterStatus" class="bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs">
+                        <select id="filterStatus" class="appearance-none bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3.5 pr-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs">
                             <option value="">ทุกสถานะกระบวนการ</option>
                             <option value="submitted">1. รอคัดกรองเบื้องต้น</option>
                             <option value="dept_review">2. ส่งแผนกพิจารณา</option>
@@ -417,6 +439,9 @@
                             <option value="dept_rejected">หัวหน้าแผนกส่งกลับ</option>
                             <option value="interview_failed">ไม่ผ่านสัมภาษณ์</option>
                         </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
                     </div>
 
                     <!-- Open Only Toggle Checkbox -->
@@ -429,13 +454,16 @@
 
                     <!-- Items Per Page -->
                     <div class="relative w-full sm:w-auto">
-                        <select id="filterPageSize" class="bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3 pr-8 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs" title="จำนวนรายการต่อหน้า">
+                        <select id="filterPageSize" class="appearance-none bg-white border border-slate-200 text-slate-800 text-xs rounded-xl focus:ring-slate-500 focus:border-slate-500 block py-2.5 pl-3.5 pr-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white w-full cursor-pointer shadow-2xs" title="จำนวนรายการต่อหน้า">
                             <option value="5">แสดง 5 รายการ</option>
                             <option value="10" selected>แสดง 10 รายการ</option>
                             <option value="25">แสดง 25 รายการ</option>
                             <option value="50">แสดง 50 รายการ</option>
                             <option value="-1">แสดงทั้งหมด</option>
                         </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
                     </div>
 
                     <!-- Reset Button -->
@@ -451,7 +479,7 @@
                 <table id="dataTableApps" class="display responsive nowrap w-full text-xs sm:text-sm">
                     <thead class="bg-slate-50/80 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px] font-semibold border-y border-slate-200/80 dark:border-slate-700/60">
                         <tr>
-                            <th class="all whitespace-nowrap text-center py-3">ประเภท</th>
+                            <th class="all whitespace-nowrap text-center py-3">ประเภทแบบฟอร์ม</th>
                             <th class="all whitespace-nowrap text-left py-3">ID</th>
                             <th class="all whitespace-nowrap text-left py-3">ผู้สมัคร</th>
                             <th class="all whitespace-nowrap text-left py-3">ตำแหน่งที่สมัคร</th>
@@ -471,25 +499,24 @@
                                 $appliedDateFormatted = $app->applied_at ? $app->applied_at->format('Y-m-d') : ($app->created_at ? $app->created_at->format('Y-m-d') : '');
                             @endphp
                             <tr data-status="{{ $app->status }}" data-department="{{ $deptName }}" data-job-post-id="{{ $app->job_post_id }}" data-post-open="{{ $isPostOpen ? '1' : '0' }}" data-applied-date="{{ $appliedDateFormatted }}" class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
-                                <!-- ประเภท -->
-                                <td class="text-center whitespace-nowrap py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
-                                        <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <span>ใบสมัครงาน</span>
-                                    </span>
+                                <!-- ประเภทแบบฟอร์ม -->
+                                <td data-search="" class="text-center whitespace-nowrap py-3.5">
+                                    <span class="badge badge-blue shadow-2xs">ใบสมัครงาน</span>
                                 </td>
 
                                 <!-- ID -->
-                                <td data-order="{{ $app->id }}" class="text-left font-bold whitespace-nowrap py-3.5">
-                                    <a href="{{ route('backend.recruitment.applications.show', $app->id) }}" class="inline-flex items-center px-2 py-0.5 rounded-md font-mono text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-blue-600 border border-slate-200 dark:border-slate-700" title="ดูรายละเอียดผู้สมัคร">
-                                        #APP-{{ str_pad($app->id, 5, '0', STR_PAD_LEFT) }}
+                                @php
+                                    $appCode = $app->application_no ?: ('APP-' . str_pad($app->id, 5, '0', STR_PAD_LEFT));
+                                    $displayAppCode = str_starts_with($appCode, '#') ? $appCode : ('#' . $appCode);
+                                @endphp
+                                <td data-order="{{ $app->id }}" data-search="" class="text-left font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap py-3.5">
+                                    <a href="{{ route('backend.recruitment.applications.show', $app->id) }}" class="font-mono text-xs font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:underline" title="ดูรายละเอียดผู้สมัคร">
+                                        {{ $displayAppCode }}
                                     </a>
                                 </td>
 
                                 <!-- ผู้สมัคร -->
-                                <td class="text-left whitespace-nowrap py-3.5">
+                                <td data-search="{{ $applicantName }} {{ $app->applicant->email ?? '' }}" class="text-left whitespace-nowrap py-3.5">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center text-xs font-bold uppercase shrink-0 border border-slate-200 dark:border-slate-600">
                                             {{ mb_substr($app->applicant->first_name ?? '', 0, 1) }}{{ mb_substr($app->applicant->last_name ?? '', 0, 1) }}
@@ -515,7 +542,7 @@
 
                                     @if(($app->total_applications ?? 0) > 1 && $app->applicant && $app->applicant->applications)
                                         <!-- Template for Child Row Expansion -->
-                                        <div class="app-history-template hidden">
+                                        <template class="app-history-template">
                                             <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-50/95 via-rose-50/25 to-slate-50/95 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 border-y-2 border-rose-300/80 dark:border-rose-800/60 shadow-inner">
                                                 <div class="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2.5 border-b border-rose-200/60 dark:border-rose-900/40">
                                                     <div class="flex items-center gap-2.5">
@@ -570,7 +597,11 @@
                                                                         </span>
                                                                     </td>
                                                                     <td class="px-4 py-2.5 font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                                                                        #APP-{{ str_pad($histApp->id, 5, '0', STR_PAD_LEFT) }}
+                                                                        @php
+                                                                            $hCode = $histApp->application_no ?: ('APP-' . str_pad($histApp->id, 5, '0', STR_PAD_LEFT));
+                                                                            $displayHCode = str_starts_with($hCode, '#') ? $hCode : ('#' . $hCode);
+                                                                        @endphp
+                                                                        {{ $displayHCode }}
                                                                         @if($isCurrent)
                                                                             <span class="ml-1.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800">ปัจจุบัน</span>
                                                                         @endif
@@ -585,8 +616,9 @@
                                                                         {{ $histApp->applied_at ? $histApp->applied_at->addYears(543)->format('d/m/Y H:i น.') : ($histApp->created_at ? $histApp->created_at->addYears(543)->format('d/m/Y H:i น.') : '-') }}
                                                                     </td>
                                                                     <td class="px-4 py-2.5 text-center whitespace-nowrap">
-                                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold {{ $histApp->status_badge_class }}">
-                                                                            {{ $histApp->status_label }}
+                                                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-2xs {{ $histApp->status_badge_class }}">
+                                                                            <i class="{{ $histApp->status_icon }} text-[10px]"></i>
+                                                                            <span>{{ $histApp->status_label }}</span>
                                                                         </span>
                                                                     </td>
                                                                     <td class="px-4 py-2.5 text-center whitespace-nowrap">
@@ -603,12 +635,12 @@
                                                     </table>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </template>
                                     @endif
                                 </td>
 
                                 <!-- ตำแหน่งที่สมัคร -->
-                                <td class="text-left whitespace-nowrap py-3.5">
+                                <td data-search="{{ $posName }}" class="text-left whitespace-nowrap py-3.5">
                                     <div class="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                                         <span>{{ $posName }}</span>
                                         @if($isPostOpen)
@@ -620,7 +652,7 @@
                                 </td>
 
                                 <!-- ฝ่าย / แผนก -->
-                                <td class="text-left text-slate-600 dark:text-slate-300 whitespace-nowrap py-3.5">
+                                <td data-search="" class="text-left text-slate-600 dark:text-slate-300 whitespace-nowrap py-3.5">
                                     <div class="inline-flex items-center gap-1.5">
                                         <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0v-5a2 2 0 012-2h2a2 2 0 012 2v5m-4 0h4"/>
@@ -630,7 +662,7 @@
                                 </td>
 
                                 <!-- วันที่สมัคร -->
-                                <td data-order="{{ $appliedDateFormatted }}" class="text-center whitespace-nowrap text-slate-600 dark:text-slate-400 py-3.5">
+                                <td data-order="{{ $appliedDateFormatted }}" data-search="" class="text-center whitespace-nowrap text-slate-600 dark:text-slate-400 py-3.5">
                                     <div class="inline-flex items-center justify-center gap-1.5">
                                         <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -640,36 +672,15 @@
                                 </td>
 
                                 <!-- สถานะ -->
-                                <td class="text-center whitespace-nowrap py-3.5">
-                                    @if(in_array($app->status, ['hired', 'passed_selection']))
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40">
-                                            <svg class="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                                            <span>{{ $app->status_label }}</span>
-                                        </span>
-                                    @elseif(in_array($app->status, ['interview', 'interview_scheduled', 'interview_completed']))
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-50 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-900/40">
-                                            <svg class="w-3 h-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
-                                            <span>{{ $app->status_label }}</span>
-                                        </span>
-                                    @elseif($app->status === 'dept_review')
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-900/40">
-                                            <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
-                                            <span>{{ $app->status_label }}</span>
-                                        </span>
-                                    @elseif(in_array($app->status, ['dept_rejected', 'interview_failed', 'screening_failed']))
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40">
-                                            <svg class="w-3 h-3 text-rose-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                                            <span>{{ $app->status_label }}</span>
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
-                                            <span>{{ $app->status_label }}</span>
-                                        </span>
-                                    @endif
+                                <td data-search="{{ $app->status_label }}" class="text-center whitespace-nowrap py-3.5">
+                                    <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold border shadow-2xs {{ $app->status_badge_class }}">
+                                        <i class="{{ $app->status_icon }} text-[12px]"></i>
+                                        <span>{{ $app->status_label }}</span>
+                                    </span>
                                 </td>
 
                                 <!-- จัดการ -->
-                                <td class="text-center whitespace-nowrap py-3.5">
+                                <td data-search="" class="text-center whitespace-nowrap py-3.5">
                                     <div class="relative inline-block text-left">
                                         <button type="button" class="action-dropdown-btn w-8 h-8 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-100/80 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-colors inline-flex items-center justify-center focus:outline-none cursor-pointer" title="จัดการ" onclick="toggleActionDropdown(this, event)">
                                             <svg class="w-4 h-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
@@ -803,6 +814,11 @@
                 pageLength: 10,
                 lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "ทั้งหมด"]],
                 order: [[1, 'desc']],
+                columnDefs: [
+                    // ค้นหาเฉพาะ: คอลัมน์ที่ 2 (ผู้สมัคร: ชื่อ, อีเมล) และ คอลัมน์ที่ 3 (ตำแหน่งที่สมัคร) เท่านั้น
+                    { targets: [2, 3], searchable: true },
+                    { targets: [0, 1, 4, 5, 6, 7], searchable: false }
+                ],
                 language: {
                     search: "ค้นหา:",
                     lengthMenu: "แสดง _MENU_ รายการ",
@@ -831,7 +847,7 @@
 
             if (table) {
                 // Custom search box
-                $('#customSearch').on('keyup', function() {
+                $('#customSearch').on('keyup input', function() {
                     table.search(this.value).draw();
                 });
 
@@ -938,7 +954,8 @@
                             });
                         });
 
-                        const templateHtml = tr.find('.app-history-template').html();
+                        const tmplEl = tr.find('.app-history-template')[0];
+                        const templateHtml = tmplEl ? (tmplEl.innerHTML || $(tmplEl).html()) : '';
                         if (templateHtml) {
                             const childContent = $('<div class="history-slider" style="display:none;">' + templateHtml + '</div>');
                             row.child(childContent, 'p-0 bg-transparent border-0').show();
@@ -959,7 +976,8 @@
                             }
                         });
                     } else {
-                        const templateHtml = tr.find('.app-history-template').html();
+                        const tmplEl = tr.find('.app-history-template')[0];
+                        const templateHtml = tmplEl ? (tmplEl.innerHTML || $(tmplEl).html()) : '';
                         if (templateHtml) {
                             const newRow = $('<tr class="history-row-fallback"><td colspan="8" class="p-0 border-0 bg-transparent"><div class="history-slider" style="display:none;">' + templateHtml + '</div></td></tr>');
                             tr.after(newRow);

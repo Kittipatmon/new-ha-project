@@ -1,239 +1,144 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>เชิญเข้าร่วมสัมภาษณ์งาน - Kumwell</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap');
-        
-        body {
-            font-family: 'Sarabun', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 650px;
-            margin: 20px auto;
-            background: #ffffff;
-            border-top: 6px solid #F2704E;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .header {
-            padding: 30px;
-            text-align: center;
-            background-color: #ffffff;
-        }
-        .header img {
-            max-width: 180px;
-        }
-        .tagline {
-            color: #F2704E;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 5px;
-            letter-spacing: 1px;
-        }
-        .content {
-            padding: 40px;
-            background-color: #ffffff;
-        }
-        .greeting {
-            font-size: 18px;
-            margin-bottom: 25px;
-            color: #1f2937;
-            font-weight: 600;
-        }
-        .main-text {
-            text-indent: 40px;
-            margin-bottom: 20px;
-            text-align: justify;
-        }
-        .highlight-box {
-            background-color: #fff5f2;
-            border-left: 4px solid #F2704E;
-            padding: 20px;
-            margin: 25px 0;
-        }
-        .highlight-title {
-            color: #F2704E;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-        .test-link-box {
-            background-color: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-        .footer {
-            padding: 30px;
-            background-color: #f9fafb;
-            border-top: 1px solid #e5e7eb;
-            font-size: 13px;
-            color: #64748b;
-        }
-        .signature {
-            margin-top: 30px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .welfare-section {
-            font-size: 13px;
-            color: #6b7280;
-            font-style: italic;
-            background: #fdfdfd;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #f0f0f0;
-            margin-top: 30px;
-        }
-        .btn-maps {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #F2704E;
-            color: white !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        a { color: #F2704E; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="{{ $message->embed(public_path('images/logos/th-kumwell-logo.png')) }}" alt="Kumwell Logo">
-            <div class="tagline">POWER OF INNOVATION</div>
+@extends('emails.layouts.master', [
+    'themeColor' => '#ea580c',
+    'titleColor' => '#c2410c',
+    'emailTitle' => !empty($isUpdate) ? 'แจ้งเปลี่ยนแปลงวันและเวลานัดสัมภาษณ์งาน' : 'หนังสือเชิญเข้าร่วมสัมภาษณ์งาน'
+])
+
+@section('subject', (!empty($isUpdate) ? 'แจ้งเปลี่ยนแปลงวันและเวลานัดสัมภาษณ์งาน' : 'หนังสือเชิญเข้าร่วมสัมภาษณ์งาน') . ' - Kumwell Corporation')
+
+@section('content')
+    @if(!empty($isUpdate))
+        <div class="alert-update" style="background-color: #fff7ed; border: 1.5px solid #fdba74; border-left: 5px solid #ea580c; border-radius: 8px; padding: 14px 18px; margin-bottom: 22px;">
+            <div style="color: #c2410c; font-weight: 700; font-size: 15px; margin-bottom: 4px;">
+                ⚠️ แจ้งเปลี่ยนแปลงกำหนดการสัมภาษณ์งานใหม่
+            </div>
+            <div style="color: #9a3412; font-size: 13px; line-height: 1.5;">
+                บริษัทฯ ขอแจ้งเปลี่ยนแปลงกำหนดการสัมภาษณ์งานจากเดิม โปรดยึดวัน เวลา และรูปแบบตามกำหนดการใหม่ด้านล่างนี้
+            </div>
         </div>
-        
-        <div class="content">
-            @if(!empty($isUpdate))
-                <div style="background-color: #fff7ed; border: 1.5px solid #fdba74; border-left: 5px solid #ea580c; border-radius: 6px; padding: 16px 20px; margin-bottom: 24px;">
-                    <div style="color: #c2410c; font-weight: 700; font-size: 16px; margin-bottom: 4px;">
-                        ⚠️ แจ้งเปลี่ยนแปลงวันและเวลานัดสัมภาษณ์งานใหม่
-                    </div>
-                    <div style="color: #9a3412; font-size: 13px; line-height: 1.5;">
-                        บริษัทฯ ขอแจ้งเปลี่ยนแปลงกำหนดการสัมภาษณ์งานจากเดิม โปรดยึดวัน เวลา และสถานที่ตามกำหนดการใหม่ด้านล่างนี้
-                    </div>
-                </div>
-            @endif
+    @endif
 
-            <p class="greeting">เรียน คุณ{{ $interview->application->applicant->first_name }} {{ $interview->application->applicant->last_name }}</p>
+    <p class="greeting">เรียน คุณ{{ $interview->application->applicant->first_name }} {{ $interview->application->applicant->last_name }}</p>
 
-            <p class="main-text">
-                ตามที่ท่านได้สมัครงาน กับทาง Jobthai บริษัท คัมเวล คอร์ปอเรชั่น จำกัด ( มหาชน ) ซึ่งบริษัทเป็นผู้ผลิตและประกอบระบบสายล่อฟ้าและสายดินสำหรับอุปกรณ์ไฟฟ้า ( Grounding & Lightning Protection ) ที่ได้มาตรฐานระดับโลกภายใต้แบรนด์ Kumwell จำหน่ายทั้งไทยและต่างประเทศ โดยบริษัทเปิดดำเนินกิจการมานานกว่า 25 ปี ได้รับรางวัลอุตสาหกรรมดีเด่นด้านการบริหารอุตสาหกรรมขนาดกลางและขนาดย่อมประจำปี 2555 รางวัลผู้ส่งออกดีเด่น รางวัลความรับผิดชอบต่อสังคม (CSR-DIW) เว็บไซต์ <a href="http://www.kumwell.com">www.kumwell.com</a>
-            </p>
+    <div class="message-body">
+        <p>
+            ตามที่ท่านได้สมัครงานกับ บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน) ซึ่งบริษัทฯ เป็นผู้นำด้านระบบสายล่อฟ้าและสายดินสำหรับอุปกรณ์ไฟฟ้า (Grounding & Lightning Protection) ระดับมาตรฐานสากล
+        </p>
 
-            @if(!empty($isUpdate))
-                <p class="main-text">
-                    ตามที่ท่านได้รับการนัดหมายสัมภาษณ์งานในตำแหน่ง <strong>“{{ $interview->application->jobPost->position_name }}”</strong> บริษัทฯ ขอแจ้ง<strong>เปลี่ยนแปลงวันและเวลานัดหมายสัมภาษณ์งานใหม่</strong>เป็นดังนี้:
-                </p>
-            @else
-                <p class="main-text">
-                    บริษัทฯ ได้พิจารณาแล้วเห็นว่าท่านมีคุณสมบัติเบื้องต้นตรงตามความต้องการของบริษัท ในตำแหน่ง <strong>“{{ $interview->application->jobPost->position_name }}”</strong> จึงขอนัดสัมภาษณ์งานใน
-                </p>
-            @endif
-
-            <div class="highlight-box">
-                <div class="highlight-title">
-                    @if(!empty($isUpdate))
-                        🔄 กำหนดการนัดสัมภาษณ์ใหม่ (รอบที่ {{ $interview->interview_round }})
-                    @else
-                        กำหนดการนัดสัมภาษณ์ (รอบที่ {{ $interview->interview_round }})
-                    @endif
-                </div>
-                วัน{{ \Carbon\Carbon::parse($interview->interview_date)->locale('th')->dayName }}ที่ {{ $interview->interview_date->format('d') }} {{ \Carbon\Carbon::parse($interview->interview_date)->locale('th')->monthName }} {{ $interview->interview_date->format('Y') + 543 }}<br>
-                เวลา: <strong>{{ \Carbon\Carbon::parse($interview->interview_time)->format('H:i') }} น.</strong><br>
-                รูปแบบการสัมภาษณ์: <strong>{{ $interview->interview_type == 'online' ? 'ออนไลน์ (Online Meeting)' : 'On-site / เข้ามาสัมภาษณ์ที่บริษัท' }}</strong><br>
-                @if($interview->location)
-                    สถานที่ / ห้อง: <strong>{{ $interview->location }}</strong><br>
-                @endif
-            </div>
-
-            @if($interview->meeting_link)
-                <div style="background-color: #f0fdf4; border: 1.5px solid #22c55e; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
-                    <div style="color: #15803d; font-weight: 700; font-size: 16px; margin-bottom: 6px;">
-                        📹 ลิ้งค์เข้าห้องประชุมสัมภาษณ์ออนไลน์
-                    </div>
-                    <div style="margin-bottom: 12px; font-size: 13px; color: #4b5563;">
-                        ท่านสามารถคลิกปุ่มด้านล่างนี้เพื่อเข้าร่วมการสัมภาษณ์เมื่อถึงกำหนดเวลา
-                    </div>
-                    <a href="{{ $interview->meeting_link }}" target="_blank" style="display: inline-block; background-color: #16a34a; color: #ffffff !important; font-weight: 600; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.3);">
-                        คลิกเข้าร่วมการประชุม (Join Meeting)
-                    </a>
-                    <div style="margin-top: 10px; font-size: 12px; color: #64748b; word-break: break-all;">
-                        หากคลิกปุ่มไม่ได้ สามารถคัดลอกลิ้งค์นี้ไปวางในเบราว์เซอร์: <a href="{{ $interview->meeting_link }}" target="_blank" style="color: #16a34a;">{{ $interview->meeting_link }}</a>
-                    </div>
-                </div>
-            @endif
-
-            @if($interview->note)
-                <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 14px 18px; margin: 20px 0; border-radius: 4px;">
-                    <strong style="color: #1d4ed8; font-size: 14px;">รายละเอียด / ข้อความเพิ่มเติมจากการนัดหมาย:</strong>
-                    <p style="margin: 6px 0 0 0; color: #334155; font-size: 14px; white-space: pre-line;">{{ $interview->note }}</p>
-                </div>
-            @endif
-
-            <p><strong>หากสะดวกในวันเวลาดังกล่าว รบกวนคอนเฟิร์มกลับมาทางอีเมลฉบับนี้ครับ</strong></p>
-
-            <div class="test-link-box">
-                <p style="margin-top: 0;"><strong>รบกวนทำแบบทดสอบบุคลิกภาพ 16 personalities เพื่อประกอบการสัมภาษณ์งานตามลิ้งค์แนบครับ</strong></p>
-                <a href="https://shorturl.asia/3BcrT">https://shorturl.asia/3BcrT</a>
-                <p style="margin-bottom: 0; font-size: 14px; color: #64748b;">* หลังจากทำแบบทดสอบเสร็จแล้ว รบกวนแคปเจอร์หน้าจอและส่งกลับทางอีเมลฉบับนี้ครับ</p>
-            </div>
-
-            @if($interview->interview_type != 'online' || empty($interview->meeting_link))
-                <p>
-                    <strong>สถานที่สัมภาษณ์งาน :</strong> {{ $interview->location ?: 'สำนักงานใหญ่ บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)' }}<br>
-                    <a href="https://maps.app.goo.gl/Xsu7hgYL4moRC6Hf9" class="btn-maps">ดูแผนที่สำนักงานใหญ่</a>
-                </p>
-            @endif
-
-            <div style="margin-top: 30px;">
-                <p><strong>สำหรับเอกสารใช้ประกอบในการสมัครงานมีดังนี้</strong></p>
-                <ul style="padding-left: 20px;">
-                    <li>สำเนาบัตรประชาชน 1 ใบ</li>
-                    <li>สำเนาทะเบียนบ้าน 1 ใบ</li>
-                    <li>วุฒิการศึกษา 1 ใบ</li>
-                    <li>รูปถ่าย 1 ใบ</li>
-                    <li>เอกสารอื่นๆ เช่น (สลิปเงินเดือนล่าสุด, Resume, ใบรับรองการผ่านงาน, ใบประกาศผ่านฝึกอบรม)</li>
-                </ul>
-                <p style="color: #F2704E;"><strong>** เอกสารการสมัครงาน รบกวนนำมาในวันสัมภาษณ์งานครับ **</strong></p>
-            </div>
-
+        @if(!empty($isUpdate))
             <p>
-                หากท่านมีข้อสงสัยประการใด สามารถสอบถามได้ทางโทรศัพท์หมายเลข <strong>02-954-3455</strong> ติดต่อ <strong>คุณ{{ $senderName ?? 'เจ้าหน้าที่ฝ่ายทรัพยากรบุคคล' }}</strong> (อีเมล: <a href="mailto:{{ $senderEmail }}">{{ $senderEmail }}</a>) จักขอบพระคุณยิ่ง
+                ตามที่ท่านได้รับการนัดหมายสัมภาษณ์งานในตำแหน่ง <strong>“{{ $interview->application->jobPost->position_name }}”</strong> บริษัทฯ ขอแจ้ง<strong>เปลี่ยนแปลงวันและเวลานัดหมายสัมภาษณ์งานใหม่</strong>เป็นดังนี้:
             </p>
-
+        @else
             <p>
-                จึงเรียนมาเพื่อขอเชิญท่านเข้าร่วมสัมภาษณ์งานในครั้งนี้และหวังว่าท่านจะได้มาเป็นบุคคลากรที่สำคัญอีก 1 ท่านของบริษัทและพร้อมที่จะเติบโตไปกับองค์กร
+                บริษัทฯ ได้พิจารณาคุณสมบัติเบื้องต้นของท่านแล้วเห็นว่าตรงตามความต้องการของบริษัท ในตำแหน่ง <strong>“{{ $interview->application->jobPost->position_name }}”</strong> จึงขอเรียนเชิญท่านเข้าร่วมสัมภาษณ์งานตามกำหนดการดังต่อไปนี้:
             </p>
+        @endif
 
-            <div class="welfare-section">
-                <strong>*** สวัสดิการ อาทิเช่น</strong> กองทุนสำรองเลี้ยงชีพ , กองทุนสวัสดิการกู้ยืม , ประกันอุบัติเหตุ , ตรวจสุขภาพก่อนเริ่มงาน , ตรวจสุขภาพประจำปี เงินช่วยเหลือกรณีสมรส , สวัสดิการของเยี่ยมคลอด , เงินช่วยเหลือกรณี บิดา มารดา และบุตร เสียชีวิต , ทุนการศึกษาบุตร ตามเงื่อนไข ท่องเที่ยวประจำปี , ปรับเงินประจำปี , โบนัส , ฯลฯ ***
+        <div class="highlight-box" style="background-color: #fff7ed; border: 1.5px solid #ffedd5; border-left: 5px solid #ea580c; padding: 18px 20px; border-radius: 8px; margin: 20px 0;">
+            <span style="display: inline-block; background-color: #ffedd5; color: #c2410c; font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px;">
+                {{ !empty($isUpdate) ? '🔄 กำหนดการนัดสัมภาษณ์ใหม่' : '📅 กำหนดการสัมภาษณ์งาน' }} (รอบที่ {{ $interview->interview_round }})
+            </span>
+            <p style="margin: 5px 0;"><strong>ตำแหน่งงาน:</strong> <span style="color: #c2410c; font-weight: 700;">{{ $interview->application->jobPost->position_name }}</span></p>
+            <p style="margin: 5px 0;"><strong>วันที่สัมภาษณ์:</strong> วัน{{ \Carbon\Carbon::parse($interview->interview_date)->locale('th')->dayName }}ที่ {{ \Carbon\Carbon::parse($interview->interview_date)->format('d') }} {{ \Carbon\Carbon::parse($interview->interview_date)->locale('th')->monthName }} {{ \Carbon\Carbon::parse($interview->interview_date)->format('Y') + 543 }}</p>
+            <p style="margin: 5px 0;"><strong>เวลา:</strong> <span style="font-weight: 700; color: #111827;">{{ \Carbon\Carbon::parse($interview->interview_time)->format('H:i') }} น.</span></p>
+            <p style="margin: 5px 0;"><strong>รูปแบบการสัมภาษณ์:</strong> {{ $interview->interview_type == 'online' ? 'ออนไลน์ (Online Meeting)' : 'On-site / เข้ามาสัมภาษณ์ที่สำนักงานบริษัท' }}</p>
+            @if($interview->location)
+                <p style="margin: 5px 0;"><strong>สถานที่ / ห้อง:</strong> {{ $interview->location }}</p>
+            @endif
+        </div>
+
+        @if($interview->meeting_link)
+            <div class="meeting-box" style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 18px 20px; margin: 22px 0; text-align: center;">
+                <div style="color: #15803d; font-weight: 700; font-size: 15px; margin-bottom: 6px;">
+                    📹 ลิ้งค์เข้าห้องประชุมสัมภาษณ์ออนไลน์
+                </div>
+                <div style="font-size: 13px; color: #4b5563; margin-bottom: 10px;">
+                    ท่านสามารถคลิกปุ่มด้านล่างนี้เพื่อเข้าร่วมการสัมภาษณ์เมื่อถึงกำหนดเวลา
+                </div>
+                <a href="{{ $interview->meeting_link }}" target="_blank" class="btn-meeting"
+                    style="display: inline-block; background-color: #16a34a; color: #ffffff !important; font-weight: 700; padding: 12px 26px; border-radius: 8px; text-decoration: none; font-size: 14px; margin-top: 10px;">
+                    คลิกเข้าร่วมการประชุม (Join Meeting)
+                </a>
+                <div style="margin-top: 10px; font-size: 12px; color: #64748b; word-break: break-all;">
+                    หรือคัดลอกลิ้งค์: <a href="{{ $interview->meeting_link }}" target="_blank" style="color: #16a34a;">{{ $interview->meeting_link }}</a>
+                </div>
             </div>
+        @endif
 
-            <div class="signature">
-                <p style="margin-bottom: 5px;">Best Regards,</p>
-                <p style="margin: 0; font-weight: 600;">Kumwell Corporation Public Company Limited</p>
-                <p style="margin: 0;"><strong>{{ $senderName ?? 'ฝ่ายทรัพยากรบุคคล' }}</strong></p>
-                <p style="margin: 0; color: #64748b; font-size: 14px;">{{ $senderPosition ?? 'ฝ่ายทรัพยากรบุคคล (Human Resources)' }}</p>
-                <p style="margin: 5px 0 0 0; font-size: 14px;">Phone: +662 954 3455</p>
-                <p style="margin: 0; font-size: 14px;">Web: <a href="http://www.kumwell.com">www.kumwell.com</a></p>
-                <p style="margin: 0; font-size: 14px;">Email: <a href="mailto:{{ $senderEmail }}">{{ $senderEmail }}</a></p>
+        @if($interview->note)
+            <div class="note-card" style="background-color: #eff6ff; border: 1px solid #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 14px 18px; margin: 20px 0; font-size: 13.5px; color: #1e40af;">
+                <strong style="color: #1d4ed8;">📌 รายละเอียด / ข้อความเพิ่มเติมจากการนัดหมาย:</strong>
+                <div style="margin-top: 6px; color: #334155; white-space: pre-line;">{{ $interview->note }}</div>
+            </div>
+        @endif
+
+        <p style="margin-top: 20px;">
+            <strong>⚠️ หากสะดวกในวันเวลาดังกล่าว รบกวนตอบกลับเพื่อคอนเฟิร์มการนัดหมายทางอีเมลฉบับนี้ครับ</strong>
+        </p>
+
+        <div class="test-box" style="background-color: #f8fafc; border: 1.5px dashed #cbd5e1; padding: 16px 18px; margin: 20px 0; border-radius: 8px; font-size: 13.5px;">
+            <strong style="color: #1e293b;">📝 แบบทดสอบบุคลิกภาพ (16 Personalities):</strong>
+            <p style="margin: 6px 0; color: #475569;">
+                รบกวนทำแบบทดสอบบุคลิกภาพ เพื่อประกอบการพิจารณาสัมภาษณ์งานตามลิ้งค์แนบ:<br>
+                👉 <a href="https://shorturl.asia/3BcrT" target="_blank" style="font-weight: 600; color: #ea580c;">https://shorturl.asia/3BcrT</a>
+            </p>
+            <div style="font-size: 12.5px; color: #64748b; margin-top: 4px;">
+                * หลังจากทำแบบทดสอบเสร็จเรียบร้อยแล้ว รบกวนแคปเจอร์หน้าจอผลการทดสอบและตอบกลับทางอีเมลฉบับนี้
             </div>
         </div>
 
-        <div class="footer">
-            &copy; {{ date('Y') + 543 }} Kumwell Corporation Public Company Limited. All rights reserved.
+        @if($interview->interview_type != 'online' || empty($interview->meeting_link))
+            <div style="margin: 20px 0;">
+                <p style="margin-bottom: 6px;">
+                    <strong>📍 สถานที่สัมภาษณ์งาน:</strong> {{ $interview->location ?: 'สำนักงานใหญ่ บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)' }}
+                </p>
+                <a href="https://maps.app.goo.gl/Xsu7hgYL4moRC6Hf9" class="btn-maps" target="_blank"
+                    style="display: inline-block; background-color: #ea580c; color: #ffffff !important; text-decoration: none; font-weight: 600; font-size: 13px; padding: 9px 20px; border-radius: 6px; margin-top: 8px;">
+                    🗺️ ดูแผนที่สำนักงานใหญ่ (Google Maps)
+                </a>
+            </div>
+        @endif
+
+        <div class="doc-section" style="background-color: #f9fafb; border: 1px solid #f3f4f6; border-radius: 8px; padding: 16px 20px; margin: 20px 0; font-size: 13.5px;">
+            <strong style="color: #111827;">📄 เอกสารที่ต้องเตรียมมาในวันสัมภาษณ์งาน:</strong>
+            <ul style="margin: 8px 0; padding-left: 22px; color: #4b5563;">
+                <li>สำเนาบัตรประชาชน 1 ฉบับ</li>
+                <li>สำเนาทะเบียนบ้าน 1 ฉบับ</li>
+                <li>สำเนาหลักฐานการศึกษา (Transcript / ใบปริญญาบัตร) 1 ฉบับ</li>
+                <li>รูปถ่ายหน้าตรง 1 รูป</li>
+                <li>เอกสารอื่นๆ (เช่น ผลงาน/Portfolio, สลิปเงินเดือนล่าสุด, หนังสือรับรองการทำงาน)</li>
+            </ul>
+            <div style="color: #ea580c; font-weight: 600; font-size: 12.5px;">
+                ** รบกวนจัดเตรียมเอกสารข้างต้นให้ครบถ้วนในวันสัมภาษณ์งาน **
+            </div>
+        </div>
+
+        <p style="margin-top: 20px;">
+            หากท่านมีข้อสงสัยหรือติดขัดประการใด สามารถสอบถามได้ทางโทรศัพท์ <strong>02-954-3455</strong> ติดต่อ <strong>คุณ{{ $senderName ?? 'เจ้าหน้าที่ฝ่ายทรัพยากรบุคคล' }}</strong>@if(!empty($senderEmail)) (อีเมล: <a href="mailto:{{ $senderEmail }}">{{ $senderEmail }}</a>)@endif
+        </p>
+
+        <p>
+            จึงเรียนมาเพื่อขอเชิญท่านเข้าร่วมสัมภาษณ์งานในครั้งนี้ และหวังเป็นอย่างยิ่งว่าจะได้มีโอกาสร่วมงานกับท่าน
+        </p>
+
+        <div class="welfare-section" style="font-size: 12.5px; color: #6b7280; background: #fafafa; padding: 14px 18px; border-radius: 6px; border: 1px solid #f0f0f0; margin-top: 24px; line-height: 1.6;">
+            <strong>⭐ สวัสดิการพนักงาน Kumwell:</strong> กองทุนสำรองเลี้ยงชีพ, กองทุนสวัสดิการกู้ยืม, ประกันอุบัติเหตุกลุ่ม, ตรวจสุขภาพประจำปี, เงินช่วยเหลือในโอกาสต่างๆ, ทุนการศึกษาบุตร, ท่องเที่ยวประจำปี, การปรับเงินเดือนประจำปี, โบนัส ฯลฯ
         </div>
     </div>
-</body>
-</html>
+@endsection
+
+@section('signature')
+    <div class="signature">
+        <p style="margin: 0; font-weight: 600; color: #1f2937;">Best Regards,</p>
+        <p style="margin: 5px 0 0 0; color: #4b5563;">
+            <strong>{{ $senderName ?? 'ฝ่ายทรัพยากรบุคคล' }}</strong><br>
+            <span style="font-size: 13px; color: #6b7280;">{{ $senderPosition ?? 'ฝ่ายทรัพยากรบุคคลและบริหารงานกลาง' }}</span><br>
+            บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)<br>
+            <span style="font-size: 13px; color: #6b7280;">โทร: +662 954 3455 | เว็บไซต์: <a href="http://www.kumwell.com" target="_blank" style="color: #ea580c;">www.kumwell.com</a></span>
+            @if(!empty($senderEmail))
+                <br><span style="font-size: 13px; color: #6b7280;">อีเมล: <a href="mailto:{{ $senderEmail }}" style="color: #ea580c;">{{ $senderEmail }}</a></span>
+            @endif
+        </p>
+    </div>
+@endsection

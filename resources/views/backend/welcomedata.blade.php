@@ -1,30 +1,32 @@
 @extends('layouts.app')
 
-@section('title', 'ระบบจัดการข้อมูลหลัก HR (Master Data Management)')
-
 @section('content')
-<div class="py-4">
-    <!-- Header Section with soft gradient card -->
-    <div class="relative overflow-hidden mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 text-white p-6 sm:p-8 shadow-lg">
-        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="w-full">
+    <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+        
+        <!-- Header Bar Inside Frame -->
+        <div class="pb-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
-                    <i class="fa-solid fa-database mr-2"></i> HR Master Data Portal
-                </h2>
-                <p class="text-white/90 text-sm sm:text-base max-w-2xl font-light">
+                <nav class="flex text-xs font-semibold text-slate-500 mb-1" aria-label="Breadcrumb">
+                    <a href="{{ route('welcome') }}" class="hover:text-indigo-600 transition">หน้าหลัก</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-slate-800 dark:text-slate-200">ระบบจัดการข้อมูลหลัก HR (Master Data Management)</span>
+                </nav>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <i class="fa-solid fa-database text-red-600"></i> ระบบจัดการข้อมูลหลัก HR (Master Data Management)
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     ระบบศูนย์กลางสำหรับแอดมินและฝ่ายบุคคลในการจัดการข้อมูลตั้งค่าหลักของระบบ เช่น ข้อมูลโครงสร้างองค์กร สิทธิ์ผู้ใช้งาน และรูปแบบเอกสารคำร้องต่างๆ
                 </p>
             </div>
-            <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20 shrink-0 self-start md:self-auto">
-                <i class="fa-solid fa-shield-halved text-2xl text-amber-200"></i>
+            <div class="flex items-center gap-2.5 bg-slate-50 dark:bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs shrink-0 self-start sm:self-auto">
+                <i class="fa-solid fa-shield-halved text-amber-500 text-lg"></i>
                 <div class="text-left">
-                    <div class="text-xs text-white/70">สิทธิ์การเข้าถึง</div>
-                    <div class="text-sm font-semibold">ผู้ดูแลระบบสูงสุด (HR Admin)</div>
+                    <div class="text-[10px] text-slate-400">สิทธิ์การเข้าถึง</div>
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-200">ผู้ดูแลระบบสูงสุด (HR Admin)</div>
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Quick Stats Summary -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -287,6 +289,7 @@
                 </a>
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection

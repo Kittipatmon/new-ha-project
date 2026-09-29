@@ -199,8 +199,102 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
 
+        /* ── Expandable Group Row & Chevron (Image 1 Style) ── */
+        .group-parent-row {
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .group-parent-row:hover {
+            background-color: #f8fafc !important;
+        }
+        .dark .group-parent-row:hover {
+            background-color: #1e293b/80 !important;
+        }
+        .group-parent-row.is-active {
+            background-color: #f1f5f9 !important;
+        }
+        .dark .group-parent-row.is-active {
+            background-color: #334155/60 !important;
+        }
+        .group-chevron {
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .group-chevron.is-open {
+            transform: rotate(180deg);
+        }
+
+        /* ── Action Box (Matching Image 1 [✏️][v]) ── */
+        .action-box-erp {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .dark .action-box-erp {
+            border-color: #374151;
+            background: #1e293b;
+        }
+        .action-box-erp button,
+        .action-box-erp a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            color: #64748b;
+            background: transparent;
+            transition: all 0.15s ease;
+            font-size: 0.75rem;
+        }
+        .action-box-erp button:hover,
+        .action-box-erp a:hover {
+            color: #F2704E;
+            background: #f8fafc;
+        }
+        .dark .action-box-erp button:hover,
+        .dark .action-box-erp a:hover {
+            color: #F2704E;
+            background: #374151;
+        }
+        .action-box-erp .divider {
+            width: 1px;
+            height: 1.25rem;
+            background: #e2e8f0;
+        }
+        .dark .action-box-erp .divider {
+            background: #374151;
+        }
+
+        /* ── Specification grid text styles (Image 1 ERP style) ── */
+        .erp-spec-label {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            width: 155px;
+            flex-shrink: 0;
+        }
+        .dark .erp-spec-label {
+            color: #94a3b8;
+        }
+        .erp-spec-value {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #1e293b;
+            word-break: break-word;
+        }
+        .dark .erp-spec-value {
+            color: #f1f5f9;
+        }
+
         /* ── DataTable table header styling ─────────────────── */
-        table.dataTable thead th {
+        table.dataTable thead th,
+        .erp-table thead th {
             background-color: #f8fafc;
             color: #475569;
             font-size: 0.75rem;
@@ -209,26 +303,22 @@
             border-bottom: 1px solid #e2e8f0 !important;
             white-space: nowrap;
         }
-        .dark table.dataTable thead th {
+        .dark table.dataTable thead th,
+        .dark .erp-table thead th {
             background-color: #111827;
             color: #94a3b8;
             border-bottom-color: #374151 !important;
         }
 
-        table.dataTable tbody td {
+        table.dataTable tbody td,
+        .erp-table tbody td {
             padding: 0.75rem 0.85rem !important;
             vertical-align: middle;
             border-bottom: 1px solid #f1f5f9 !important;
         }
-        .dark table.dataTable tbody td {
+        .dark table.dataTable tbody td,
+        .dark .erp-table tbody td {
             border-bottom-color: #374151/40 !important;
-        }
-
-        table.dataTable tbody tr:hover {
-            background-color: #f8fafc !important;
-        }
-        .dark table.dataTable tbody tr:hover {
-            background-color: #1f2937/80 !important;
         }
     </style>
 
@@ -247,7 +337,7 @@
                     ประวัติการส่งอีเมล (Recruitment Mail Logs)
                 </h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    ตรวจสอบสถานะการส่งอีเมล ประวัติการนัดสัมภาษณ์ และผลการพิจารณารับเข้าทำงาน
+                    ตรวจสอบสถานะการส่งอีเมล แยกตามกลุ่มตำแหน่งงาน พร้อมรายละเอียดสเปกและการส่ง (สไตล์เดียวกับรูปที่ 1)
                 </p>
             </div>
 
@@ -330,250 +420,746 @@
             </div>
         </div>
 
-        {{-- ════════════════════════════════════════════
-             SECTION CARD : ALL MAIL LOGS TABLE (Matching รูปที่ 2)
-        ════════════════════════════════════════════ --}}
+        {{-- ══════════════════════════════════════════════════════════
+             SECTION CARD : GROUPED MAIL LOGS (Matching รูปที่ 1)
+        ══════════════════════════════════════════════════════════ --}}
         <div class="section-card">
-            <div class="px-6 pt-6 pb-0">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <!-- Header with Title & View Mode Switcher -->
+            <div class="px-5 sm:px-6 pt-6 pb-4">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <!-- Left: Title -->
                     <div class="flex items-center gap-3">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 shadow-xs">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                            </svg>
+                        <div class="flex items-center justify-center w-11 h-11 rounded-2xl bg-rose-50 text-kumwell-red dark:bg-rose-950/50 dark:text-rose-400 shadow-xs border border-rose-100 dark:border-rose-900/40">
+                            <i class="fa-solid fa-boxes-stacked text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                                รายการประวัติการส่งอีเมลทั้งหมด
-                                <span id="mailLogsCountBadge" class="text-sm font-normal text-gray-400">({{ $logs->count() }} รายการ)</span>
-                            </h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">All Recruitment Mail Logs (แบบตารางจัดการง่าย สะดวกต่อการค้นหาและตรวจสอบสถานะ)</p>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                                    ประวัติการส่งอีเมลแยกตามตำแหน่งงาน
+                                </h3>
+                                <span id="groupedSummaryBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-kumwell-red border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300">
+                                    {{ $groupedLogs->count() }} ตำแหน่ง ({{ $logs->count() }} อีเมล)
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                รวมรายการตามตำแหน่งงาน คลิกแถวหรือปุ่มลูกศรเพื่อเปิดดูสเปกและรายการย่อยแบบรูปที่ 1
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right: View Mode Toggle & Expand/Collapse Controls -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Expand / Collapse All -->
+                        <div id="groupedExpandControls" class="inline-flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 text-xs">
+                            <button type="button" onclick="expandAllGroups()" class="px-2.5 py-1 text-slate-600 dark:text-slate-300 hover:text-kumwell-red rounded-lg transition-colors flex items-center gap-1" title="เปิดรายละเอียดทุกตำแหน่งพร้อมกัน">
+                                <i class="fa-solid fa-angles-down text-[10px]"></i>
+                                <span>เปิดทั้งหมด</span>
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-600">|</span>
+                            <button type="button" onclick="collapseAllGroups()" class="px-2.5 py-1 text-slate-600 dark:text-slate-300 hover:text-kumwell-red rounded-lg transition-colors flex items-center gap-1" title="พับปิดรายละเอียดทั้งหมด">
+                                <i class="fa-solid fa-angles-up text-[10px]"></i>
+                                <span>พับทั้งหมด</span>
+                            </button>
+                        </div>
+
+                        <!-- View Switcher (Grouped vs Flat) -->
+                        <div class="inline-flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                            <button type="button" id="btnModeGrouped" onclick="switchViewMode('grouped')" class="px-3 py-1.5 rounded-lg transition-all shadow-xs bg-white dark:bg-slate-700 text-kumwell-red dark:text-white font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group"></i>
+                                <span>จัดกลุ่มตำแหน่ง (รูปที่ 1)</span>
+                            </button>
+                            <button type="button" id="btnModeFlat" onclick="switchViewMode('flat')" class="px-3 py-1.5 rounded-lg transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-table-list"></i>
+                                <span>รายการทั้งหมด (ตารางเดี่ยว)</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-gray-100 dark:border-gray-700"></div>
+            <div class="border-t border-slate-100 dark:border-slate-800"></div>
 
             <div class="p-4 sm:p-6">
-                <!-- Filters Bar (Matching รูปที่ 2) -->
+                <!-- Filters Bar (ERP Style Matching รูปที่ 1) -->
                 <div class="flex flex-wrap items-center gap-3 mb-5">
-                    <div class="relative flex-1 min-w-[220px] max-w-sm">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                            </svg>
+                    <!-- Search Input -->
+                    <div class="relative flex-1 min-w-[240px] max-w-sm">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
                         </div>
-                        <input type="text" id="customSearch" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400" placeholder="ค้นหารายละเอียด...">
+                        <input type="text" id="customSearch" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-kumwell-red/20 focus:border-kumwell-red block w-full pl-10 pr-3.5 py-2.5 placeholder-slate-400 transition-all" placeholder="ค้นหาตำแหน่ง, ผู้รับ, อีเมล, หัวข้อ...">
                     </div>
                     
-                    <select id="filterStatus" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                        <option value="">ทุกสถานะ</option>
-                        <option value="sent">ส่งสำเร็จ</option>
-                        <option value="failed">ล้มเหลว</option>
-                        <option value="queued">รอในคิว</option>
-                    </select>
+                    <!-- Filter Status -->
+                    <div class="relative w-full sm:w-auto">
+                        <select id="filterStatus" class="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-kumwell-red/20 focus:border-kumwell-red block py-2.5 pl-3.5 pr-10 w-full sm:w-auto cursor-pointer shadow-2xs">
+                            <option value="">ทุกสถานะ (All Status)</option>
+                            <option value="sent">ส่งสำเร็จ</option>
+                            <option value="failed">ล้มเหลว</option>
+                            <option value="queued">รอในคิว</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
 
-                    <select id="filterMailType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                        <option value="">ประเภทอีเมล ทั้งหมด</option>
-                        <option value="interview_scheduled">นัดสัมภาษณ์</option>
-                        <option value="application_hired">รับเข้าทำงาน</option>
-                        <option value="application_rejected">ไม่ผ่านการคัดเลือก</option>
-                        <option value="direct_email">อีเมลตรง</option>
-                    </select>
+                    <!-- Filter Mail Type -->
+                    <div class="relative w-full sm:w-auto">
+                        <select id="filterMailType" class="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-kumwell-red/20 focus:border-kumwell-red block py-2.5 pl-3.5 pr-10 w-full sm:w-auto cursor-pointer shadow-2xs">
+                            <option value="">ประเภทอีเมล ทั้งหมด</option>
+                            <option value="new_application_ha_notification">แจ้งเตือนผู้สมัครใหม่ (HA)</option>
+                            <option value="dept_review_notification">ส่งต่อหัวหน้าแผนกพิจารณา</option>
+                            <option value="interview_scheduled">นัดหมายสัมภาษณ์งาน</option>
+                            <option value="interview_scheduled_dept">แจ้งแผนก/กรรมการสัมภาษณ์</option>
+                            <option value="interview_rescheduled">ปรับเวลานัดสัมภาษณ์</option>
+                            <option value="application_received">ยืนยันการรับสมัครงาน</option>
+                            <option value="application_hired">แจ้งผลรับเข้าทำงาน</option>
+                            <option value="application_rejected">แจ้งผลไม่ผ่านการคัดเลือก</option>
+                            <option value="direct_email">อีเมลติดต่อโดยตรง</option>
+                            <option value="test">ทดสอบระบบอีเมล</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
 
-                    <select id="filterChannel" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer">
-                        <option value="">ทุกช่องทาง</option>
-                        <option value="microsoft_graph">Microsoft Graph</option>
-                        <option value="smtp">SMTP</option>
-                    </select>
+                    <!-- Filter Channel -->
+                    <div class="relative w-full sm:w-auto">
+                        <select id="filterChannel" class="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-kumwell-red/20 focus:border-kumwell-red block py-2.5 pl-3.5 pr-10 w-full sm:w-auto cursor-pointer shadow-2xs">
+                            <option value="">ทุกช่องทาง (All Channels)</option>
+                            <option value="microsoft_graph">Microsoft Graph API</option>
+                            <option value="smtp">SMTP</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
 
-                    <select id="filterPageSize" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-full sm:w-auto cursor-pointer" title="จำนวนรายการต่อหน้า">
-                        <option value="5">แสดง 5 รายการ</option>
-                        <option value="10" selected>แสดง 10 รายการ</option>
-                        <option value="25">แสดง 25 รายการ</option>
-                        <option value="50">แสดง 50 รายการ</option>
-                        <option value="-1">แสดงทั้งหมด</option>
-                    </select>
-
-                    <button type="button" id="btnResetFilters" class="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/80 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors cursor-pointer" title="ล้างค่าตัวกรองทั้งหมด">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                        </svg>
+                    <!-- Reset Filters Button (Matching Image 1 red outline style) -->
+                    <button type="button" id="btnResetFilters" class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 border border-rose-200 dark:border-rose-900/60 rounded-xl transition-colors cursor-pointer" title="ล้างค่าตัวกรองทั้งหมด">
+                        <i class="fa-solid fa-rotate-left text-xs"></i>
                         <span>ล้างตัวกรอง</span>
                     </button>
                 </div>
 
-                <!-- Table Matching รูปที่ 2 -->
-                <table id="dataTableMailLogs" class="display responsive nowrap w-full text-xs sm:text-sm">
-                    <thead>
-                        <tr>
-                            <th class="all whitespace-nowrap text-center" style="width: 140px;">ประเภทอีเมล</th>
-                            <th class="whitespace-nowrap text-left" style="width: 90px;">ID</th>
-                            <th class="whitespace-nowrap text-center" style="width: 120px;">วันที่ส่ง</th>
-                            <th class="all whitespace-nowrap text-left">ผู้รับ (Recipient)</th>
-                            <th class="whitespace-nowrap text-left">ตำแหน่งที่สมัคร</th>
-                            <th class="all whitespace-nowrap text-left">หัวข้ออีเมล</th>
-                            <th class="whitespace-nowrap text-center" style="width: 110px;">ช่องทาง</th>
-                            <th class="all whitespace-nowrap text-center" style="width: 110px;">สถานะ</th>
-                            <th class="text-center all whitespace-nowrap" style="width: 60px;">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($logs as $log)
-                            @php
-                                $displayLogCode = 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT);
-                            @endphp
-                            <tr data-status="{{ $log->status }}" data-mailtype="{{ $log->mail_type }}" data-channel="{{ $log->channel }}">
-                                <!-- 1. ประเภทอีเมล (Matching badge-blue รูปที่ 2) -->
-                                <td class="text-center whitespace-nowrap">
-                                    <span class="badge badge-blue shadow-2xs">{{ $log->mail_type_label }}</span>
-                                </td>
+                {{-- ──────────────────────────────────────────
+                     VIEW 1 : GROUPED BY POSITION (รูปที่ 1)
+                ────────────────────────────────────────── --}}
+                <div id="groupedViewContainer" class="space-y-4">
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-2xs">
+                        <table id="tableGroupedMailLogs" class="erp-table w-full text-left text-xs sm:text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap" style="width: 220px;">SO / ตำแหน่งงาน</th>
+                                    <th class="whitespace-nowrap text-center" style="width: 90px;">SO_LINE</th>
+                                    <th class="whitespace-nowrap">CUS_ITEM / หัวข้อล่าสุด</th>
+                                    <th class="whitespace-nowrap text-center" style="width: 100px;">ITEM / ผู้รับ</th>
+                                    <th class="whitespace-nowrap text-center" style="width: 130px;">PROD_ITEM / ช่องทาง</th>
+                                    <th class="whitespace-nowrap text-center" style="width: 140px;">SIZE / ส่งล่าสุด</th>
+                                    <th class="whitespace-nowrap text-center" style="width: 130px;">สถานะภาพรวม</th>
+                                    <th class="whitespace-nowrap text-right" style="width: 110px;">PROD_PCS_QTY</th>
+                                    <th class="whitespace-nowrap text-center" style="width: 80px;">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($groupedLogs as $idx => $group)
+                                    @php
+                                        $soLineCode = '000' . ($idx + 1);
+                                        $latestLog = $group->latest_log;
+                                        $firstDate = $group->logs->min('created_at');
+                                        $latestDate = $group->latest_sent_at;
+                                        $hasGraph = in_array('microsoft_graph', $group->channels);
+                                        $hasSmtp = in_array('smtp', $group->channels);
+                                        $successPct = $group->total_count > 0 ? round(($group->sent_count / $group->total_count) * 100) : 0;
+                                        $rowSearchString = strtolower($group->position_name . ' ' . $group->logs->pluck('recipient_name')->join(' ') . ' ' . $group->logs->pluck('recipient_email')->join(' ') . ' ' . $group->logs->pluck('subject')->join(' '));
+                                    @endphp
+                                    {{-- Parent Position Row --}}
+                                    <tr id="group-parent-{{ $idx }}"
+                                        class="group-parent-row border-b border-slate-100 dark:border-slate-800 select-none"
+                                        onclick="toggleGroupDetail({{ $idx }}, event)"
+                                        data-search="{{ $rowSearchString }}"
+                                        data-sent="{{ $group->sent_count }}"
+                                        data-failed="{{ $group->failed_count }}"
+                                        data-queued="{{ $group->queued_count }}"
+                                        data-has-graph="{{ $hasGraph ? '1' : '0' }}"
+                                        data-has-smtp="{{ $hasSmtp ? '1' : '0' }}"
+                                        data-mail-types="{{ $group->logs->pluck('mail_type')->filter()->unique()->join(',') }}">
+                                        
+                                        <!-- 1. SO / ตำแหน่งงาน (Image 1 style: Bold Title + subtext) -->
+                                        <td class="font-medium">
+                                            <div class="flex items-center gap-2.5">
+                                                <div class="size-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-700/80">
+                                                    <i class="fa-solid fa-briefcase text-xs text-kumwell-red"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <div class="font-bold text-slate-900 dark:text-white truncate max-w-[200px]" title="{{ $group->position_name }}">
+                                                        {{ $group->position_name }}
+                                                    </div>
+                                                    <div class="text-[11px] text-slate-400 truncate">
+                                                        {{ $group->recipients_count }} ผู้สมัครบันทึก
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
 
-                                <!-- 2. ID -->
-                                <td data-order="{{ $log->id }}" class="text-left font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                                    <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400">
-                                        #{{ $displayLogCode }}
-                                    </span>
-                                </td>
+                                        <!-- 2. SO_LINE -->
+                                        <td class="text-center font-mono text-xs text-slate-500 dark:text-slate-400">
+                                            {{ $soLineCode }}
+                                        </td>
 
-                                <!-- 3. วันที่ส่ง (Calendar Icon + Date) -->
-                                <td data-order="{{ $log->created_at ? $log->created_at->timestamp : 0 }}" class="text-center whitespace-nowrap text-gray-600 dark:text-gray-400">
-                                    <div class="inline-flex items-center justify-center gap-1.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 9v7.5" />
-                                        </svg>
-                                        <span>{{ $log->created_at ? $log->created_at->copy()->addYears(543)->format('d/m/Y') : '-' }}</span>
-                                    </div>
-                                    @if($log->sent_at)
-                                        <div class="text-[10px] text-emerald-600 dark:text-emerald-400">{{ $log->sent_at->format('H:i:s') }} น.</div>
-                                    @endif
-                                </td>
+                                        <!-- 3. CUS_ITEM (Latest subject / details) -->
+                                        <td class="max-w-[260px]">
+                                            <div class="truncate font-medium text-slate-800 dark:text-slate-200 text-xs" title="{{ $latestLog?->subject }}">
+                                                {{ $latestLog?->subject ?: '-' }}
+                                            </div>
+                                            <div class="text-[11px] text-slate-400 truncate">
+                                                {{ $latestLog?->recipient_name ?: '-' }} ({{ $latestLog?->recipient_email }})
+                                            </div>
+                                        </td>
 
-                                <!-- 4. ผู้รับ (Recipient Name + Email) -->
-                                <td class="text-left whitespace-nowrap">
-                                    <div class="font-medium text-gray-900 dark:text-gray-100">
-                                        {{ $log->recipient_name ?: '-' }}
-                                    </div>
-                                    <a href="mailto:{{ $log->recipient_email }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline block truncate max-w-[200px]" title="{{ $log->recipient_email }}">
-                                        {{ $log->recipient_email }}
-                                    </a>
-                                </td>
+                                        <!-- 4. ITEM / จำนวนผู้รับ -->
+                                        <td class="text-center font-semibold text-slate-700 dark:text-slate-300">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs">
+                                                <i class="fa-regular fa-user text-[10px]"></i> {{ $group->recipients_count }} ท่าน
+                                            </span>
+                                        </td>
 
-                                <!-- 5. ตำแหน่งที่สมัคร -->
-                                <td class="text-left text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                                    @if($log->position_name)
-                                        <div class="inline-flex items-center gap-1.5">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-                                            </svg>
-                                            <span class="truncate max-w-[180px]" title="{{ $log->position_name }}">{{ $log->position_name }}</span>
-                                        </div>
-                                    @else
-                                        <span class="text-gray-400">-</span>
-                                    @endif
-                                </td>
+                                        <!-- 5. PROD_ITEM / ช่องทาง -->
+                                        <td class="text-center whitespace-nowrap">
+                                            @if($hasGraph && $hasSmtp)
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300">
+                                                    Graph + SMTP
+                                                </span>
+                                            @elseif($hasGraph)
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                                                    <i class="fa-brands fa-microsoft text-[10px]"></i> Graph API
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+                                                    <i class="fa-solid fa-server text-[9px]"></i> SMTP
+                                                </span>
+                                            @endif
+                                        </td>
 
-                                <!-- 6. หัวข้ออีเมล -->
-                                <td class="text-left">
-                                    <div class="font-medium text-gray-900 dark:text-gray-100 line-clamp-1 max-w-xs" title="{{ $log->subject }}">
-                                        {{ $log->subject }}
-                                    </div>
-                                    <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 truncate max-w-xs">
-                                        ผู้ส่ง: {{ $log->user?->fullname ?: 'ระบบอัตโนมัติ' }}
-                                    </div>
-                                </td>
+                                        <!-- 6. SIZE / วันที่ส่งล่าสุด -->
+                                        <td class="text-center whitespace-nowrap text-xs text-slate-600 dark:text-slate-400">
+                                            @if($latestDate)
+                                                <div>{{ \Carbon\Carbon::parse($latestDate)->copy()->addYears(543)->format('d/m/Y') }}</div>
+                                                <div class="text-[10px] text-slate-400">{{ \Carbon\Carbon::parse($latestDate)->format('H:i:s') }} น.</div>
+                                            @else
+                                                <span class="text-slate-400">-</span>
+                                            @endif
+                                        </td>
 
-                                <!-- 7. ช่องทาง (Channel) -->
-                                <td class="text-center whitespace-nowrap">
-                                    @if($log->channel === 'microsoft_graph')
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 shadow-2xs">
-                                            <i class="fa-brands fa-microsoft text-[11px]"></i> Graph API
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 shadow-2xs">
-                                            <i class="fa-solid fa-server text-[10px]"></i> SMTP
-                                        </span>
-                                    @endif
-                                </td>
+                                        <!-- 7. สถานะภาพรวม (Badges for Sent/Failed/Queued) -->
+                                        <td class="text-center whitespace-nowrap">
+                                            <div class="inline-flex items-center gap-1">
+                                                @if($group->sent_count > 0)
+                                                    <span class="badge badge-green text-[11px] py-0.5 px-2" title="ส่งสำเร็จ {{ $group->sent_count }} รายการ">
+                                                        <i class="fa-solid fa-check text-[10px]"></i> {{ $group->sent_count }}
+                                                    </span>
+                                                @endif
+                                                @if($group->failed_count > 0)
+                                                    <span class="badge badge-red text-[11px] py-0.5 px-2" title="ล้มเหลว {{ $group->failed_count }} รายการ">
+                                                        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> {{ $group->failed_count }}
+                                                    </span>
+                                                @endif
+                                                @if($group->queued_count > 0)
+                                                    <span class="badge badge-yellow text-[11px] py-0.5 px-2" title="รอในคิว {{ $group->queued_count }} รายการ">
+                                                        <i class="fa-solid fa-clock text-[10px]"></i> {{ $group->queued_count }}
+                                                    </span>
+                                                @endif
+                                                @if($group->total_count === 0)
+                                                    <span class="text-slate-400 text-xs">-</span>
+                                                @endif
+                                            </div>
+                                        </td>
 
-                                <!-- 8. สถานะ (Matching badge-green/red/yellow รูปที่ 2) -->
-                                <td class="text-center whitespace-nowrap">
-                                    @if($log->status === 'sent')
-                                        <span class="badge badge-green shadow-2xs">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
-                                            </svg>
-                                            <span>ส่งสำเร็จ</span>
-                                        </span>
-                                    @elseif($log->status === 'failed')
-                                        <span class="badge badge-red shadow-2xs">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-rose-600 dark:text-rose-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clip-rule="evenodd" />
-                                            </svg>
-                                            <span>ล้มเหลว</span>
-                                        </span>
-                                    @else
-                                        <span class="badge badge-yellow shadow-2xs">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-amber-600 dark:text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clip-rule="evenodd" />
-                                            </svg>
-                                            <span>รอในคิว</span>
-                                        </span>
-                                    @endif
-                                </td>
+                                        <!-- 8. PROD_PCS_QTY (จำนวนอีเมลรวม) -->
+                                        <td class="text-right font-black text-slate-900 dark:text-white font-mono text-sm pr-4">
+                                            {{ number_format($group->total_count) }}
+                                        </td>
 
-                                <!-- 9. จัดการ (3-dots vertical action menu) -->
-                                <td class="text-center whitespace-nowrap">
-                                    <div class="relative inline-block text-left">
-                                        <button type="button"
-                                            class="action-dropdown-btn"
-                                            onclick="toggleActionMenu(this, 'menu-{{ $log->id }}')"
-                                            title="ตัวเลือกเพิ่มเติม">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
-                                            </svg>
-                                        </button>
-
-                                        <!-- Dropdown Menu -->
-                                        <div id="menu-{{ $log->id }}" class="action-dropdown-menu hidden text-xs">
-                                            @if($log->error_message)
+                                        <!-- 9. จัดการ (Image 1 Style: [✏️] [v] Action Box) -->
+                                        <td class="text-center whitespace-nowrap">
+                                            <div class="action-box-erp" onclick="event.stopPropagation()">
+                                                <!-- Action 1: Toggle details -->
                                                 <button type="button"
-                                                    onclick="showErrorModal('{{ addslashes($log->recipient_email) }}', '{{ addslashes($log->subject) }}', '{{ addslashes($log->error_message) }}')"
-                                                    class="flex items-center gap-2 w-full px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-colors text-left">
-                                                    <i class="fa-solid fa-circle-exclamation w-3.5 text-center"></i>
-                                                    <span>ดูข้อผิดพลาด</span>
+                                                    onclick="toggleGroupDetail({{ $idx }}, event)"
+                                                    title="เปิดดูรายละเอียดสเปกและประวัติย่อย">
+                                                    <i class="fa-solid fa-chevron-down group-chevron" id="chevron-{{ $idx }}"></i>
                                                 </button>
-                                            @endif
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                            @if(in_array($log->status, ['failed', 'queued']))
-                                                <form action="{{ route('backend.recruitment.mail-logs.retry', $log->id) }}" method="POST" class="m-0">
-                                                    @csrf
-                                                    <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-colors text-left">
-                                                        <i class="fa-solid fa-rotate-right w-3.5 text-center"></i>
-                                                        <span>ส่งทันที / ส่งซ้ำ</span>
-                                                    </button>
-                                                </form>
-                                            @endif
+                                    {{-- Expandable Child Detail Row (Matching รูปที่ 1 3-column specs + CONTENT Sub-table) --}}
+                                    <tr id="group-detail-{{ $idx }}" class="group-detail-row hidden bg-slate-50/70 dark:bg-slate-900/60 border-b-2 border-slate-200 dark:border-slate-700">
+                                        <td colspan="9" class="p-0">
+                                            <div id="group-content-{{ $idx }}" class="p-4 sm:p-6 space-y-6">
 
-                                            <a href="mailto:{{ $log->recipient_email }}" class="flex items-center gap-2 w-full px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors text-left">
-                                                <i class="fa-regular fa-envelope w-3.5 text-center text-slate-400"></i>
-                                                <span>ส่งอีเมลหาผู้รับ</span>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                                                <!-- Top 3-Column Specifications Grid (Matching รูปที่ 1) -->
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 shadow-xs">
+                                                    
+                                                    <!-- Column 1: 🏷️ ข้อมูลตำแหน่งและผู้สมัคร (Title in Red) -->
+                                                    <div class="space-y-2.5">
+                                                        <div class="text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-rose-100 dark:border-rose-900/40">
+                                                            <i class="fa-solid fa-tag text-kumwell-red"></i>
+                                                            <span>ข้อมูลตำแหน่งและผู้สมัคร</span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">DESCRIPTION</span>
+                                                            <span class="erp-spec-value font-bold text-slate-900 dark:text-white">{{ $group->position_name }}</span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">HPL_DESC</span>
+                                                            <span class="erp-spec-value text-slate-600 dark:text-slate-300">ตำแหน่งงาน recruitment / สมัครงาน</span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">CANDIDATES</span>
+                                                            <span class="erp-spec-value">{{ $group->recipients_count }} รายชื่อผู้รับ</span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">LATEST_APPLICANT</span>
+                                                            <span class="erp-spec-value truncate" title="{{ $latestLog?->recipient_name }} ({{ $latestLog?->recipient_email }})">
+                                                                {{ $latestLog?->recipient_name ?: '-' }}
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">SENDER_BY</span>
+                                                            <span class="erp-spec-value text-slate-500">
+                                                                {{ $latestLog?->user?->fullname ?: 'ระบบอัตโนมัติ' }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Column 2: 🖨️ สเปกและบรรจุภัณฑ์ / ช่องทางการส่ง (Title in Red) -->
+                                                    <div class="space-y-2.5">
+                                                        <div class="text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-rose-100 dark:border-rose-900/40">
+                                                            <i class="fa-solid fa-server text-kumwell-red"></i>
+                                                            <span>สเปกและช่องทางการส่ง</span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">CHANNEL_TYPE</span>
+                                                            <span class="erp-spec-value font-semibold">
+                                                                {{ $hasGraph ? 'Microsoft Graph API' : 'SMTP Server' }}
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">GATEWAY_STATUS</span>
+                                                            <span class="erp-spec-value text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                                                                <span class="size-1.5 rounded-full bg-emerald-500"></span> พร้อมใช้งาน
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">SUCCESS_RATE</span>
+                                                            <span class="erp-spec-value font-bold {{ $successPct >= 80 ? 'text-emerald-600' : 'text-amber-600' }}">
+                                                                {{ $successPct }}% ({{ $group->sent_count }}/{{ $group->total_count }})
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">QUEUED_MAILS</span>
+                                                            <span class="erp-spec-value font-mono">{{ $group->queued_count }} ฉบับ</span>
+                                                        </div>
+
+                                                        <div class="flex items-baseline text-xs">
+                                                            <span class="erp-spec-label">FAILED_MAILS</span>
+                                                            <span class="erp-spec-value font-mono {{ $group->failed_count > 0 ? 'text-rose-600 font-bold' : '' }}">
+                                                                {{ $group->failed_count }} ฉบับ
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Column 3: 📅 วันที่และแผนการผลิต / ประวัติการส่ง (Title in Red) -->
+                                                    <div class="space-y-2.5 flex flex-col justify-between">
+                                                        <div class="space-y-2.5">
+                                                            <div class="text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wide flex items-center gap-1.5 pb-2 border-b border-rose-100 dark:border-rose-900/40">
+                                                                <i class="fa-solid fa-calendar-check text-kumwell-red"></i>
+                                                                <span>วันที่และประวัติการส่ง</span>
+                                                            </div>
+
+                                                            <div class="flex items-baseline text-xs">
+                                                                <span class="erp-spec-label">BOOKING_DATE</span>
+                                                                <span class="erp-spec-value">
+                                                                    {{ $firstDate ? \Carbon\Carbon::parse($firstDate)->copy()->addYears(543)->format('d/m/Y H:i') . ' น.' : '-' }}
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="flex items-baseline text-xs">
+                                                                <span class="erp-spec-label">LATEST_SENT</span>
+                                                                <span class="erp-spec-value">
+                                                                    {{ $latestDate ? \Carbon\Carbon::parse($latestDate)->copy()->addYears(543)->format('d/m/Y H:i') . ' น.' : '-' }}
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="flex items-baseline text-xs">
+                                                                <span class="erp-spec-label">CONFIRM_STATUS</span>
+                                                                <span class="erp-spec-value">
+                                                                    @if($group->failed_count == 0 && $group->queued_count == 0)
+                                                                        <span class="text-emerald-600 font-semibold">ส่งสำเร็จครบถ้วน</span>
+                                                                    @elseif($group->failed_count > 0)
+                                                                        <span class="text-rose-600 font-semibold">พบข้อผิดพลาดบางรายการ</span>
+                                                                    @else
+                                                                        <span class="text-amber-600 font-semibold">กำลังรอ Worker ประมวลผล</span>
+                                                                    @endif
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Action button matching Image 1: [ ✏️ แก้ไขแผนการผลิต ] -->
+                                                        <div class="pt-3 flex justify-end">
+                                                            @if($group->failed_count > 0 || $group->queued_count > 0)
+                                                                @php
+                                                                    $pendingLog = $group->logs->first(fn($l) => in_array($l->status, ['failed', 'queued']));
+                                                                @endphp
+                                                                @if($pendingLog)
+                                                                    <form action="{{ route('backend.recruitment.mail-logs.retry', $pendingLog->id) }}" method="POST" class="m-0">
+                                                                        @csrf
+                                                                        <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700/80 rounded-xl text-xs font-semibold shadow-2xs transition-colors">
+                                                                            <i class="fa-solid fa-rotate-right text-xs"></i>
+                                                                            <span>ส่งซ้ำรายการที่ค้าง (#LOG-{{ str_pad($pendingLog->id, 5, '0', STR_PAD_LEFT) }})</span>
+                                                                        </button>
+                                                                    </form>
+                                                                @endif
+                                                            @else
+                                                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-700/40 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium">
+                                                                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                                                                    <span>ข้อมูลการส่งสมบูรณ์</span>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- CONTENT Banner (Matching Image 1: [📄 CONTENT: Combine only 1 shipment...]) -->
+                                                <div class="flex items-center justify-between px-4 py-2.5 bg-slate-200/70 dark:bg-slate-800/90 rounded-xl text-xs text-slate-700 dark:text-slate-300 font-semibold border border-slate-300/50 dark:border-slate-700">
+                                                    <div class="flex items-center gap-2">
+                                                        <i class="fa-regular fa-file-lines text-kumwell-red"></i>
+                                                        <span>CONTENT: รายการประวัติการส่งอีเมลในตำแหน่งนี้ ({{ $group->total_count }} รายการ)</span>
+                                                    </div>
+                                                    <span class="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                                                        คลิกที่เมนูจัดการเพื่อดูข้อผิดพลาด หรือกดส่งซ้ำ
+                                                    </span>
+                                                </div>
+
+                                                <!-- Sub-table: All Mails for this Position (Image 1 Nested Table) -->
+                                                <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xs">
+                                                    <table class="w-full text-left text-xs">
+                                                        <thead class="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 text-slate-500 uppercase font-bold text-[11px]">
+                                                            <tr>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-left" style="width: 80px;">ID</th>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-center" style="width: 110px;">วันที่ส่ง</th>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-left">ผู้รับ (Recipient)</th>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-left">หัวข้ออีเมล</th>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-center" style="width: 120px;">ประเภท</th>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-center" style="width: 100px;">ช่องทาง</th>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-center" style="width: 100px;">สถานะ</th>
+                                                                <th class="py-2.5 px-3 whitespace-nowrap text-center" style="width: 60px;">จัดการ</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                                                            @foreach($group->logs as $subIdx => $subLog)
+                                                                @php
+                                                                    $subDisplayCode = 'LOG-' . str_pad($subLog->id, 5, '0', STR_PAD_LEFT);
+                                                                @endphp
+                                                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-sub-mailtype="{{ $subLog->mail_type }}">
+                                                                    <!-- ID -->
+                                                                    <td class="py-2.5 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                                                                        #{{ $subDisplayCode }}
+                                                                    </td>
+
+                                                                    <!-- วันที่ส่ง -->
+                                                                    <td class="py-2.5 px-3 text-center whitespace-nowrap text-slate-600 dark:text-slate-400">
+                                                                        <div>{{ $subLog->created_at ? $subLog->created_at->copy()->addYears(543)->format('d/m/Y') : '-' }}</div>
+                                                                        @if($subLog->sent_at)
+                                                                            <div class="text-[10px] text-emerald-600 dark:text-emerald-400">{{ $subLog->sent_at->format('H:i:s') }} น.</div>
+                                                                        @endif
+                                                                    </td>
+
+                                                                    <!-- ผู้รับ -->
+                                                                    <td class="py-2.5 px-3 whitespace-nowrap">
+                                                                        <div class="font-medium text-slate-900 dark:text-slate-100">
+                                                                            {{ $subLog->recipient_name ?: '-' }}
+                                                                        </div>
+                                                                        <a href="mailto:{{ $subLog->recipient_email }}" class="text-[11px] text-blue-600 dark:text-blue-400 hover:underline block truncate max-w-[200px]" title="{{ $subLog->recipient_email }}">
+                                                                            {{ $subLog->recipient_email }}
+                                                                        </a>
+                                                                    </td>
+
+                                                                    <!-- หัวข้ออีเมล -->
+                                                                    <td class="py-2.5 px-3">
+                                                                        <div class="font-medium text-slate-900 dark:text-slate-100 line-clamp-1 max-w-sm" title="{{ $subLog->subject }}">
+                                                                            {{ $subLog->subject }}
+                                                                        </div>
+                                                                        <div class="text-[10px] text-slate-400 truncate">
+                                                                            ผู้ส่ง: {{ $subLog->user?->fullname ?: 'ระบบอัตโนมัติ' }}
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <!-- ประเภทอีเมล -->
+                                                                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shadow-2xs {{ $subLog->mail_type_badge }}">
+                                                                            <i class="{{ $subLog->mail_type_icon }} text-[9px]"></i>
+                                                                            <span>{{ $subLog->mail_type_label }}</span>
+                                                                        </span>
+                                                                    </td>
+
+                                                                    <!-- ช่องทาง -->
+                                                                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                                                        @if($subLog->channel === 'microsoft_graph')
+                                                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                                                                                <i class="fa-brands fa-microsoft"></i> Graph
+                                                                            </span>
+                                                                        @else
+                                                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+                                                                                <i class="fa-solid fa-server"></i> SMTP
+                                                                            </span>
+                                                                        @endif
+                                                                    </td>
+
+                                                                    <!-- สถานะ -->
+                                                                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                                                        @if($subLog->status === 'sent')
+                                                                            <span class="badge badge-green text-[10px] py-0.5 px-2">ส่งสำเร็จ</span>
+                                                                        @elseif($subLog->status === 'failed')
+                                                                            <span class="badge badge-red text-[10px] py-0.5 px-2">ล้มเหลว</span>
+                                                                        @else
+                                                                            <span class="badge badge-yellow text-[10px] py-0.5 px-2">รอในคิว</span>
+                                                                        @endif
+                                                                    </td>
+
+                                                                    <!-- จัดการ -->
+                                                                    <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                                                        <div class="relative inline-block text-left">
+                                                                            <button type="button"
+                                                                                class="action-dropdown-btn"
+                                                                                onclick="toggleActionMenu(this, 'menu-sub-{{ $subLog->id }}')"
+                                                                                title="ตัวเลือก">
+                                                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                                            </button>
+
+                                                                            <div id="menu-sub-{{ $subLog->id }}" class="action-dropdown-menu hidden text-xs">
+                                                                                @if($subLog->error_message)
+                                                                                    <button type="button"
+                                                                                        onclick="showErrorModal('{{ addslashes($subLog->recipient_email) }}', '{{ addslashes($subLog->subject) }}', '{{ addslashes($subLog->error_message) }}')"
+                                                                                        class="flex items-center gap-2 w-full px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-colors text-left">
+                                                                                        <i class="fa-solid fa-circle-exclamation w-3.5 text-center"></i>
+                                                                                        <span>ดูข้อผิดพลาด</span>
+                                                                                    </button>
+                                                                                @endif
+
+                                                                                @if(in_array($subLog->status, ['failed', 'queued']))
+                                                                                    <form action="{{ route('backend.recruitment.mail-logs.retry', $subLog->id) }}" method="POST" class="m-0">
+                                                                                        @csrf
+                                                                                        <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-colors text-left">
+                                                                                            <i class="fa-solid fa-rotate-right w-3.5 text-center"></i>
+                                                                                            <span>ส่งทันที / ส่งซ้ำ</span>
+                                                                                        </button>
+                                                                                    </form>
+                                                                                @endif
+
+                                                                                <a href="mailto:{{ $subLog->recipient_email }}" class="flex items-center gap-2 w-full px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors text-left">
+                                                                                    <i class="fa-regular fa-envelope w-3.5 text-center text-slate-400"></i>
+                                                                                    <span>ส่งอีเมลหาผู้รับ</span>
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="py-12 text-center text-slate-400">
+                                            <i class="fa-regular fa-folder-open text-3xl mb-2 text-slate-300 dark:text-slate-600 block"></i>
+                                            ไม่พบข้อมูลกลุ่มตำแหน่งงาน
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{-- ──────────────────────────────────────────
+                     VIEW 2 : FLAT TABLE (รูปที่ 2)
+                ────────────────────────────────────────── --}}
+                <div id="flatViewContainer" class="hidden">
+                    <table id="dataTableMailLogs" class="display responsive nowrap w-full text-xs sm:text-sm">
+                        <thead>
                             <tr>
-                                <td colspan="9" class="py-12 text-center text-slate-400">
-                                    <i class="fa-regular fa-envelope-open text-3xl mb-2 text-slate-300 dark:text-slate-600 block"></i>
-                                    ไม่พบข้อมูลประวัติการส่งอีเมล
-                                </td>
+                                <th class="all whitespace-nowrap text-center" style="width: 140px;">ประเภทอีเมล</th>
+                                <th class="whitespace-nowrap text-left" style="width: 90px;">ID</th>
+                                <th class="whitespace-nowrap text-center" style="width: 120px;">วันที่ส่ง</th>
+                                <th class="all whitespace-nowrap text-left">ผู้รับ (Recipient)</th>
+                                <th class="whitespace-nowrap text-left">ตำแหน่งที่สมัคร</th>
+                                <th class="all whitespace-nowrap text-left">หัวข้ออีเมล</th>
+                                <th class="whitespace-nowrap text-center" style="width: 110px;">ช่องทาง</th>
+                                <th class="all whitespace-nowrap text-center" style="width: 110px;">สถานะ</th>
+                                <th class="text-center all whitespace-nowrap" style="width: 60px;">จัดการ</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @forelse($logs as $log)
+                                @php
+                                    $displayLogCode = 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT);
+                                @endphp
+                                <tr data-status="{{ $log->status }}" data-mailtype="{{ $log->mail_type }}" data-channel="{{ $log->channel }}">
+                                    <!-- 1. ประเภทอีเมล -->
+                                    <td class="text-center whitespace-nowrap">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shadow-2xs {{ $log->mail_type_badge }}">
+                                            <i class="{{ $log->mail_type_icon }} text-[10px]"></i>
+                                            <span>{{ $log->mail_type_label }}</span>
+                                        </span>
+                                    </td>
+
+                                    <!-- 2. ID -->
+                                    <td data-order="{{ $log->id }}" class="text-left font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                        <span class="font-mono text-xs text-indigo-600 dark:text-indigo-400">
+                                            #{{ $displayLogCode }}
+                                        </span>
+                                    </td>
+
+                                    <!-- 3. วันที่ส่ง -->
+                                    <td data-order="{{ $log->created_at ? $log->created_at->timestamp : 0 }}" class="text-center whitespace-nowrap text-gray-600 dark:text-gray-400">
+                                        <div class="inline-flex items-center justify-center gap-1.5">
+                                            <i class="fa-regular fa-calendar text-xs text-slate-400"></i>
+                                            <span>{{ $log->created_at ? $log->created_at->copy()->addYears(543)->format('d/m/Y') : '-' }}</span>
+                                        </div>
+                                        @if($log->sent_at)
+                                            <div class="text-[10px] text-emerald-600 dark:text-emerald-400">{{ $log->sent_at->format('H:i:s') }} น.</div>
+                                        @endif
+                                    </td>
+
+                                    <!-- 4. ผู้รับ -->
+                                    <td class="text-left whitespace-nowrap">
+                                        <div class="font-medium text-gray-900 dark:text-gray-100">
+                                            {{ $log->recipient_name ?: '-' }}
+                                        </div>
+                                        <a href="mailto:{{ $log->recipient_email }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline block truncate max-w-[200px]" title="{{ $log->recipient_email }}">
+                                            {{ $log->recipient_email }}
+                                        </a>
+                                    </td>
+
+                                    <!-- 5. ตำแหน่งที่สมัคร -->
+                                    <td class="text-left text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                        @if($log->position_name)
+                                            <div class="inline-flex items-center gap-1.5">
+                                                <i class="fa-solid fa-briefcase text-xs text-slate-400"></i>
+                                                <span class="truncate max-w-[180px]" title="{{ $log->position_name }}">{{ $log->position_name }}</span>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
+
+                                    <!-- 6. หัวข้ออีเมล -->
+                                    <td class="text-left">
+                                        <div class="font-medium text-gray-900 dark:text-gray-100 line-clamp-1 max-w-xs" title="{{ $log->subject }}">
+                                            {{ $log->subject }}
+                                        </div>
+                                        <div class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 truncate max-w-xs">
+                                            ผู้ส่ง: {{ $log->user?->fullname ?: 'ระบบอัตโนมัติ' }}
+                                        </div>
+                                    </td>
+
+                                    <!-- 7. ช่องทาง -->
+                                    <td class="text-center whitespace-nowrap">
+                                        @if($log->channel === 'microsoft_graph')
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 shadow-2xs">
+                                                <i class="fa-brands fa-microsoft text-[11px]"></i> Graph API
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 shadow-2xs">
+                                                <i class="fa-solid fa-server text-[10px]"></i> SMTP
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <!-- 8. สถานะ -->
+                                    <td class="text-center whitespace-nowrap">
+                                        @if($log->status === 'sent')
+                                            <span class="badge badge-green shadow-2xs">
+                                                <i class="fa-solid fa-check text-xs"></i>
+                                                <span>ส่งสำเร็จ</span>
+                                            </span>
+                                        @elseif($log->status === 'failed')
+                                            <span class="badge badge-red shadow-2xs">
+                                                <i class="fa-solid fa-xmark text-xs"></i>
+                                                <span>ล้มเหลว</span>
+                                            </span>
+                                        @else
+                                            <span class="badge badge-yellow shadow-2xs">
+                                                <i class="fa-solid fa-clock text-xs"></i>
+                                                <span>รอในคิว</span>
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <!-- 9. จัดการ -->
+                                    <td class="text-center whitespace-nowrap">
+                                        <div class="relative inline-block text-left">
+                                            <button type="button"
+                                                class="action-dropdown-btn"
+                                                onclick="toggleActionMenu(this, 'menu-flat-{{ $log->id }}')"
+                                                title="ตัวเลือกเพิ่มเติม">
+                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                            </button>
+
+                                            <!-- Dropdown Menu -->
+                                            <div id="menu-flat-{{ $log->id }}" class="action-dropdown-menu hidden text-xs">
+                                                @if($log->error_message)
+                                                    <button type="button"
+                                                        onclick="showErrorModal('{{ addslashes($log->recipient_email) }}', '{{ addslashes($log->subject) }}', '{{ addslashes($log->error_message) }}')"
+                                                        class="flex items-center gap-2 w-full px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-colors text-left">
+                                                        <i class="fa-solid fa-circle-exclamation w-3.5 text-center"></i>
+                                                        <span>ดูข้อผิดพลาด</span>
+                                                    </button>
+                                                @endif
+
+                                                @if(in_array($log->status, ['failed', 'queued']))
+                                                    <form action="{{ route('backend.recruitment.mail-logs.retry', $log->id) }}" method="POST" class="m-0">
+                                                        @csrf
+                                                        <button type="submit" class="flex items-center gap-2 w-full px-3 py-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-colors text-left">
+                                                            <i class="fa-solid fa-rotate-right w-3.5 text-center"></i>
+                                                            <span>ส่งทันที / ส่งซ้ำ</span>
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                <a href="mailto:{{ $log->recipient_email }}" class="flex items-center gap-2 w-full px-3 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors text-left">
+                                                    <i class="fa-regular fa-envelope w-3.5 text-center text-slate-400"></i>
+                                                    <span>ส่งอีเมลหาผู้รับ</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="py-12 text-center text-slate-400">
+                                        <i class="fa-regular fa-envelope-open text-3xl mb-2 text-slate-300 dark:text-slate-600 block"></i>
+                                        ไม่พบข้อมูลประวัติการส่งอีเมล
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -648,12 +1234,10 @@
                 const menuWidth = 160;
                 const menuHeight = menu.offsetHeight || 100;
 
-                // Horizontal positioning (align right edge with button)
                 let left = rect.right - menuWidth;
                 if (left < 10) left = 10;
                 menu.style.left = left + 'px';
 
-                // Vertical positioning
                 const spaceBelow = window.innerHeight - rect.bottom;
                 if (spaceBelow < menuHeight + 10 && rect.top > menuHeight + 10) {
                     menu.style.top = 'auto';
@@ -681,16 +1265,109 @@
             });
         }, true);
 
-        // DataTables init
+        // ── Expandable Group Detail Toggle (Matching Image 1) ─────────────
+        window.toggleGroupDetail = function(idx, event) {
+            if (event) {
+                // If user clicked directly on a link or button, do not toggle accordion
+                if (event.target.closest('a') || event.target.closest('form')) {
+                    return;
+                }
+            }
+
+            const detailRow = document.getElementById(`group-detail-${idx}`);
+            const chevron = document.getElementById(`chevron-${idx}`);
+            const parentRow = document.getElementById(`group-parent-${idx}`);
+            const contentDiv = document.getElementById(`group-content-${idx}`);
+
+            if (!detailRow) return;
+
+            const isCurrentlyHidden = detailRow.classList.contains('hidden');
+
+            if (isCurrentlyHidden) {
+                // Open row
+                detailRow.classList.remove('hidden');
+                if (window.$ && contentDiv) {
+                    $(contentDiv).hide().slideDown(220);
+                }
+                if (chevron) chevron.classList.add('is-open');
+                if (parentRow) parentRow.classList.add('is-active');
+            } else {
+                // Close row
+                if (window.$ && contentDiv) {
+                    $(contentDiv).slideUp(180, function() {
+                        detailRow.classList.add('hidden');
+                    });
+                } else {
+                    detailRow.classList.add('hidden');
+                }
+                if (chevron) chevron.classList.remove('is-open');
+                if (parentRow) parentRow.classList.remove('is-active');
+            }
+        };
+
+        // Expand All Groups
+        window.expandAllGroups = function() {
+            document.querySelectorAll('.group-detail-row').forEach(function(row) {
+                row.classList.remove('hidden');
+                const content = row.querySelector('[id^="group-content-"]');
+                if (content && window.$) $(content).show();
+            });
+            document.querySelectorAll('.group-chevron').forEach(function(ch) {
+                ch.classList.add('is-open');
+            });
+            document.querySelectorAll('.group-parent-row').forEach(function(pr) {
+                pr.classList.add('is-active');
+            });
+        };
+
+        // Collapse All Groups
+        window.collapseAllGroups = function() {
+            document.querySelectorAll('.group-detail-row').forEach(function(row) {
+                row.classList.add('hidden');
+            });
+            document.querySelectorAll('.group-chevron').forEach(function(ch) {
+                ch.classList.remove('is-open');
+            });
+            document.querySelectorAll('.group-parent-row').forEach(function(pr) {
+                pr.classList.remove('is-active');
+            });
+        };
+
+        // Switch View Modes (Grouped vs Flat)
+        window.switchViewMode = function(mode) {
+            const groupedView = document.getElementById('groupedViewContainer');
+            const flatView = document.getElementById('flatViewContainer');
+            const btnGrouped = document.getElementById('btnModeGrouped');
+            const btnFlat = document.getElementById('btnModeFlat');
+            const expandControls = document.getElementById('groupedExpandControls');
+
+            if (mode === 'grouped') {
+                groupedView.classList.remove('hidden');
+                flatView.classList.add('hidden');
+                if (expandControls) expandControls.classList.remove('hidden');
+
+                btnGrouped.className = "px-3 py-1.5 rounded-lg transition-all shadow-xs bg-white dark:bg-slate-700 text-kumwell-red dark:text-white font-bold flex items-center gap-2";
+                btnFlat.className = "px-3 py-1.5 rounded-lg transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2";
+            } else {
+                groupedView.classList.add('hidden');
+                flatView.classList.remove('hidden');
+                if (expandControls) expandControls.classList.add('hidden');
+
+                btnFlat.className = "px-3 py-1.5 rounded-lg transition-all shadow-xs bg-white dark:bg-slate-700 text-kumwell-red dark:text-white font-bold flex items-center gap-2";
+                btnGrouped.className = "px-3 py-1.5 rounded-lg transition-all text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-2";
+            }
+        };
+
+        // ── DataTables & Filtering Logic ──────────────────────────────
         $(document).ready(function() {
-            let table = null;
+            let flatTable = null;
             const dtOptions = {
                 dom: '<"overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700/60 shadow-xs"t><"dataTables_bottom_bar"ip>',
                 autoWidth: false,
                 responsive: false,
                 pageLength: 10,
                 lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "ทั้งหมด"]],
-                order: [[2, 'desc'], [1, 'desc']], // เรียงวันที่ส่งล่าสุดก่อน
+                order: [[2, 'desc'], [1, 'desc']],
                 language: {
                     search: "ค้นหา:",
                     lengthMenu: "แสดง _MENU_ รายการ",
@@ -709,87 +1386,150 @@
 
             try {
                 if (typeof window.DataTable === 'function') {
-                    table = new window.DataTable('#dataTableMailLogs', dtOptions);
+                    flatTable = new window.DataTable('#dataTableMailLogs', dtOptions);
                 } else if (window.$ && typeof window.$.fn.DataTable === 'function') {
-                    table = $('#dataTableMailLogs').DataTable(dtOptions);
+                    flatTable = $('#dataTableMailLogs').DataTable(dtOptions);
                 }
             } catch (err) {
                 console.warn('DataTable init notice:', err);
             }
 
-            if (table) {
-                // Custom search box
-                $('#customSearch').on('keyup', function() {
-                    table.search(this.value).draw();
-                });
+            // Grouped view filtering logic
+            function filterGroupedView() {
+                const keyword = ($('#customSearch').val() || '').toLowerCase().trim();
+                const status = $('#filterStatus').val();
+                const mailType = $('#filterMailType').val();
+                const channel = $('#filterChannel').val();
 
-                // Page size dropdown
-                $('#filterPageSize').on('change', function() {
-                    const len = parseInt(this.value, 10);
-                    table.page.len(len).draw();
-                });
+                let visibleCount = 0;
 
-                // Filter logic
-                function applyFilters() {
-                    const statusVal = $('#filterStatus').val();
-                    const mailTypeVal = $('#filterMailType').val();
-                    const channelVal = $('#filterChannel').val();
+                $('.group-parent-row').each(function() {
+                    const row = $(this);
+                    const idx = row.attr('id').replace('group-parent-', '');
+                    const detailRow = $(`#group-detail-${idx}`);
 
-                    const filterFn = function(settings, data, dataIndex) {
-                        const row = $(table.row(dataIndex).node());
-                        const rowStatus = row.attr('data-status') || '';
-                        const rowMailType = row.attr('data-mailtype') || '';
-                        const rowChannel = row.attr('data-channel') || '';
+                    const searchData = row.attr('data-search') || '';
+                    const sentCount = parseInt(row.attr('data-sent') || '0', 10);
+                    const failedCount = parseInt(row.attr('data-failed') || '0', 10);
+                    const queuedCount = parseInt(row.attr('data-queued') || '0', 10);
+                    const hasGraph = row.attr('data-has-graph') === '1';
+                    const hasSmtp = row.attr('data-has-smtp') === '1';
+                    const mailTypes = (row.attr('data-mail-types') || '').split(',');
 
-                        if (statusVal && rowStatus !== statusVal) return false;
-                        if (mailTypeVal && rowMailType !== mailTypeVal) return false;
-                        if (channelVal && rowChannel !== channelVal) return false;
+                    let match = true;
 
-                        return true;
-                    };
-
-                    if (window.DataTable && window.DataTable.ext) {
-                        window.DataTable.ext.search = [filterFn];
-                    } else if (window.$.fn && window.$.fn.dataTable) {
-                        window.$.fn.dataTable.ext.search = [filterFn];
+                    // Search keyword
+                    if (keyword && !searchData.includes(keyword)) {
+                        match = false;
                     }
 
-                    table.draw();
-                    updateCount();
+                    // Status
+                    if (match && status) {
+                        if (status === 'sent' && sentCount === 0) match = false;
+                        if (status === 'failed' && failedCount === 0) match = false;
+                        if (status === 'queued' && queuedCount === 0) match = false;
+                    }
+
+                    // Mail Type
+                    if (match && mailType) {
+                        if (!mailTypes.includes(mailType)) match = false;
+                    }
+
+                    // Channel
+                    if (match && channel) {
+                        if (channel === 'microsoft_graph' && !hasGraph) match = false;
+                        if (channel === 'smtp' && !hasSmtp) match = false;
+                    }
+
+                    if (match) {
+                        row.show();
+                        visibleCount++;
+
+                        if (mailType) {
+                            detailRow.find('tr[data-sub-mailtype]').each(function() {
+                                const subRow = $(this);
+                                if (subRow.attr('data-sub-mailtype') === mailType) {
+                                    subRow.show();
+                                } else {
+                                    subRow.hide();
+                                }
+                            });
+                        } else {
+                            detailRow.find('tr[data-sub-mailtype]').show();
+                        }
+                    } else {
+                        row.hide();
+                        detailRow.addClass('hidden');
+                        $(`#chevron-${idx}`).removeClass('is-open');
+                        row.removeClass('is-active');
+                    }
+                });
+
+                $('#groupedSummaryBadge').text(`${visibleCount} ตำแหน่ง`);
+            }
+
+            // Flat Table filtering logic
+            function filterFlatTable() {
+                if (!flatTable) return;
+
+                const statusVal = $('#filterStatus').val();
+                const mailTypeVal = $('#filterMailType').val();
+                const channelVal = $('#filterChannel').val();
+
+                const filterFn = function(settings, data, dataIndex) {
+                    const row = $(flatTable.row(dataIndex).node());
+                    const rowStatus = row.attr('data-status') || '';
+                    const rowMailType = row.attr('data-mailtype') || '';
+                    const rowChannel = row.attr('data-channel') || '';
+
+                    if (statusVal && rowStatus !== statusVal) return false;
+                    if (mailTypeVal && rowMailType !== mailTypeVal) return false;
+                    if (channelVal && rowChannel !== channelVal) return false;
+
+                    return true;
+                };
+
+                if (window.DataTable && window.DataTable.ext) {
+                    window.DataTable.ext.search = [filterFn];
+                } else if (window.$.fn && window.$.fn.dataTable) {
+                    window.$.fn.dataTable.ext.search = [filterFn];
                 }
 
-                $('#filterStatus, #filterMailType, #filterChannel').on('change', applyFilters);
+                flatTable.draw();
+            }
 
-                // Reset filters
-                $('#btnResetFilters').on('click', function() {
-                    $('#customSearch').val('');
-                    $('#filterStatus').val('');
-                    $('#filterMailType').val('');
-                    $('#filterChannel').val('');
-                    $('#filterPageSize').val('10');
-                    table.page.len(10);
-                    table.search('');
+            // Universal event bindings
+            $('#customSearch').on('keyup', function() {
+                filterGroupedView();
+                if (flatTable) {
+                    flatTable.search(this.value).draw();
+                }
+            });
+
+            $('#filterStatus, #filterChannel, #filterMailType').on('change', function() {
+                filterGroupedView();
+                filterFlatTable();
+            });
+
+            // Reset filters
+            $('#btnResetFilters').on('click', function() {
+                $('#customSearch').val('');
+                $('#filterStatus').val('');
+                $('#filterMailType').val('');
+                $('#filterChannel').val('');
+                
+                filterGroupedView();
+
+                if (flatTable) {
+                    flatTable.search('');
                     if (window.DataTable && window.DataTable.ext) {
                         window.DataTable.ext.search = [];
                     } else if (window.$.fn && window.$.fn.dataTable) {
                         window.$.fn.dataTable.ext.search = [];
                     }
-                    table.draw();
-                    updateCount();
-                });
-
-                function updateCount() {
-                    const visibleRows = table.rows({ filter: 'applied' }).count();
-                    $('#mailLogsCountBadge').text(`(${visibleRows} รายการ)`);
+                    flatTable.draw();
                 }
-
-                table.on('draw', function() {
-                    document.querySelectorAll('.action-dropdown-menu').forEach(function(m) {
-                        m.classList.add('hidden');
-                    });
-                    updateCount();
-                });
-            }
+            });
         });
     </script>
 @endsection

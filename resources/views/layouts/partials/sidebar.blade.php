@@ -67,9 +67,7 @@
                     </x-sidebar.dropdown>
 
                     @if(Auth::user()->canManageUsers())
-                    <x-sidebar.dropdown id="hr" title="HR Settings" icon="users-gear" :active="request()->routeIs('users.*') || request()->routeIs('usertypes.*') || request()->routeIs('sections.*') || request()->routeIs('divisions.*') || request()->routeIs('departments.*')">
-                        <x-sidebar.item href="{{ route('users.index') }}" :active="request()->routeIs('users.index')">ข้อมูลพนักงาน</x-sidebar.item>
-                    </x-sidebar.dropdown>
+                    <x-sidebar.link title="จัดการพนักงาน" icon="users-gear" href="{{ route('users.index') }}" :active="request()->routeIs('users.*')" />
                     @endif
 
                     <x-sidebar.link title="พิจารณาคำขอ HR" icon="clipboard-check" href="{{ route('manpower-request.index') }}" :active="request()->routeIs('manpower-request.*') || request()->routeIs('probation-evaluation.*') || request()->routeIs('interview-evaluation.*') || request()->routeIs('admin.manpower-requests.*') || request()->routeIs('admin.probation-evaluations.*') || request()->routeIs('admin.interview-evaluations.*')" />
@@ -88,7 +86,19 @@
                         <x-sidebar.item href="{{ route('backend.recruitment.requests.index') }}" :active="request()->routeIs('backend.recruitment.requests.*')">คำขอเปิดรับสมัครพนักงาน</x-sidebar.item>
                         <x-sidebar.item href="{{ route('backend.recruitment.posts.index') }}" :active="request()->routeIs('backend.recruitment.posts.*')">ประกาศรับสมัครงาน</x-sidebar.item>
                         <x-sidebar.item href="{{ route('backend.recruitment.applications.index') }}" :active="request()->routeIs('backend.recruitment.applications.*')">รายชื่อผู้สมัคร</x-sidebar.item>
+                        <x-sidebar.item href="{{ route('backend.recruitment.email-templates.index') }}" :active="request()->routeIs('backend.recruitment.email-templates.*')">ตั้งค่าข้อความอีเมล</x-sidebar.item>
+                        <x-sidebar.item href="{{ route('backend.recruitment.mail-logs.index') }}" :active="request()->routeIs('backend.recruitment.mail-logs.*')">ประวัติการส่งอีเมล</x-sidebar.item>
                     </x-sidebar.dropdown>
+
+                    <!-- Section Divider: System Settings -->
+                    @if(Auth::user()->canManageUsers() || Auth::user()->isHrOrAdmin())
+                        <div class="sidebar-text px-3 pt-5 pb-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            System Settings
+                        </div>
+
+                        <x-sidebar.link title="ตั้งค่า Microsoft 365" icon="microsoft" href="{{ route('backend.settings.microsoft') }}" :active="request()->routeIs('backend.settings.microsoft*')" />
+                        <x-sidebar.link title="ประวัติกิจกรรม (Audit Logs)" icon="clock-rotate-left" href="{{ route('backend.audit-logs.index') }}" :active="request()->routeIs('backend.audit-logs.*')" />
+                    @endif
 
                 @endif
 

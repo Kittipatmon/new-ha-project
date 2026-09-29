@@ -3,7 +3,10 @@
 namespace App\Models\Recruitment;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Division;
+use App\Models\Section;
 
 class Department extends Model
 {
@@ -33,6 +36,16 @@ class Department extends Model
     public function recruitmentRequests(): HasMany
     {
         return $this->hasMany(RecruitmentRequest::class, 'department_id');
+    }
+
+    public function division(): BelongsTo
+    {
+        return $this->belongsTo(Division::class, 'division_id', 'division_id');
+    }
+
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(Section::class, 'section_id', 'section_id');
     }
 
     public function jobPosts(): HasMany

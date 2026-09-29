@@ -201,12 +201,21 @@ class MicrosoftGraphService
         $formattedAttachments = [];
         foreach ($attachments as $att) {
             if (isset($att['contentBytes'])) {
-                $formattedAttachments[] = [
+                $item = [
                     '@odata.type' => '#microsoft.graph.fileAttachment',
                     'name' => $att['name'],
                     'contentType' => $att['contentType'] ?? 'application/octet-stream',
                     'contentBytes' => $att['contentBytes'],
                 ];
+
+                if (!empty($att['isInline'])) {
+                    $item['isInline'] = true;
+                }
+                if (!empty($att['contentId'])) {
+                    $item['contentId'] = $att['contentId'];
+                }
+
+                $formattedAttachments[] = $item;
             }
         }
 

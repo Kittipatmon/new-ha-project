@@ -1,22 +1,29 @@
 @extends('layouts.app')
-@section('title', 'จัดการภาพพื้นหลัง (Hero Background)')
+
 @section('content')
-<div class="container mx-auto px-4 py-4">
-    <!-- Top Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-            <h1 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <i class="fa-solid fa-panorama text-indigo-600"></i> จัดการภาพพื้นหลัง (Hero Background)
-            </h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                กำหนดรูปภาพพื้นหลังแบนเนอร์หัวเว็บ (Hero Banner) ที่จะแสดงในหน้าแรก สามารถเพิ่มได้หลายภาพเพื่อสไลด์สลับกัน
-            </p>
+<div class="w-full">
+    <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+        
+        <!-- Header Bar Inside Frame -->
+        <div class="pb-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <nav class="flex text-xs font-semibold text-slate-500 mb-1" aria-label="Breadcrumb">
+                    <a href="{{ route('welcome') }}" class="hover:text-indigo-600 transition">หน้าหลัก</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-slate-800 dark:text-slate-200">จัดการภาพพื้นหลัง (Hero Background)</span>
+                </nav>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <i class="fa-solid fa-panorama text-indigo-600"></i> จัดการภาพพื้นหลัง (Hero Background)
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    กำหนดรูปภาพพื้นหลังแบนเนอร์หัวเว็บ (Hero Banner) ที่จะแสดงในหน้าแรก สามารถเพิ่มได้หลายภาพเพื่อสไลด์สลับกัน
+                </p>
+            </div>
+            <button type="button" onclick="showAddModal()"
+                class="btn bg-indigo-600 hover:bg-indigo-700 text-white shadow-md flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all cursor-pointer">
+                <i class="fa-solid fa-plus"></i> เพิ่มภาพพื้นหลังใหม่
+            </button>
         </div>
-        <button type="button" onclick="showAddModal()"
-            class="btn bg-indigo-600 hover:bg-indigo-700 text-white shadow-md flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all cursor-pointer">
-            <i class="fa-solid fa-plus"></i> เพิ่มภาพพื้นหลังใหม่
-        </button>
-    </div>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -141,6 +148,7 @@
         </button>
     </div>
     @endif
+    </div>
 </div>
 
 <!-- ==================== ADD/EDIT MODAL ==================== -->

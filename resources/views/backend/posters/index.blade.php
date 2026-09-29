@@ -1,26 +1,33 @@
 @extends('layouts.app')
-@section('title', 'จัดการโปสเตอร์และแบนเนอร์ประชาสัมพันธ์')
+
 @section('content')
-<div class="container mx-auto px-4 py-4">
-    <!-- Top Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-            <h1 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <i class="fa-solid fa-images text-red-600"></i> จัดการโปสเตอร์และแบนเนอร์ประชาสัมพันธ์
-            </h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                กำหนดรูปภาพโปสเตอร์ สไลด์ Carousel และแบนเนอร์ด้านข้าง พร้อมลิงก์หรือไฟล์แนบที่จะแสดงในหน้าแรก
-            </p>
+<div class="w-full">
+    <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+        
+        <!-- Header Bar Inside Frame -->
+        <div class="pb-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <nav class="flex text-xs font-semibold text-slate-500 mb-1" aria-label="Breadcrumb">
+                    <a href="{{ route('welcome') }}" class="hover:text-indigo-600 transition">หน้าหลัก</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-slate-800 dark:text-slate-200">จัดการโปสเตอร์และแบนเนอร์ประชาสัมพันธ์</span>
+                </nav>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <i class="fa-solid fa-images text-red-600"></i> จัดการโปสเตอร์และแบนเนอร์ประชาสัมพันธ์
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    กำหนดรูปภาพโปสเตอร์ สไลด์ Carousel และแบนเนอร์ด้านข้าง พร้อมลิงก์หรือไฟล์แนบที่จะแสดงในหน้าแรก
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="showAnalyticsModal()" id="openAnalyticsModal" class="btn bg-blue-600 hover:bg-blue-700 text-white shadow-md flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all cursor-pointer">
+                    <i class="fa-solid fa-chart-line"></i> สถิติการเข้าชม
+                </button>
+                <button type="button" onclick="showPosterModal()" id="openCreatePosterModal" class="btn btn-success bg-green-600 hover:bg-green-700 text-white shadow-md flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all cursor-pointer">
+                    <i class="fa-solid fa-plus"></i> เพิ่มโปสเตอร์ใหม่
+                </button>
+            </div>
         </div>
-        <div class="flex items-center gap-2">
-            <button type="button" onclick="showAnalyticsModal()" id="openAnalyticsModal" class="btn bg-blue-600 hover:bg-blue-700 text-white shadow-md flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all cursor-pointer">
-                <i class="fa-solid fa-chart-line"></i> สถิติการเข้าชม
-            </button>
-            <button type="button" onclick="showPosterModal()" id="openCreatePosterModal" class="btn btn-success bg-green-600 hover:bg-green-700 text-white shadow-md flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all cursor-pointer">
-                <i class="fa-solid fa-plus"></i> เพิ่มโปสเตอร์ใหม่
-            </button>
-        </div>
-    </div>
 
     <!-- Analytics Stats Overview Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

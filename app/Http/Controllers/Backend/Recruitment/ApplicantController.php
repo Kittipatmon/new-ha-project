@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Backend\Recruitment;
 use App\Http\Controllers\Controller;
 use App\Models\Recruitment\Application;
 use App\Models\Recruitment\StatusLog;
+use App\Models\User;
+use App\Models\OrgDepartment;
+use App\Mail\NewCandidateDeptReviewNotification;
+use App\Services\RecruitmentMailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,18 +42,17 @@ class ApplicantController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($sub) use ($search) {
+                // ค้นหาเฉพาะ: 1. ชื่อ-นามสกุล 2. อีเมล
                 $sub->whereHas('applicant', function ($q) use ($search) {
                     $q->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
+                // และ 3. ตำแหน่งงาน
                 })->orWhereHas('jobPost', function ($q) use ($search) {
                     $q->where('position_name', 'like', "%{$search}%")
+                        ->orWhere('title', 'like', "%{$search}%")
                         ->orWhereHas('jobPosition', function ($jq) use ($search) {
                             $jq->where('position_name', 'like', "%{$search}%");
-                        })
-                        ->orWhereHas('department', function ($dq) use ($search) {
-                            $dq->where('department_name', 'like', "%{$search}%")
-                                ->orWhere('department_fullname', 'like', "%{$search}%");
                         });
                 });
             });
@@ -119,8 +122,11 @@ class ApplicantController extends Controller
             'jobPost.department',
             'jobPost.jobPosition',
             'documents',
+            'screener',
+            'deptReviewer',
             'statusLogs.user',
             'interviews.interviewers',
+            'interviews.interviewer',
             'interviews.scores',
         ])->findOrFail($id);
 
@@ -169,10 +175,19 @@ class ApplicantController extends Controller
             'onboarding_date' => 'nullable|date',
         ]);
 
-        // Guard status changes: non-HA users can only make department review decisions (interview, dept_rejected)
+        // Guard status changes: non-HA users can only make department review & interview selection decisions, or propose start date
         $user = Auth::user();
-        if ($user && !$user->isHrOrAdmin()) {
-            if (!in_array($validated['status'], ['interview', 'dept_rejected'])) {
+        $isDeptUser = $user && !$user->isHrOrAdmin();
+        if ($isDeptUser) {
+            $allowedForDept = [
+                'interview',
+                'dept_rejected',
+                'passed_selection',
+                'selection_approved',
+                'interview_failed',
+                'offered',
+            ];
+            if (!in_array($validated['status'], $allowedForDept)) {
                 return back()->with('error', 'สิทธิ์ไม่เพียงพอ: การปรับเปลี่ยนสถานะด้วยตนเองสามารถทำได้เฉพาะฝ่าย HA เท่านั้น');
             }
         }
@@ -202,17 +217,25 @@ class ApplicantController extends Controller
         // Meaningful default remark if note not provided
         $remark = $validated['note'] ?? $request->get('remark') ?? null;
         if (empty($remark)) {
-            $remark = match ($validated['status']) {
-                'screening_failed' => 'HA ตรวจสอบข้อมูลแล้ว: ไม่ผ่านคุณสมบัติ (บันทึกจัดเก็บข้อมูล)',
-                'dept_review' => 'HA ตรวจสอบคุณสมบัติผ่าน: ส่งรายชื่อให้หัวหน้าแผนกพิจารณา',
-                'dept_rejected' => 'หัวหน้าแผนกพิจารณา: ไม่ผ่าน (ส่งกลับให้ HA พิจารณาผู้สมัครคนอื่น)',
-                'interview', 'interview_scheduled' => 'หัวหน้าแผนกพิจารณาผ่าน: ดำเนินการเตรียมนัดสัมภาษณ์',
-                'interview_failed' => 'ผลสัมภาษณ์: ไม่ผ่านเกณฑ์ (ส่งกลับให้ HA พิจารณาผู้สมัครคนอื่น)',
-                'passed_selection', 'selection_approved' => 'ผลสัมภาษณ์: ผ่านเกณฑ์ และกดอนุมัติผ่านการคัดเลือก',
-                'offered' => 'HA ดำเนินการติดต่อผู้สมัครเพื่อแจ้งผลและยื่นข้อเสนอจ้างงาน',
-                'hired' => 'กำหนดวันเริ่มงานเรียบร้อย: รับเข้าทำงาน ' . ($application->onboarding_date ? '(เริ่มงาน: ' . $application->onboarding_date->format('d/m/Y') . ')' : ''),
-                default => 'เปลี่ยนสถานะเป็น ' . $application->status_label,
-            };
+            if ($validated['status'] === 'offered') {
+                if ($isDeptUser) {
+                    $dateStr = $application->onboarding_date ? $application->onboarding_date->format('d/m/Y') : '-';
+                    $remark = "หัวหน้าแผนกกำหนดวันเริ่มงาน: {$dateStr} (ส่งต่อให้ฝ่าย HA ตรวจสอบและกดส่งแจ้งผู้สมัคร)";
+                } else {
+                    $remark = 'HA ดำเนินการยื่นข้อเสนอและส่งอีเมลแจ้งผลผ่านการคัดเลือกให้ผู้สมัครเรียบร้อยแล้ว';
+                }
+            } else {
+                $remark = match ($validated['status']) {
+                    'screening_failed' => 'HA ตรวจสอบข้อมูลแล้ว: ไม่ผ่านคุณสมบัติ (บันทึกจัดเก็บข้อมูล)',
+                    'dept_review' => 'HA ตรวจสอบคุณสมบัติผ่าน: ส่งรายชื่อให้หัวหน้าแผนกพิจารณา',
+                    'dept_rejected' => 'หัวหน้าแผนกพิจารณา: ไม่ผ่าน (ส่งกลับให้ HA พิจารณาผู้สมัครคนอื่น)',
+                    'interview', 'interview_scheduled' => 'หัวหน้าแผนกพิจารณาผ่าน: ดำเนินการเตรียมนัดสัมภาษณ์',
+                    'interview_failed' => 'ผลสัมภาษณ์: ไม่ผ่านเกณฑ์ (ส่งกลับให้ HA พิจารณาผู้สมัครคนอื่น)',
+                    'passed_selection', 'selection_approved' => 'ผลสัมภาษณ์: ผ่านเกณฑ์ และกดอนุมัติผ่านการคัดเลือก',
+                    'hired' => 'HA ตรวจสอบยืนยันและกดส่งแจ้งผู้สมัคร: รับเข้าทำงานเรียบร้อย (เริ่มงาน: ' . ($application->onboarding_date ? $application->onboarding_date->format('d/m/Y') : '-') . ')',
+                    default => 'เปลี่ยนสถานะเป็น ' . $application->status_label,
+                };
+            }
         }
 
         StatusLog::create([
@@ -223,19 +246,126 @@ class ApplicantController extends Controller
             'remark' => $remark,
         ]);
 
-        if ($validated['status'] === 'hired' && $application->applicant && $application->applicant->email) {
+        // เมื่อ HA ตรวจสอบคุณสมบัติผ่าน และเปลี่ยนสถานะส่งให้ทางหัวหน้าแผนกพิจารณา (dept_review) -> ส่งอีเมลแจ้งเตือนหัวหน้าแผนก
+        if ($oldStatus !== 'dept_review' && $validated['status'] === 'dept_review') {
             try {
-                $mailable = new \App\Mail\ApplicationHired($application, Auth::user());
+                $deptRecipients = collect();
+                $jobPost = $application->jobPost;
+                $deptId = $jobPost?->department_id;
+
+                // 1. ผู้จัดการแผนกตามโครงสร้างองค์กร (OrgDepartment manager_id)
+                if ($deptId) {
+                    $deptManagerId = OrgDepartment::where('id', $deptId)->value('manager_id');
+                    if ($deptManagerId && $manager = User::find($deptManagerId)) {
+                        if (!empty($manager->email) && filter_var($manager->email, FILTER_VALIDATE_EMAIL)) {
+                            $deptRecipients->put($manager->email, $manager);
+                        }
+                    }
+                }
+
+                // 2. ผู้ร้องขออัตรากำลัง (Requester)
+                $reqUser = $jobPost?->recruitmentRequest?->requester
+                    ?? ($jobPost?->recruitmentRequest?->requested_by ? User::find($jobPost->recruitmentRequest->requested_by) : null);
+                if ($reqUser && !empty($reqUser->email) && filter_var($reqUser->email, FILTER_VALIDATE_EMAIL)) {
+                    $deptRecipients->put($reqUser->email, $reqUser);
+                }
+
+                // 3. Fallback: หากไม่พบอีเมลหัวหน้าแผนก ให้ส่งไปยังอีเมลกลาง/ทดสอบ (Kittipat.Ma@kumwell.com)
+                if ($deptRecipients->isEmpty()) {
+                    $fallbackEmail = config('recruitment.ha_notification_email', 'Kittipat.Ma@kumwell.com');
+                    if (!empty($fallbackEmail)) {
+                        $fallbackUser = User::where('email', $fallbackEmail)->first();
+                        $deptRecipients->put($fallbackEmail, $fallbackUser);
+                    }
+                }
+
+                foreach ($deptRecipients as $recipientEmail => $recipientUser) {
+                    $mailable = new NewCandidateDeptReviewNotification(
+                        $application,
+                        $recipientUser,
+                        Auth::user(),
+                        $validated['note'] ?? null
+                    );
+                    RecruitmentMailService::queueMailable(
+                        $mailable,
+                        $recipientEmail,
+                        $recipientUser?->fullname ?? 'หัวหน้าแผนก',
+                        'dept_review_notification',
+                        [
+                            'application_id' => $application->id,
+                            'application_no' => $application->application_no,
+                            'position_name' => $jobPost?->position_name ?? ($jobPost?->jobPosition?->position_name ?? $jobPost?->title),
+                            'applicant_name' => $application->applicant?->full_name ?? 'ผู้สมัคร',
+                            'recipient_role' => 'Department Head',
+                        ]
+                    );
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send Dept Review email notification: ' . $e->getMessage());
+            }
+        }
+
+        if ($validated['status'] === 'hired') {
+            // Auto-link to Probation Evaluations table
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('probation_evaluations')) {
+                    $applicant = $application->applicant;
+                    $jobPost = $application->jobPost;
+                    $empName = $applicant ? $applicant->full_name : "พนักงาน รหัสใบสมัคร {$application->application_no}";
+                    $posName = $jobPost ? ($jobPost->position_name ?: $jobPost->title) : 'พนักงาน';
+                    $deptName = $jobPost && $jobPost->department ? ($jobPost->department->department_name ?: 'สำนักงานใหญ่') : 'สำนักงานใหญ่';
+                    $startDate = $application->onboarding_date ?: now();
+                    $probDueDate = \Carbon\Carbon::parse($startDate)->addDays(119);
+
+                    $exists = \Illuminate\Support\Facades\DB::table('probation_evaluations')->where('employee_name', $empName)->first();
+                    if (!$exists) {
+                        \Illuminate\Support\Facades\DB::table('probation_evaluations')->insert([
+                            'user_id' => $applicant?->user_id ?? 0,
+                            'prefix' => $applicant?->prefix ?? 'นาย',
+                            'employee_name' => $empName,
+                            'position' => $posName,
+                            'emp_code' => 'EMP-' . str_pad($application->id, 5, '0', STR_PAD_LEFT),
+                            'department' => $deptName,
+                            'start_date' => $startDate,
+                            'probation_due_date' => $probDueDate,
+                            'status' => 'pending_round_1',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Auto probation record notice: ' . $e->getMessage());
+            }
+
+            if ($application->applicant && $application->applicant->email) {
+                try {
+                    $mailable = new \App\Mail\ApplicationHired($application, Auth::user());
+                    \App\Services\RecruitmentMailService::queueMailable(
+                        $mailable,
+                        $application->applicant->email,
+                        $application->applicant->full_name,
+                        'application_hired',
+                        ['application_id' => $application->id, 'status' => 'hired'],
+                        Auth::user()
+                    );
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to queue hired email: ' . $e->getMessage());
+                }
+            }
+        } elseif ($oldStatus !== 'offered' && $validated['status'] === 'offered' && $application->applicant && $application->applicant->email) {
+            try {
+                $mailable = new \App\Mail\ApplicationOffered($application, Auth::user());
                 \App\Services\RecruitmentMailService::queueMailable(
                     $mailable,
                     $application->applicant->email,
                     $application->applicant->full_name,
-                    'application_hired',
-                    ['application_id' => $application->id, 'status' => 'hired'],
+                    'application_offered',
+                    ['application_id' => $application->id, 'status' => 'offered'],
                     Auth::user()
                 );
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to queue hired email: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('Failed to queue offered email: ' . $e->getMessage());
             }
         } elseif (in_array($validated['status'], ['screening_failed', 'rejected']) && $application->applicant && $application->applicant->email) {
             try {
@@ -253,6 +383,17 @@ class ApplicantController extends Controller
             }
         }
 
-        return back()->with('success', 'ดำเนินการอัปเดตสถานะ: ' . $application->status_label . ' เรียบร้อยแล้ว');
+        $successMsg = 'ดำเนินการอัปเดตสถานะ: ' . $application->status_label . ' เรียบร้อยแล้ว';
+        if ($validated['status'] === 'offered') {
+            if ($isDeptUser) {
+                $successMsg = 'บันทึกกำหนดวันเริ่มงานเรียบร้อยแล้ว ส่งข้อมูลต่อให้ฝ่าย HA เพื่อยืนยันและส่งแจ้งผู้สมัคร';
+            } else {
+                $successMsg = 'ยื่นข้อเสนอและส่งอีเมลแจ้งผลผ่านการคัดเลือกให้ผู้สมัครเรียบร้อยแล้ว';
+            }
+        } elseif ($validated['status'] === 'hired') {
+            $successMsg = 'บันทึกรับเข้าทำงานและส่งอีเมลยืนยันวันเริ่มงานให้ผู้สมัครเรียบร้อยแล้ว';
+        }
+
+        return back()->with('success', $successMsg);
     }
 }

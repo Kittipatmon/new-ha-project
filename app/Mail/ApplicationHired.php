@@ -73,6 +73,7 @@ class ApplicationHired extends Mailable
         return new Content(
             view: 'emails.application_hired',
             with: [
+                'application' => $this->application,
                 'applicantName' => $this->application->applicant ? $this->application->applicant->full_name : 'ผู้สมัคร',
                 'positionName' => $this->application->jobPost->position_name ?? ($this->application->jobPost->jobPosition->position_name ?? '-'),
                 'sender' => $this->sender,

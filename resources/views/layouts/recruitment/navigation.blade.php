@@ -118,6 +118,7 @@
 
             @php
                 $navPendingJobPostCount = \App\Models\Recruitment\RecruitmentRequest::where('status', 'approved')->doesntHave('jobPosts')->count();
+                $navNewApplicationsCount = \App\Models\Recruitment\Application::whereIn('status', ['new', 'submitted'])->count();
                 $canViewDeptCandidates = false;
                 $pendingDeptReviewCount = 0;
                 if (Auth::check()) {
@@ -151,6 +152,15 @@
                             href="{{ route('recruitment.index') }}">สมัครงาน</a>
                     </li>
 
+                    <!-- 2.1 ตรวจสอบสถานะการสมัคร -->
+                    <li>
+                        <a class="navbar-link {{ request()->routeIs('recruitment.track*') ? 'active' : '' }} flex items-center gap-1.5"
+                            href="{{ route('recruitment.track') }}" title="ตรวจสอบสถานะการสมัครงาน">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            <span>เช็คสถานะ</span>
+                        </a>
+                    </li>
+
                     @if(Auth::check() && Auth::user()->isHrOrAdmin())
                         <!-- 3. Dashboard -->
                         <li>
@@ -160,8 +170,15 @@
 
                         <!-- 4. รายชื่อผู้สมัคร -->
                         <li>
-                            <a class="navbar-link {{ request()->routeIs('backend.recruitment.applications.*') ? 'active' : '' }}"
-                                href="{{ route('backend.recruitment.applications.index') }}">รายชื่อผู้สมัคร</a>
+                            <a class="navbar-link {{ request()->routeIs('backend.recruitment.applications.*') ? 'active' : '' }} flex items-center gap-1.5"
+                                href="{{ route('backend.recruitment.applications.index') }}">
+                                <span>รายชื่อผู้สมัคร</span>
+                                @if($navNewApplicationsCount > 0)
+                                    <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-extrabold {{ request()->routeIs('backend.recruitment.applications.*') ? 'text-white bg-red-600' : 'text-red-700 bg-white' }} rounded-full shadow-sm animate-pulse" title="มีผู้สมัครใหม่รอคัดกรอง: {{ $navNewApplicationsCount }} คน">
+                                        {{ $navNewApplicationsCount }}
+                                    </span>
+                                @endif
+                            </a>
                         </li>
 
                         <!-- 5. ประกาศรับสมัครงาน -->
@@ -436,6 +453,11 @@
                     <i class="fa-solid fa-briefcase w-4 text-center"></i>
                     <span>สมัครงาน (Careers)</span>
                 </a>
+                <a href="{{ route('recruitment.track') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('recruitment.track*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
+                    <i class="fa-solid fa-magnifying-glass w-4 text-center"></i>
+                    <span>เช็คสถานะการสมัคร</span>
+                </a>
             </div>
         </div>
 
@@ -452,9 +474,16 @@
                         <span>Dashboard</span>
                     </a>
                     <a href="{{ route('backend.recruitment.applications.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.applications.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                        <i class="fa-solid fa-users w-4 text-center text-blue-500"></i>
-                        <span>รายชื่อผู้สมัคร</span>
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.applications.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-users w-4 text-center text-blue-500"></i>
+                            <span>รายชื่อผู้สมัคร</span>
+                        </div>
+                        @if($navNewApplicationsCount > 0)
+                            <span class="px-2 py-0.5 text-[10px] font-extrabold {{ request()->routeIs('backend.recruitment.applications.*') ? 'text-red-600 bg-white' : 'text-white bg-red-600' }} rounded-full shadow-sm">
+                                {{ $navNewApplicationsCount }}
+                            </span>
+                        @endif
                     </a>
                     <a href="{{ route('backend.recruitment.posts.index') }}"
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.posts.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">

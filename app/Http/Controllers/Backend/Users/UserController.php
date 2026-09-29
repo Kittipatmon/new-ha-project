@@ -63,8 +63,15 @@ class UserController extends Controller
             abort(403, 'คุณไม่มีสิทธิ์จัดการข้อมูลพนักงาน (เฉพาะสิทธิ์ ADMIN เท่านั้น)');
         }
 
-        $users = $this->filteredUsers($request)->paginate(50)->withQueryString();
+        $perPage = (int) $request->input('per_page', 50);
+        $perPage = max(1, min($perPage, 100));
+
+        $users = $this->filteredUsers($request)->paginate($perPage)->withQueryString();
         
+        if ($request->ajax()) {
+            return view('backend.users.partials.table', compact('users'))->render();
+        }
+
         $departments = Cache::remember('all_departments', 3600, fn() => Department::all());
         $divisions = Cache::remember('all_divisions', 3600, fn() => Division::all());
         $sections = Cache::remember('all_sections', 3600, fn() => Section::all());
@@ -117,7 +124,8 @@ class UserController extends Controller
                   ->orWhere('firstname', 'like', "%{$keyword}%")
                   ->orWhere('lastname', 'like', "%{$keyword}%")
                   ->orWhereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", ["%{$keyword}%"])
-                  ->orWhere('position', 'like', "%{$keyword}%");
+                  ->orWhere('email', 'like', "%{$keyword}%")
+                  ->orWhere('username', 'like', "%{$keyword}%");
             });
         }
 
@@ -214,25 +222,13 @@ class UserController extends Controller
 
 public function create()
 {
-    if (auth()->check() && !auth()->user()->canManageUsers()) {
-        abort(403, 'คุณไม่มีสิทธิ์เพิ่มข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
-    }
-
-    $departments = Cache::remember('all_departments', 3600, fn() => Department::all());
-    $divisions = Cache::remember('all_divisions', 3600, fn() => Division::all());
-    $sections = Cache::remember('all_sections', 3600, fn() => Section::all());
-
-    return view('backend.users.create', compact('departments', 'divisions', 'sections'));
+    abort(403, 'ระบบไม่อนุญาตให้เพิ่มข้อมูลพนักงานโดยตรง ข้อมูลพนักงานจะถูกเชื่อมโยงมาจากฐานข้อมูลกลาง (Central User Database)');
 }
 
 
 public function store(StoreUserRequest $request)
 {
-    if (auth()->check() && !auth()->user()->canManageUsers()) {
-        abort(403, 'คุณไม่มีสิทธิ์เพิ่มข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
-    }
-
-    $validated = $request->validated();
+    abort(403, 'ระบบไม่อนุญาตให้เพิ่มข้อมูลพนักงานโดยตรง ข้อมูลพนักงานจะถูกเชื่อมโยงมาจากฐานข้อมูลกลาง (Central User Database)');
 
     // ตรวจสอบสิทธิ์การให้ ADMIN: เฉพาะฝ่าย 16 Information Communication Technology เท่านั้น
     if (($validated['role'] ?? '') === 'admin' && !auth()->user()->canAssignAdminRole()) {
@@ -368,17 +364,81 @@ public function update(UpdateUserRequest $request, $id)
     return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลพนักงานเรียบร้อยแล้ว');  
 }
 
+public function updateRole(Request $request, $id)
+{
+    if (auth()->check() && !auth()->user()->canManageUsers()) {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => 'คุณไม่มีสิทธิ์จัดการสิทธิ์พนักงาน (เฉพาะสิทธิ์ ADMIN เท่านั้น)'], 403);
+        }
+        abort(403, 'คุณไม่มีสิทธิ์จัดการสิทธิ์พนักงาน (เฉพาะสิทธิ์ ADMIN เท่านั้น)');
+    }
+
+    $validator = Validator::make($request->all(), [
+        'role' => ['required', 'string', Rule::in(['admin', 'editor', 'viewer'])],
+    ], [
+        'role.required' => 'กรุณาเลือกสิทธิ์ที่ต้องการกำหนด',
+        'role.in'       => 'สิทธิ์ที่เลือกไม่ถูกต้อง (ต้องเป็น admin, editor หรือ viewer)',
+    ]);
+
+    if ($validator->fails()) {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+        return back()->withErrors($validator)->withInput();
+    }
+
+    $targetUser = User::findOrFail($id);
+    $newRole = strtolower(trim($request->input('role')));
+
+    // ตรวจสอบสิทธิ์การให้ ADMIN: ถ้าเปลี่ยนคนที่ไม่ใช่ admin ให้เป็น admin ต้องเป็นฝ่าย 16 ICT เท่านั้น
+    if ($newRole === 'admin' && $targetUser->hr_role !== 'admin' && !auth()->user()->canAssignAdminRole()) {
+        $msg = 'เฉพาะผู้ดูแลระบบสังกัดฝ่าย 16 Information Communication Technology เท่านั้นที่สามารถเปลี่ยนสิทธิ์เป็น ADMIN ได้';
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => $msg], 403);
+        }
+        return back()->with('error', $msg);
+    }
+
+    DB::transaction(function () use ($targetUser, $newRole) {
+        // บันทึก/อัปเดตสิทธิ์ลงตาราง hr_user_roles (Database: hrsystem)
+        HrUserRole::updateOrCreate(
+            ['employee_code' => (string)$targetUser->employee_code],
+            [
+                'employee_id' => $targetUser->id,
+                'role'        => $newRole,
+                'updated_at'  => now(),
+            ]
+        );
+
+        // ปรับ role ในฐานข้อมูลหลัก (central)
+        $targetUser->role = ($newRole === 'admin' ? 'admin' : 'staff');
+        $targetUser->save();
+    });
+
+    Cache::forget("user_hr_role_{$targetUser->employee_code}");
+
+    $roleDisplay = match($newRole) {
+        'admin' => '<span class="inline-flex items-center gap-1.5 font-medium text-purple-600 dark:text-purple-400"><i class="fa-solid fa-shield-halved text-purple-600"></i> Admin</span>',
+        'editor' => '<span class="inline-flex items-center gap-1.5 font-medium text-cyan-600 dark:text-cyan-400"><i class="fa-solid fa-pen text-cyan-500"></i> Editor</span>',
+        default => '<span class="inline-flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-eye text-emerald-500"></i> Viewer</span>',
+    };
+
+    if ($request->expectsJson() || $request->ajax()) {
+        return response()->json([
+            'success' => true,
+            'message' => "ปรับสิทธิ์การใช้งานของ {$targetUser->fullname} เป็น " . strtoupper($newRole) . " เรียบร้อยแล้ว",
+            'role' => $newRole,
+            'role_label' => strtoupper($newRole),
+            'role_html' => $roleDisplay,
+        ]);
+    }
+
+    return redirect()->route('users.index')->with('success', "ปรับสิทธิ์การใช้งานของ {$targetUser->fullname} เป็น " . strtoupper($newRole) . " เรียบร้อยแล้ว");
+}
 
 public function destroy($id)
 {
-    if (auth()->check() && !auth()->user()->canDelete()) {
-        abort(403, 'คุณไม่มีสิทธิ์ลบข้อมูลพนักงาน (สำหรับ Admin เท่านั้น)');
-    }
-
-    $user = User::findOrFail($id);
-    $user->delete();
-
-    return redirect()->route('users.index')->with('success', 'ลบข้อมูลพนักงานเรียบร้อยแล้ว');
+    abort(403, 'ระบบไม่อนุญาตให้ลบข้อมูลพนักงานโดยตรง ข้อมูลพนักงานจะถูกเชื่อมโยงมาจากฐานข้อมูลกลาง (Central User Database)');
 }
 
     public function updateAvatar(Request $request)

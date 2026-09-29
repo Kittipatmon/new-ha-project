@@ -1,21 +1,39 @@
 @extends('layouts.app')
-@section('title', 'จัดการผู้สมัครฝึกอบรม')
-
-@section('header_actions')
-    <a href="{{ route('backend.training.index') }}"
-        class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm shadow-sm">
-        <i class="fa-solid fa-arrow-left text-xs"></i>
-        กลับไปที่รายการ
-    </a>
-@endsection
-
 @section('content')
-    <div class="space-y-6">
-        @if(isset($course_name))
-            <div class="-mt-2 mb-2">
-                <p class="text-sm text-gray-500 dark:text-gray-400">หลักสูตร: {{ $course_name }}</p>
+<div class="w-full">
+    <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 sm:p-7 space-y-6">
+        
+        <!-- Header Bar Inside Frame -->
+        <div class="pb-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <nav class="flex text-xs font-semibold text-slate-500 mb-1" aria-label="Breadcrumb">
+                    <a href="{{ route('welcome') }}" class="hover:text-indigo-600 transition">หน้าหลัก</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <a href="{{ route('backend.training.index') }}" class="hover:text-indigo-600 transition">การฝึกอบรม</a>
+                    <span class="mx-2 text-slate-400">/</span>
+                    <span class="text-indigo-600 dark:text-indigo-400 font-bold">จัดการผู้สมัครฝึกอบรม</span>
+                </nav>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg shadow-sm">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <span>จัดการผู้สมัครฝึกอบรม</span>
+                </h1>
+                @if(isset($course_name))
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">หลักสูตร: <strong class="text-slate-800 dark:text-slate-200">{{ $course_name }}</strong></p>
+                @endif
             </div>
-        @endif
+
+            <div>
+                <a href="{{ route('backend.training.index') }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition shadow-sm">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    กลับไปที่รายการ
+                </a>
+            </div>
+        </div>
+
+        <div class="space-y-6">
 
         <!-- Filter Bar -->
         <div
@@ -208,6 +226,8 @@
             @endif
         </div>
     </div>
+    </div>
+</div>
 
     <script>
         function toggleDetails(id) {

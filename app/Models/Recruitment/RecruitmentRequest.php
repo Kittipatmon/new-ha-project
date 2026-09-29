@@ -3,12 +3,23 @@
 namespace App\Models\Recruitment;
 
 use App\Models\User;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RecruitmentRequest extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'recruitment';
+    public string $auditModuleName = 'ระบบสรรหาบุคลากร (คำขออัตรากำลัง)';
+
+    public function getAuditTitle(): string
+    {
+        return "คำขออัตรากำลัง: {$this->request_no} ({$this->position_name})";
+    }
+
     protected $table = 'recruitment_requests';
 
     protected $fillable = [

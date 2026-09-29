@@ -22,11 +22,27 @@
                         class="text-kumwell-red font-bold">{{ $post->position_name }}</span>
                     แล้ว เจ้าหน้าที่จะพิจารณาและติดต่อกลับโดยเร็วที่สุด
                 </p>
+
+                @if(session('application_no'))
+                    <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 text-center space-y-1">
+                        <span class="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">เลขที่ใบสมัครของคุณ (Application No.)</span>
+                        <div class="font-mono text-xl font-black text-kumwell-red tracking-wider">
+                            {{ session('application_no') }}
+                        </div>
+                        <p class="text-[11px] text-slate-400">โปรดบันทึกรหัสนี้ไว้เพื่อใช้ตรวจสอบสถานะการสมัครงาน</p>
+                    </div>
+                @endif
             </div>
 
-            <div class="pt-8 space-y-3">
+            <div class="pt-6 space-y-3">
+                @if(session('application_no'))
+                    <a href="{{ route('recruitment.track', ['app_no' => session('application_no')]) }}"
+                        class="block w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 rounded-2xl shadow-md transition-all active:scale-95">
+                        <i class="fa-solid fa-magnifying-glass mr-2"></i> ติดตามสถานะใบสมัครนี้
+                    </a>
+                @endif
                 <a href="{{ route('recruitment.index') }}"
-                    class="block w-full bg-kumwell-red hover:bg-red-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-red-500/30 transition-all active:scale-95">
+                    class="block w-full bg-kumwell-red hover:bg-red-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-red-500/30 transition-all active:scale-95">
                     กลับไปดูตำแหน่งงานอื่น
                 </a>
                 <a href="{{ route('welcome') }}"
