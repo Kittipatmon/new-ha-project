@@ -287,30 +287,101 @@ if (!function_exists('renderAuditDescHtml')) {
         if (!$desc) return '-';
         $safe = e($desc);
 
-        // Highlight: ขอรับรหัสผ่านถอดรหัสไฟล์
+        // 1. Password & Auth Badges
         $safe = preg_replace(
             '/ขอรับรหัสผ่านถอดรหัสไฟล์(?:\:)?/u',
-            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์:</span>',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span>',
             $safe
         );
 
-        // Highlight: ยืนยันตัวตนบัญชี Microsoft 365
         $safe = preg_replace(
-            '/ยืนยันตัวตนบัญชี Microsoft 365(?:\s*แผนก ICT)?/u',
+            '/ยืนยันตัวตน(?:บัญชี)?\s*Microsoft 365(?:\s*แผนก ICT)?(?:\s*สำเร็จ)?/u',
             '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px]"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>',
             $safe
         );
 
-        // Highlight: พยายามเข้าถึงรหัสผ่าน...
         $safe = preg_replace(
             '/พยายามเข้าถึงรหัสผ่านสำรองฐานข้อมูลโดยไม่ผ่านการยืนยันตัวตน/u',
             '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px]"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันสิทธิ์ ICT</span>',
             $safe
         );
 
-        // Highlight backup filenames: backup_db_*.zip
         $safe = preg_replace(
-            '/(backup_db_[a-zA-Z0-9_\.]+\.zip)/u',
+            '/ปฏิเสธการเข้าถึงรหัสผ่าน(?:\:)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px]"><i class="fa-solid fa-ban text-[10px] text-rose-500"></i> ปฏิเสธสิทธิ์:</span>',
+            $safe
+        );
+
+        $safe = preg_replace(
+            '/ผู้ดูแลระบบเปิดดูรหัสผ่านถอดรหัสไฟล์สำรองฐานข้อมูล(?:\:)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800 text-[11px] shadow-2xs"><i class="fa-solid fa-eye text-[10px] text-purple-500"></i> ดูรหัสผ่านสำรอง:</span>',
+            $safe
+        );
+
+        // 2. Backup Badges (Blue / Sky)
+        $safe = preg_replace(
+            '/สำรองฐานข้อมูลสำเร็จ\s*(?:\(เข้ารหัส\s*AES-256\))?(?:\:)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px] shadow-2xs"><i class="fa-solid fa-database text-[10px] text-blue-500"></i> สำรองฐานข้อมูลสำเร็จ:</span>',
+            $safe
+        );
+
+        $safe = preg_replace(
+            '/ดาวน์โหลดไฟล์สำรองฐานข้อมูล(?:\:)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 text-[11px] shadow-2xs"><i class="fa-solid fa-download text-[10px] text-indigo-500"></i> ดาวน์โหลดสำรอง:</span>',
+            $safe
+        );
+
+        $safe = preg_replace(
+            '/สร้างไฟล์คลังบีบอัด Audit Log(?:\:)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800 text-[11px] shadow-2xs"><i class="fa-solid fa-file-zipper text-[10px] text-sky-500"></i> สร้างไฟล์คลัง Log:</span>',
+            $safe
+        );
+
+        $safe = preg_replace(
+            '/ดาวน์โหลดไฟล์คลัง Audit Log(?:\:)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800 text-[11px] shadow-2xs"><i class="fa-solid fa-download text-[10px] text-sky-500"></i> ดาวน์โหลดคลัง Log:</span>',
+            $safe
+        );
+
+        // 3. Delete Badges (Rose / Red)
+        $safe = preg_replace(
+            '/^(ลบข้อมูล[^\:\：]+|ลบไฟล์[^\:\：]+|ล้างไฟล์[^\:\：]+|ล้างข้อมูล[^\:\：]+|ลบ[^\:\：]+)([\:\：])\s*/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shadow-2xs"><i class="fa-solid fa-trash-can text-[10px] text-rose-500"></i> $1:</span> ',
+            $safe
+        );
+        $safe = preg_replace(
+            '/^(ลบข้อมูล|ลบไฟล์|ล้างข้อมูล|ล้างไฟล์|ลบ)\s+/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shadow-2xs"><i class="fa-solid fa-trash-can text-[10px] text-rose-500"></i> $1:</span> ',
+            $safe
+        );
+
+        // 4. Update / Edit Badges (Amber / Warm)
+        $safe = preg_replace(
+            '/^(แก้ไขข้อมูล[^\:\：]+|แก้ไข[^\:\：]+|ปรับปรุงการตั้งค่า[^\:\：]*|ปรับปรุงข้อมูล[^\:\：]*|ปรับปรุง[^\:\：]+|ปิดการรับสมัคร[^\:\：]*)([\:\：])\s*/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-pen-to-square text-[10px] text-amber-500"></i> $1:</span> ',
+            $safe
+        );
+        $safe = preg_replace(
+            '/^(แก้ไขข้อมูล|แก้ไข|ปรับปรุงการตั้งค่า|ปรับปรุงข้อมูล|ปรับปรุง|ปิดการรับสมัคร)\s+/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-pen-to-square text-[10px] text-amber-500"></i> $1:</span> ',
+            $safe
+        );
+
+        // 5. Create / Add Badges (Emerald / Green)
+        $safe = preg_replace(
+            '/^(เพิ่มประกาศ[^\:\：]+|เพิ่มหลักสูตร[^\:\：]+|เพิ่มข้อมูล[^\:\：]+|เพิ่ม[^\:\：]+)([\:\：])\s*/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shadow-2xs"><i class="fa-solid fa-circle-plus text-[10px] text-emerald-500"></i> $1:</span> ',
+            $safe
+        );
+        $safe = preg_replace(
+            '/^(เพิ่มข้อมูล|เพิ่ม)\s+/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shadow-2xs"><i class="fa-solid fa-circle-plus text-[10px] text-emerald-500"></i> $1:</span> ',
+            $safe
+        );
+
+        // 6. Highlight backup/archive filenames: backup_db_*.zip / audit_archive_*.zip
+        $safe = preg_replace(
+            '/((?:backup_db_|audit_archive_)[a-zA-Z0-9_\.]+\.zip)/u',
             '<code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800 break-all">$1</code>',
             $safe
         );
@@ -323,19 +394,63 @@ if (!function_exists('renderAuditPreviewHtml')) {
     function renderAuditPreviewHtml($desc) {
         if (!$desc) return '-';
 
+        // 1. Password request
         if (str_contains($desc, 'ขอรับรหัสผ่านถอดรหัสไฟล์')) {
             if (preg_match('/(backup_db_[a-zA-Z0-9_\.]+\.zip)/u', $desc, $matches)) {
-                return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[140px] inline-block align-bottom">' . e($matches[1]) . '</code>';
+                return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[130px] inline-block align-bottom">' . e($matches[1]) . '</code>';
             }
-            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์</span>';
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน</span>';
         }
 
-        if (str_contains($desc, 'ยืนยันตัวตนบัญชี Microsoft 365')) {
+        // 2. Microsoft 365 Auth
+        if (str_contains($desc, 'ยืนยันตัวตน') && str_contains($desc, 'Microsoft 365')) {
             return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shrink-0"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>';
         }
 
-        if (str_contains($desc, 'ไม่ผ่านการยืนยันตัวตน')) {
-            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันตัวตน</span>';
+        // 3. Security alert
+        if (str_contains($desc, 'ไม่ผ่านการยืนยันตัวตน') || str_contains($desc, 'ปฏิเสธการเข้าถึง')) {
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันสิทธิ์ ICT</span>';
+        }
+
+        // 4. Backup
+        if (str_contains($desc, 'สำรองฐานข้อมูลสำเร็จ')) {
+            if (preg_match('/(backup_db_[a-zA-Z0-9_\.]+\.zip)/u', $desc, $matches)) {
+                return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px] shrink-0"><i class="fa-solid fa-database text-[10px] text-blue-500"></i> สำรองฐานข้อมูล:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[130px] inline-block align-bottom">' . e($matches[1]) . '</code>';
+            }
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px] shrink-0"><i class="fa-solid fa-database text-[10px] text-blue-500"></i> สำรองฐานข้อมูลสำเร็จ</span>';
+        }
+
+        // 5. Download backup / Archive
+        if (str_contains($desc, 'ดาวน์โหลดไฟล์สำรองฐานข้อมูล')) {
+            if (preg_match('/(backup_db_[a-zA-Z0-9_\.]+\.zip)/u', $desc, $matches)) {
+                return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 text-[11px] shrink-0"><i class="fa-solid fa-download text-[10px] text-indigo-500"></i> ดาวน์โหลด:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[130px] inline-block align-bottom">' . e($matches[1]) . '</code>';
+            }
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 text-[11px] shrink-0"><i class="fa-solid fa-download text-[10px] text-indigo-500"></i> ดาวน์โหลดสำรอง</span>';
+        }
+
+        if (str_contains($desc, 'สร้างไฟล์คลังบีบอัด')) {
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800 text-[11px] shrink-0"><i class="fa-solid fa-file-zipper text-[10px] text-sky-500"></i> บีบอัดคลัง Log</span>';
+        }
+
+        // 6. Delete (ลบ / ล้าง)
+        if (preg_match('/^(?:ลบข้อมูล|ลบไฟล์|ล้างไฟล์|ล้างข้อมูล|ลบ|ล้าง)\s*(?:[^\:\：]*[\:\：]\s*|\s+)(.*)$/u', $desc, $matches)) {
+            $badge = '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-trash-can text-[10px] text-rose-500"></i> ลบ:</span>';
+            $rem = isset($matches[1]) ? ' ' . e(mb_substr($matches[1], 0, 35)) . (mb_strlen($matches[1]) > 35 ? '...' : '') : '';
+            return $badge . $rem;
+        }
+
+        // 7. Update (แก้ไข / ปรับปรุง / ปิด)
+        if (preg_match('/^(?:แก้ไขข้อมูล|แก้ไข|ปรับปรุงการตั้งค่า|ปรับปรุงข้อมูล|ปรับปรุง|ปิดการรับสมัคร)\s*(?:[^\:\：]*[\:\：]\s*|\s+)(.*)$/u', $desc, $matches)) {
+            $badge = '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-pen-to-square text-[10px] text-amber-500"></i> แก้ไข:</span>';
+            $rem = isset($matches[1]) ? ' ' . e(mb_substr($matches[1], 0, 35)) . (mb_strlen($matches[1]) > 35 ? '...' : '') : '';
+            return $badge . $rem;
+        }
+
+        // 8. Create (เพิ่ม)
+        if (preg_match('/^(?:เพิ่มประกาศรับสมัครงานใหม่|เพิ่มหลักสูตรฝึกอบรม|เพิ่มข้อมูล|เพิ่ม)\s*(?:[^\:\：]*[\:\：]\s*|\s+)(.*)$/u', $desc, $matches)) {
+            $badge = '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shrink-0"><i class="fa-solid fa-circle-plus text-[10px] text-emerald-500"></i> เพิ่ม:</span>';
+            $rem = isset($matches[1]) ? ' ' . e(mb_substr($matches[1], 0, 35)) . (mb_strlen($matches[1]) > 35 ? '...' : '') : '';
+            return $badge . $rem;
         }
 
         return e(mb_substr($desc, 0, 50)) . (mb_strlen($desc) > 50 ? '...' : '');
@@ -413,7 +528,7 @@ if (!function_exists('renderAuditPreviewHtml')) {
                                 <!-- Description -->
                                 <td class="col-description">
                                     <div class="desc-container" style="max-width: 320px; white-space: normal; word-break: break-word;">
-                                        @if(mb_strlen($log->description) > 50 || str_contains($log->description, 'ขอรับรหัสผ่านถอดรหัสไฟล์') || str_contains($log->description, 'ยืนยันตัวตนบัญชี Microsoft 365'))
+                                        @if(mb_strlen($log->description) > 45 || str_contains($log->description, 'ขอรับรหัสผ่านถอดรหัสไฟล์') || str_contains($log->description, 'สำรองฐานข้อมูล') || str_contains($log->description, 'ดาวน์โหลดไฟล์สำรอง') || preg_match('/^(?:เพิ่ม|แก้ไข|ปรับปรุง|ลบ|ล้าง)/u', $log->description))
                                             <div class="text-xs text-slate-800 dark:text-slate-100 font-medium leading-relaxed">
                                                 <span class="desc-short-text">{!! renderAuditPreviewHtml($log->description) !!}</span>
                                                 <span class="desc-full-text" style="display: none;">{!! renderAuditDescHtml($log->description) !!}</span>
@@ -1004,27 +1119,86 @@ function highlightAuditText(text) {
     if (!text) return '';
     let safe = $('<div>').text(text).html();
 
-    // Highlight: ขอรับรหัสผ่านถอดรหัสไฟล์
+    // 1. Password & Auth Badges
     safe = safe.replace(
-        /ขอรับรหัสผ่านถอดรหัสไฟล์(?:\:)?/g,
-        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์:</span>'
+        /ขอรับรหัสผ่านถอดรหัสไฟล์(?::)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span>'
     );
 
-    // Highlight: ยืนยันตัวตนบัญชี Microsoft 365
     safe = safe.replace(
-        /ยืนยันตัวตนบัญชี Microsoft 365(?:\s*แผนก ICT)?/g,
+        /ยืนยันตัวตน(?:บัญชี)?\s*Microsoft 365(?:\s*แผนก ICT)?(?:\s*สำเร็จ)?/g,
         '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px]"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>'
     );
 
-    // Highlight: ไม่ผ่านการยืนยันตัวตน
     safe = safe.replace(
         /พยายามเข้าถึงรหัสผ่านสำรองฐานข้อมูลโดยไม่ผ่านการยืนยันตัวตน/g,
         '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px]"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันสิทธิ์ ICT</span>'
     );
 
-    // Highlight backup filenames: backup_db_*.zip
     safe = safe.replace(
-        /(backup_db_[a-zA-Z0-9_\.]+\.zip)/g,
+        /ปฏิเสธการเข้าถึงรหัสผ่าน(?::)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px]"><i class="fa-solid fa-ban text-[10px] text-rose-500"></i> ปฏิเสธสิทธิ์:</span>'
+    );
+
+    safe = safe.replace(
+        /ผู้ดูแลระบบเปิดดูรหัสผ่านถอดรหัสไฟล์สำรองฐานข้อมูล(?::)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800 text-[11px] shadow-2xs"><i class="fa-solid fa-eye text-[10px] text-purple-500"></i> ดูรหัสผ่านสำรอง:</span>'
+    );
+
+    // 2. Backup Badges (Blue / Sky)
+    safe = safe.replace(
+        /สำรองฐานข้อมูลสำเร็จ\s*(?:\(เข้ารหัส\s*AES-256\))?(?::)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px] shadow-2xs"><i class="fa-solid fa-database text-[10px] text-blue-500"></i> สำรองฐานข้อมูลสำเร็จ:</span>'
+    );
+
+    safe = safe.replace(
+        /ดาวน์โหลดไฟล์สำรองฐานข้อมูล(?::)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 text-[11px] shadow-2xs"><i class="fa-solid fa-download text-[10px] text-indigo-500"></i> ดาวน์โหลดสำรอง:</span>'
+    );
+
+    safe = safe.replace(
+        /สร้างไฟล์คลังบีบอัด Audit Log(?::)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800 text-[11px] shadow-2xs"><i class="fa-solid fa-file-zipper text-[10px] text-sky-500"></i> สร้างไฟล์คลัง Log:</span>'
+    );
+
+    safe = safe.replace(
+        /ดาวน์โหลดไฟล์คลัง Audit Log(?::)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800 text-[11px] shadow-2xs"><i class="fa-solid fa-download text-[10px] text-sky-500"></i> ดาวน์โหลดคลัง Log:</span>'
+    );
+
+    // 3. Delete Badges (Rose / Red)
+    safe = safe.replace(
+        /^(ลบข้อมูล[^:：]+|ลบไฟล์[^:：]+|ล้างไฟล์[^:：]+|ล้างข้อมูล[^:：]+|ลบ[^:：]+)([:：])\s*/u,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shadow-2xs"><i class="fa-solid fa-trash-can text-[10px] text-rose-500"></i> $1:</span> '
+    );
+    safe = safe.replace(
+        /^(ลบข้อมูล|ลบไฟล์|ล้างข้อมูล|ล้างไฟล์|ลบ)\s+/u,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shadow-2xs"><i class="fa-solid fa-trash-can text-[10px] text-rose-500"></i> $1:</span> '
+    );
+
+    // 4. Update / Edit Badges (Amber / Warm)
+    safe = safe.replace(
+        /^(แก้ไขข้อมูล[^:：]+|แก้ไข[^:：]+|ปรับปรุงการตั้งค่า[^:：]*|ปรับปรุงข้อมูล[^:：]*|ปรับปรุง[^:：]+|ปิดการรับสมัคร[^:：]*)([:：])\s*/u,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-pen-to-square text-[10px] text-amber-500"></i> $1:</span> '
+    );
+    safe = safe.replace(
+        /^(แก้ไขข้อมูล|แก้ไข|ปรับปรุงการตั้งค่า|ปรับปรุงข้อมูล|ปรับปรุง|ปิดการรับสมัคร)\s+/u,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-pen-to-square text-[10px] text-amber-500"></i> $1:</span> '
+    );
+
+    // 5. Create / Add Badges (Emerald / Green)
+    safe = safe.replace(
+        /^(เพิ่มประกาศ[^:：]+|เพิ่มหลักสูตร[^:：]+|เพิ่มข้อมูล[^:：]+|เพิ่ม[^:：]+)([:：])\s*/u,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shadow-2xs"><i class="fa-solid fa-circle-plus text-[10px] text-emerald-500"></i> $1:</span> '
+    );
+    safe = safe.replace(
+        /^(เพิ่มข้อมูล|เพิ่ม)\s+/u,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shadow-2xs"><i class="fa-solid fa-circle-plus text-[10px] text-emerald-500"></i> เพิ่มข้อมูล:</span> '
+    );
+
+    // 6. Highlight backup/archive filenames: backup_db_*.zip / audit_archive_*.zip
+    safe = safe.replace(
+        /((?:backup_db_|audit_archive_)[a-zA-Z0-9_\.]+\.zip)/g,
         '<code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800 break-all">$1</code>'
     );
 
@@ -1033,21 +1207,73 @@ function highlightAuditText(text) {
 
 function getAuditPreviewHtml(text) {
     if (!text) return '-';
+
+    // 1. Password request
     if (text.includes('ขอรับรหัสผ่านถอดรหัสไฟล์')) {
         const match = text.match(/(backup_db_[a-zA-Z0-9_\.]+\.zip)/);
         if (match) {
             const fname = $('<div>').text(match[1]).html();
-            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[140px] inline-block align-bottom">${fname}</code>`;
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[130px] inline-block align-bottom">${fname}</code>`;
         }
-        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์</span>';
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน</span>';
     }
 
-    if (text.includes('ยืนยันตัวตนบัญชี Microsoft 365')) {
+    // 2. Microsoft 365 Auth
+    if (text.includes('ยืนยันตัวตน') && text.includes('Microsoft 365')) {
         return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shrink-0"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>';
     }
 
-    if (text.includes('ไม่ผ่านการยืนยันตัวตน')) {
-        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันตัวตน</span>';
+    // 3. Security alert
+    if (text.includes('ไม่ผ่านการยืนยันตัวตน') || text.includes('ปฏิเสธการเข้าถึง')) {
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันสิทธิ์ ICT</span>';
+    }
+
+    // 4. Backup
+    if (text.includes('สำรองฐานข้อมูลสำเร็จ')) {
+        const match = text.match(/(backup_db_[a-zA-Z0-9_\.]+\.zip)/);
+        if (match) {
+            const fname = $('<div>').text(match[1]).html();
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px] shrink-0"><i class="fa-solid fa-database text-[10px] text-blue-500"></i> สำรองฐานข้อมูล:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[130px] inline-block align-bottom">${fname}</code>`;
+        }
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 text-[11px] shrink-0"><i class="fa-solid fa-database text-[10px] text-blue-500"></i> สำรองฐานข้อมูลสำเร็จ</span>';
+    }
+
+    // 5. Download backup / Archive
+    if (text.includes('ดาวน์โหลดไฟล์สำรองฐานข้อมูล')) {
+        const match = text.match(/(backup_db_[a-zA-Z0-9_\.]+\.zip)/);
+        if (match) {
+            const fname = $('<div>').text(match[1]).html();
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 text-[11px] shrink-0"><i class="fa-solid fa-download text-[10px] text-indigo-500"></i> ดาวน์โหลด:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[130px] inline-block align-bottom">${fname}</code>`;
+        }
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 text-[11px] shrink-0"><i class="fa-solid fa-download text-[10px] text-indigo-500"></i> ดาวน์โหลดสำรอง</span>';
+    }
+
+    if (text.includes('สร้างไฟล์คลังบีบอัด')) {
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800 text-[11px] shrink-0"><i class="fa-solid fa-file-zipper text-[10px] text-sky-500"></i> บีบอัดคลัง Log</span>';
+    }
+
+    // 6. Delete (ลบ / ล้าง)
+    const matchDel = text.match(/^(?:ลบข้อมูล|ลบไฟล์|ล้างไฟล์|ล้างข้อมูล|ลบ|ล้าง)\s*(?:[^:：]*[:：]\s*|\s+)(.*)$/u);
+    if (matchDel) {
+        const badge = '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-trash-can text-[10px] text-rose-500"></i> ลบ:</span>';
+        const rem = matchDel[1] ? ' ' + $('<div>').text(matchDel[1].substring(0, 35) + (matchDel[1].length > 35 ? '...' : '')).html() : '';
+        return badge + rem;
+    }
+
+    // 7. Update (แก้ไข / ปรับปรุง / ปิด)
+    const matchUpd = text.match(/^(?:แก้ไขข้อมูล|แก้ไข|ปรับปรุงการตั้งค่า|ปรับปรุงข้อมูล|ปรับปรุง|ปิดการรับสมัคร)\s*(?:[^:：]*[:：]\s*|\s+)(.*)$/u);
+    if (matchUpd) {
+        const badge = '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-pen-to-square text-[10px] text-amber-500"></i> แก้ไข:</span>';
+        const rem = matchUpd[1] ? ' ' + $('<div>').text(matchUpd[1].substring(0, 35) + (matchUpd[1].length > 35 ? '...' : '')).html() : '';
+        return badge + rem;
+    }
+
+    // 8. Create (เพิ่ม)
+    const matchAdd = text.match(/^(?:เพิ่มประกาศรับสมัครงานใหม่|เพิ่มหลักสูตรฝึกอบรม|เพิ่มข้อมูล|เพิ่ม)\s*(?:[^:：]*[:：]\s*|\s+)(.*)$/u);
+    if (matchAdd) {
+        const badge = '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shrink-0"><i class="fa-solid fa-circle-plus text-[10px] text-emerald-500"></i> เพิ่ม:</span>';
+        const rem = matchAdd[1] ? ' ' + $('<div>').text(matchAdd[1].substring(0, 35) + (matchAdd[1].length > 35 ? '...' : '')).html() : '';
+        return badge + rem;
     }
 
     const shortStr = text.substring(0, 50) + (text.length > 50 ? '...' : '');
@@ -1059,7 +1285,7 @@ function renderAuditDescription(description, diffCount) {
     const diffBadge = diffCount > 0 ? `<div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1">มีการแก้ไข ${diffCount} ฟิลด์</div>` : '';
     const fullHtml = highlightAuditText(description);
 
-    if (description.length > 50 || description.includes('ขอรับรหัสผ่านถอดรหัสไฟล์') || description.includes('ยืนยันตัวตนบัญชี Microsoft 365')) {
+    if (description.length > 45 || description.includes('ขอรับรหัสผ่านถอดรหัสไฟล์') || description.includes('สำรองฐานข้อมูล') || description.includes('ดาวน์โหลดไฟล์สำรอง')) {
         const previewHtml = getAuditPreviewHtml(description);
         return `
             <div class="desc-container" style="max-width: 320px; white-space: normal; word-break: break-word;">
