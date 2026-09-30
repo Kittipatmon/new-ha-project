@@ -444,7 +444,7 @@ public function destroy($id)
     public function updateAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $user = Auth::user();

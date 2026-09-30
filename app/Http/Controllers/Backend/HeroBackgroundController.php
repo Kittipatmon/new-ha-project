@@ -28,7 +28,7 @@ class HeroBackgroundController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'sort_order' => 'nullable|integer',
         ]);
 
@@ -79,7 +79,7 @@ class HeroBackgroundController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'sort_order' => 'nullable|integer',
         ]);
 

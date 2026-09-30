@@ -123,7 +123,7 @@ class SuggestionController extends Controller
             'docs' => 'nullable|array',
             'other_docs_detail' => 'nullable|string',
             'history' => 'required|string',
-            'attachments.*' => 'nullable|file|max:10240',
+            'attachments.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,webp|max:10240',
         ]);
 
         $suggestion = new Suggestion($validated);

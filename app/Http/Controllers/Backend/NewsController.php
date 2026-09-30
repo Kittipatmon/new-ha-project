@@ -40,7 +40,8 @@ class NewsController extends Controller
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $filename = time() . '_' . uniqid('img_') . '_' . $file->getClientOriginalName();
+                $cleanName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+                $filename = time() . '_' . uniqid('img_') . '_' . $cleanName;
                 $file->move(public_path('images/news'), $filename);
                 $imagePaths[] = 'images/news/' . $filename;
             }
@@ -49,7 +50,8 @@ class NewsController extends Controller
         $fileNewsPaths = [];
         if ($request->hasFile('file_news')) {
             foreach ($request->file('file_news') as $file) {
-                $filename = time() . '_' . uniqid('file_') . '_' . $file->getClientOriginalName();
+                $cleanName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+                $filename = time() . '_' . uniqid('file_') . '_' . $cleanName;
                 $file->move(public_path('files/news'), $filename);
                 $fileNewsPaths[] = 'files/news/' . $filename;
             }
@@ -123,7 +125,8 @@ class NewsController extends Controller
         $newImagePaths = $existingImages;
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $filename = time() . '_' . uniqid('img_') . '_' . $file->getClientOriginalName();
+                $cleanName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+                $filename = time() . '_' . uniqid('img_') . '_' . $cleanName;
                 $file->move(public_path('images/news'), $filename);
                 $newImagePaths[] = 'images/news/' . $filename;
             }
@@ -132,7 +135,8 @@ class NewsController extends Controller
         $newFilePaths = $existingFiles;
         if ($request->hasFile('file_news')) {
             foreach ($request->file('file_news') as $file) {
-                $filename = time() . '_' . uniqid('file_') . '_' . $file->getClientOriginalName();
+                $cleanName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+                $filename = time() . '_' . uniqid('file_') . '_' . $cleanName;
                 $file->move(public_path('files/news'), $filename);
                 $newFilePaths[] = 'files/news/' . $filename;
             }

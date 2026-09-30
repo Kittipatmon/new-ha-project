@@ -144,7 +144,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/manpower-request/store', [App\Http\Controllers\ManpowerRequestController::class, 'store'])->name('manpower-request.store');
     Route::get('/manpower-request/show/{id}', [App\Http\Controllers\ManpowerRequestController::class, 'show'])->name('manpower-request.show');
     Route::get('/manpower-request/pdf/{id}', [App\Http\Controllers\ManpowerRequestController::class, 'exportPdf'])->name('manpower-request.pdf');
-    Route::delete('/manpower-request/{id}', [App\Http\Controllers\ManpowerRequestController::class, 'destroy'])->name('manpower-request.destroy');
+    // Route::delete('/manpower-request/{id}', [App\Http\Controllers\ManpowerRequestController::class, 'destroy'])->name('manpower-request.destroy');
     Route::get('/manpower-request/data/requests', [App\Http\Controllers\ManpowerRequestController::class, 'dataTableRequests'])->name('manpower-request.data.requests');
     Route::get('/manpower-request/data/requests-alias', [App\Http\Controllers\ManpowerRequestController::class, 'dataTableRequests'])->name('manpower-request.data');
     Route::get('/manpower-request/data/probations', [App\Http\Controllers\ManpowerRequestController::class, 'dataTableProbations'])->name('manpower-request.data.probations');
@@ -157,7 +157,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/probation-evaluation/show/{id}', [App\Http\Controllers\ProbationEvaluationController::class, 'show'])->name('probation-evaluation.show');
     Route::post('/probation-evaluation/{id}/sign', [App\Http\Controllers\ProbationEvaluationController::class, 'sign'])->name('admin.probation-evaluations.sign');
     Route::get('/probation-evaluation/pdf/{id}', [App\Http\Controllers\ProbationEvaluationController::class, 'exportPdf'])->name('probation-evaluation.pdf');
-    Route::delete('/probation-evaluation/{id}', [App\Http\Controllers\ProbationEvaluationController::class, 'destroy'])->name('probation-evaluation.destroy');
+    // Route::delete('/probation-evaluation/{id}', [App\Http\Controllers\ProbationEvaluationController::class, 'destroy'])->name('probation-evaluation.destroy');
 
     // HR Forms: Interview Evaluation (QF-HR-25)
     Route::get('/interview-evaluation/create', [App\Http\Controllers\InterviewEvaluationController::class, 'create'])->name('interview-evaluation.create');
@@ -165,7 +165,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/interview-evaluation/show/{id}', [App\Http\Controllers\InterviewEvaluationController::class, 'show'])->name('interview-evaluation.show');
     Route::post('/interview-evaluation/{id}/sign', [App\Http\Controllers\InterviewEvaluationController::class, 'sign'])->name('admin.interview-evaluations.sign');
     Route::get('/interview-evaluation/pdf/{id}', [App\Http\Controllers\InterviewEvaluationController::class, 'exportPdf'])->name('interview-evaluation.pdf');
-    Route::delete('/interview-evaluation/{id}', [App\Http\Controllers\InterviewEvaluationController::class, 'destroy'])->name('interview-evaluation.destroy');
+    // Route::delete('/interview-evaluation/{id}', [App\Http\Controllers\InterviewEvaluationController::class, 'destroy'])->name('interview-evaluation.destroy');
 
     // Form Sharing & Permission Routes
     Route::post('/form-shares', [App\Http\Controllers\FormShareController::class, 'store'])->name('form-shares.store');

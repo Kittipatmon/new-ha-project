@@ -356,6 +356,7 @@ class RequestHRController extends Controller
             'category_id' => 'required',
             'type_id' => 'required',
             'subtype_id' => 'nullable',
+            'timefile' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
         ]);
 
         try {
@@ -485,7 +486,8 @@ class RequestHRController extends Controller
 
                 if ($request->hasFile('timefile')) {
                     $file = $request->file('timefile');
-                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $cleanName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+                    $filename = time() . '_' . uniqid('time_') . '_' . $cleanName;
                     $file->move(public_path('files/hrrequest'), $filename);
                     $timeEdit->timefile = 'files/hrrequest/' . $filename;
                 }
@@ -650,6 +652,7 @@ class RequestHRController extends Controller
             'category_id' => 'required',
             'type_id' => 'required',
             'subtype_id' => 'nullable',
+            'timefile' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
         ]);
 
         try {
@@ -696,13 +699,14 @@ class RequestHRController extends Controller
                     $timeEdit->edit_end_time = $request->edit_end_time;
 
                     if ($request->hasFile('timefile')) {
-                        // Delete old file if exists?
+                        // Delete old file if exists
                         if ($timeEdit->timefile && file_exists(public_path($timeEdit->timefile))) {
-                            // unlink(public_path($timeEdit->timefile)); // Optional
+                            @unlink(public_path($timeEdit->timefile));
                         }
 
                         $file = $request->file('timefile');
-                        $filename = time() . '_' . $file->getClientOriginalName();
+                        $cleanName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+                        $filename = time() . '_' . uniqid('time_') . '_' . $cleanName;
                         $file->move(public_path('files/hrrequest'), $filename);
                         $timeEdit->timefile = 'files/hrrequest/' . $filename;
                     }
