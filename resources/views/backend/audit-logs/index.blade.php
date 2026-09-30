@@ -111,11 +111,17 @@
         .row-flash {
             animation: flashRow 3.5s ease-out;
         }
-        table.dataTable tbody td.col-description {
+        table.dataTable tbody td.col-description,
+        table.dataTable thead th.col-description {
+            width: 320px !important;
+            min-width: 260px !important;
+            max-width: 360px !important;
             white-space: normal !important;
-            word-break: break-word;
-            min-width: 250px;
-            max-width: 480px;
+            word-break: break-word !important;
+        }
+        .desc-box {
+            width: 100%;
+            max-width: 340px;
         }
     </style>
 @endpush
@@ -285,7 +291,7 @@
                             <th class="w-48">ผู้ดำเนินการ</th>
                             <th class="w-36">ประเภทกิจกรรม</th>
                             <th class="w-44">ระบบ / โมดูล</th>
-                            <th style="min-width: 250px;">คำอธิบายและรายละเอียด</th>
+                            <th class="col-description" style="width: 320px; max-width: 360px;">คำอธิบายและรายละเอียด</th>
                             <th class="w-32">IP / วิธี</th>
                             <th class="w-28 text-center">ดูค่าเก่า-ใหม่</th>
                         </tr>
@@ -344,23 +350,35 @@
 
                                 <!-- Description -->
                                 <td class="col-description">
-                                    <div class="font-medium text-slate-800 dark:text-slate-100 text-xs leading-relaxed" title="{{ $log->description }}">
-                                        @if(mb_strlen($log->description) > 65)
-                                            <span class="desc-short">{{ mb_substr($log->description, 0, 65) }}...</span>
-                                            <span class="desc-full hidden">{{ $log->description }}</span>
-                                            <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-bold text-[11px] underline ml-1 inline-flex items-center gap-0.5 cursor-pointer">
-                                                <span class="btn-text">เพิ่มเติม</span>
-                                                <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200"></i>
-                                            </button>
+                                    <div class="desc-box font-medium text-slate-800 dark:text-slate-100 text-xs">
+                                        @if(mb_strlen($log->description) > 55)
+                                            <div class="desc-preview flex items-center justify-between gap-1.5">
+                                                <span class="truncate text-slate-800 dark:text-slate-100" style="max-width: 250px;" title="{{ $log->description }}">
+                                                    {{ mb_substr($log->description, 0, 50) }}...
+                                                </span>
+                                                <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-bold text-[11px] underline shrink-0 inline-flex items-center gap-1 cursor-pointer">
+                                                    <span class="btn-text">เพิ่มเติม</span>
+                                                    <i class="fa-solid fa-chevron-down text-[8px] transition-transform duration-200"></i>
+                                                </button>
+                                            </div>
+                                            <div class="desc-panel hidden mt-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 text-[11.5px] text-slate-700 dark:text-slate-200 leading-relaxed shadow-sm">
+                                                <div class="break-words select-text">{{ $log->description }}</div>
+                                                <div class="mt-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-right">
+                                                    <button type="button" onclick="toggleAuditDesc(this)" class="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300 font-semibold text-[10px] inline-flex items-center gap-1 cursor-pointer">
+                                                        <span>ย่อลง</span>
+                                                        <i class="fa-solid fa-chevron-up text-[8px]"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         @else
-                                            <span>{{ $log->description }}</span>
+                                            <div class="break-words">{{ $log->description }}</div>
+                                        @endif
+                                        @if($log->diff)
+                                            <div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1">
+                                                มีการแก้ไข {{ count($log->diff) }} ฟิลด์
+                                            </div>
                                         @endif
                                     </div>
-                                    @if($log->diff)
-                                        <div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">
-                                            มีการแก้ไข {{ count($log->diff) }} ฟิลด์
-                                        </div>
-                                    @endif
                                 </td>
 
                                 <!-- IP Address & Method -->
@@ -928,57 +946,62 @@
 <script>
 function renderAuditDescription(description, diffCount) {
     if (!description) return '-';
-    const diffBadge = diffCount > 0 ? `<div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">มีการแก้ไข ${diffCount} ฟิลด์</div>` : '';
+    const diffBadge = diffCount > 0 ? `<div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1">มีการแก้ไข ${diffCount} ฟิลด์</div>` : '';
     const safeFull = $('<div>').text(description).html();
 
-    if (description.length > 65) {
-        const shortText = description.substring(0, 65) + '...';
+    if (description.length > 55) {
+        const shortText = description.substring(0, 50) + '...';
         const safeShort = $('<div>').text(shortText).html();
         return `
-            <div class="font-medium text-slate-800 dark:text-slate-100 text-xs leading-relaxed" title="${safeFull}">
-                <span class="desc-short">${safeShort}</span>
-                <span class="desc-full hidden">${safeFull}</span>
-                <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-bold text-[11px] underline ml-1 inline-flex items-center gap-0.5 cursor-pointer">
-                    <span class="btn-text">เพิ่มเติม</span>
-                    <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200"></i>
-                </button>
+            <div class="desc-box font-medium text-slate-800 dark:text-slate-100 text-xs">
+                <div class="desc-preview flex items-center justify-between gap-1.5">
+                    <span class="truncate text-slate-800 dark:text-slate-100" style="max-width: 250px;" title="${safeFull}">
+                        ${safeShort}
+                    </span>
+                    <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-bold text-[11px] underline shrink-0 inline-flex items-center gap-1 cursor-pointer">
+                        <span class="btn-text">เพิ่มเติม</span>
+                        <i class="fa-solid fa-chevron-down text-[8px] transition-transform duration-200"></i>
+                    </button>
+                </div>
+                <div class="desc-panel hidden mt-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80 text-[11.5px] text-slate-700 dark:text-slate-200 leading-relaxed shadow-sm">
+                    <div class="break-words select-text">${safeFull}</div>
+                    <div class="mt-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-right">
+                        <button type="button" onclick="toggleAuditDesc(this)" class="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300 font-semibold text-[10px] inline-flex items-center gap-1 cursor-pointer">
+                            <span>ย่อลง</span>
+                            <i class="fa-solid fa-chevron-up text-[8px]"></i>
+                        </button>
+                    </div>
+                </div>
+                ${diffBadge}
             </div>
-            ${diffBadge}
         `;
     } else {
         return `
-            <div class="font-medium text-slate-800 dark:text-slate-100 text-xs leading-relaxed" title="${safeFull}">
-                <span>${safeFull}</span>
+            <div class="desc-box font-medium text-slate-800 dark:text-slate-100 text-xs">
+                <div class="break-words">${safeFull}</div>
+                ${diffBadge}
             </div>
-            ${diffBadge}
         `;
     }
 }
 
 window.toggleAuditDesc = function(btn) {
-    const parent = btn.closest('.font-medium');
-    if (!parent) return;
-    const shortSpan = parent.querySelector('.desc-short');
-    const fullSpan = parent.querySelector('.desc-full');
-    const btnText = btn.querySelector('.btn-text');
-    const icon = btn.querySelector('i');
+    const box = btn.closest('.desc-box');
+    if (!box) return;
+    const panel = box.querySelector('.desc-panel');
+    const previewBtn = box.querySelector('.desc-preview .btn-text');
+    const previewIcon = box.querySelector('.desc-preview i');
 
-    if (fullSpan && shortSpan) {
-        if (fullSpan.classList.contains('hidden')) {
-            fullSpan.classList.remove('hidden');
-            shortSpan.classList.add('hidden');
-            if (btnText) btnText.textContent = 'ย่อลง';
-            if (icon) icon.classList.add('rotate-180');
+    if (panel) {
+        if (panel.classList.contains('hidden')) {
+            panel.classList.remove('hidden');
+            if (previewBtn) previewBtn.textContent = 'ย่อลง';
+            if (previewIcon) previewIcon.classList.add('rotate-180');
         } else {
-            fullSpan.classList.add('hidden');
-            shortSpan.classList.remove('hidden');
-            if (btnText) btnText.textContent = 'เพิ่มเติม';
-            if (icon) icon.classList.remove('rotate-180');
+            panel.classList.add('hidden');
+            if (previewBtn) previewBtn.textContent = 'เพิ่มเติม';
+            if (previewIcon) previewIcon.classList.remove('rotate-180');
         }
-    }
-
-    if (window.auditDataTable) {
-        window.auditDataTable.columns.adjust().responsive.recalc();
     }
 };
 
