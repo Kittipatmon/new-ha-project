@@ -1701,69 +1701,67 @@ function auditLogApp() {
                     // 1. Action filter
                     if (hasAction) {
                         if (filters.action === 'backup') {
-                            const isBackup = actText.includes('backup') || 
-                                             actText.includes('สำรอง') || 
-                                             descText.includes('สำรองฐานข้อมูล') || 
-                                             descText.includes('สำรอง') || 
-                                             descText.includes('backup_db') ||
-                                             descText.includes('backup');
+                            const isExcluded = actText.includes('login') || 
+                                               actText.includes('security') || 
+                                               actText.includes('export') || 
+                                               descText.includes('ขอรับรหัสผ่าน') || 
+                                               descText.includes('ยืนยันตัวตน') ||
+                                               descText.includes('ดาวน์โหลด');
+                            const isBackup = !isExcluded && (
+                                actText.includes('backup') || 
+                                actText.includes('สำรองข้อมูล') || 
+                                descText.includes('สำรองฐานข้อมูลสำเร็จ') || 
+                                descText.includes('สร้างไฟล์สำรอง')
+                            );
                             if (!isBackup) return false;
                         } else if (filters.action === 'created') {
                             const isCreated = actText.includes('created') || 
                                               actText.includes('create') || 
                                               actText.includes('สร้าง') || 
                                               actText.includes('เพิ่ม') || 
-                                              descText.includes('สร้าง') || 
-                                              descText.includes('เพิ่ม');
+                                              descText.includes('เพิ่มประกาศ') || 
+                                              descText.includes('เพิ่มหลักสูตร');
                             if (!isCreated) return false;
                         } else if (filters.action === 'updated') {
                             const isUpdated = actText.includes('updated') || 
                                               actText.includes('update') || 
                                               actText.includes('แก้ไข') || 
                                               actText.includes('ปรับปรุง') || 
-                                              descText.includes('แก้ไข') || 
-                                              descText.includes('ปรับปรุง') || 
                                               descText.includes('ปิดการรับสมัคร');
                             if (!isUpdated) return false;
                         } else if (filters.action === 'deleted') {
                             const isDeleted = actText.includes('deleted') || 
                                               actText.includes('delete') || 
                                               actText.includes('ลบ') || 
-                                              actText.includes('ล้าง') || 
-                                              descText.includes('ลบ') || 
-                                              descText.includes('ล้าง');
+                                              actText.includes('ล้าง');
                             if (!isDeleted) return false;
                         } else if (filters.action === 'password') {
                             const isPassword = descText.includes('ขอรับรหัสผ่าน') || 
-                                               descText.includes('รหัสผ่าน') || 
-                                               actText.includes('password') ||
-                                               descText.includes('password');
+                                               descText.includes('รหัสผ่านถอดรหัส') || 
+                                               descText.includes('เปิดดูรหัสผ่าน') ||
+                                               actText.includes('password');
                             if (!isPassword) return false;
                         } else if (filters.action === 'login') {
-                            const isLogin = actText.includes('login') || 
-                                            actText.includes('logout') || 
-                                            actText.includes('เข้าสู่ระบบ') || 
-                                            descText.includes('เข้าสู่ระบบ') || 
-                                            descText.includes('ยืนยันตัวตน') ||
-                                            descText.includes('microsoft 365');
+                            const isLogin = (actText.includes('login') || 
+                                             actText.includes('logout') || 
+                                             actText.includes('เข้าสู่ระบบ') || 
+                                             descText.includes('ยืนยันตัวตน') ||
+                                             descText.includes('เข้าสู่ระบบสำเร็จ')) && 
+                                             !descText.includes('ไม่ผ่านการยืนยัน');
                             if (!isLogin) return false;
                         } else if (filters.action === 'security') {
                             const isSecurity = actText.includes('security') || 
+                                               actText.includes('alert') || 
                                                actText.includes('warning') || 
-                                               actText.includes('เตือน') || 
-                                               actText.includes('login') || 
                                                descText.includes('ไม่ผ่านการยืนยัน') || 
                                                descText.includes('ปฏิเสธการเข้าถึง') || 
-                                               descText.includes('ยืนยันตัวตน') || 
-                                               descText.includes('เข้าสู่ระบบ') || 
-                                               descText.includes('ความปลอดภัย');
+                                               descText.includes('เตือนความปลอดภัย');
                             if (!isSecurity) return false;
                         } else if (filters.action === 'exported') {
-                            const isExport = actText.includes('export') || 
-                                             actText.includes('ส่งออก') || 
-                                             actText.includes('ดาวน์โหลด') || 
-                                             descText.includes('ส่งออก') || 
-                                             descText.includes('ดาวน์โหลด');
+                            const isExport = (actText.includes('export') || 
+                                              descText.includes('ดาวน์โหลด') || 
+                                              descText.includes('ส่งออก')) && 
+                                              !descText.includes('ขอรับรหัสผ่าน');
                             if (!isExport) return false;
                         } else {
                             const target = filters.action.toLowerCase();
@@ -1862,9 +1860,43 @@ function auditLogApp() {
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
                 dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-slate-50/40 dark:bg-slate-850/20"lf>t<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border-t border-slate-100 dark:border-slate-800"ip>',
                 columnDefs: [
+                    {
+                        targets: 1,
+                        render: function(data, type, row, meta) {
+                            if (typeof data === 'object' && data !== null) {
+                                if (type === 'sort' || type === 'type') {
+                                    return data['@data-order'] || data.sort || data.timestamp || 0;
+                                }
+                                if (type === 'filter') {
+                                    return data['@data-filter'] || data.filter || data.display || '';
+                                }
+                                return data.display || data._ || '';
+                            }
+                            if (typeof data === 'string') {
+                                if (type === 'sort' || type === 'type') {
+                                    const m = data.match(/data-order=["']?(\d+)["']?/);
+                                    if (m) return parseInt(m[1], 10);
+                                }
+                                return data;
+                            }
+                            return data;
+                        }
+                    },
                     { targets: [5], className: 'col-description' },
                     { targets: [7], orderable: false, searchable: false }
-                ]
+                ],
+                createdRow: function(row, data, dataIndex) {
+                    const $row = $(row);
+                    const logId = Array.isArray(data) ? data[0] : (data.id || dataIndex);
+                    $row.attr('id', `log-row-${logId}`);
+                    $row.find('td:eq(0)').addClass('text-center font-mono text-slate-400');
+                    $row.find('td:eq(1)').addClass('whitespace-nowrap');
+                    $row.find('td:eq(3)').addClass('whitespace-nowrap');
+                    $row.find('td:eq(4)').addClass('whitespace-nowrap');
+                    $row.find('td:eq(5)').addClass('col-description');
+                    $row.find('td:eq(6)').addClass('whitespace-nowrap font-mono text-[11px]');
+                    $row.find('td:eq(7)').addClass('text-center whitespace-nowrap');
+                }
             };
 
             try {
@@ -1924,9 +1956,32 @@ function auditLogApp() {
                     window.auditDataTable.clear();
                     
                     data.data.forEach(log => {
-                        const rowApi = window.auditDataTable.row.add([
+                        let tDate = log.thai_date;
+                        let tTime = log.thai_time;
+                        if (!tDate && (log.timestamp || log.created_at_raw)) {
+                            const d = log.timestamp ? new Date(log.timestamp * 1000) : new Date(log.created_at_raw);
+                            const day = d.getDate();
+                            const thaiShortMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                            const month = thaiShortMonths[d.getMonth()];
+                            const year = d.getFullYear() + 543;
+                            tDate = `${day} ${month} ${year}`;
+                            const h = String(d.getHours()).padStart(2, '0');
+                            const m = String(d.getMinutes()).padStart(2, '0');
+                            const s = String(d.getSeconds()).padStart(2, '0');
+                            tTime = `${h}:${m}:${s} น.`;
+                        }
+
+                        const dateHtml = `<div class="font-semibold text-slate-800 dark:text-white flex items-center gap-1.5 whitespace-nowrap"><i class="fa-regular fa-calendar text-indigo-500 text-[11px]"></i><span>${tDate || '-'}</span></div><div class="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 font-mono whitespace-nowrap"><i class="fa-regular fa-clock text-[10px]"></i><span>${tTime || ''}</span></div>`;
+
+                        const dateCell = {
+                            display: dateHtml,
+                            '@data-order': log.timestamp || 0,
+                            '@data-filter': `${tDate || ''} ${tTime || ''}`
+                        };
+
+                        window.auditDataTable.row.add([
                             log.id,
-                            `<div class="font-semibold text-slate-800 dark:text-white flex items-center gap-1.5"><i class="fa-regular fa-calendar text-indigo-500 text-[11px]"></i><span>${log.thai_date}</span></div><div class="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 font-mono"><i class="fa-regular fa-clock text-[10px]"></i><span>${log.thai_time}</span></div>`,
+                            dateCell,
                             `<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[11px] text-slate-600 dark:text-slate-300 shrink-0">${log.user_initial}</div><div class="min-w-0"><div class="font-semibold text-slate-800 dark:text-slate-100 truncate">${log.user_name}</div><div class="text-[10px] text-slate-400 font-mono">${log.user_code}</div></div></div>`,
                             `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${log.badge_class}"><i class="${log.icon}"></i><span>${log.action_label}</span></span>`,
                             `<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${log.module_name}</span>`,
@@ -1934,21 +1989,9 @@ function auditLogApp() {
                             `<div class="font-mono text-[11px] text-slate-700 dark:text-slate-300">${log.ip_address}</div><div class="text-[10px] text-slate-400">${log.method}</div>`,
                             log.has_diff ? `<button type="button" onclick="window.auditApp.openDiffModal(${log.id})" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition flex items-center gap-1 mx-auto"><i class="fa-solid fa-code-compare"></i><span>ดูรายละเอียด</span></button>` : `<span class="text-slate-400">-</span>`
                         ]);
-
-                        const rowNode = rowApi.node();
-                        if (rowNode) {
-                            $(rowNode).attr('id', `log-row-${log.id}`);
-                            $(rowNode).find('td:eq(0)').addClass('text-center font-mono text-slate-400');
-                            $(rowNode).find('td:eq(1)').addClass('whitespace-nowrap').attr('data-order', log.timestamp || log.id);
-                            $(rowNode).find('td:eq(3)').addClass('whitespace-nowrap');
-                            $(rowNode).find('td:eq(4)').addClass('whitespace-nowrap');
-                            $(rowNode).find('td:eq(5)').addClass('col-description');
-                            $(rowNode).find('td:eq(6)').addClass('whitespace-nowrap font-mono text-[11px]');
-                            $(rowNode).find('td:eq(7)').addClass('text-center whitespace-nowrap');
-                        }
                     });
                     
-                    window.auditDataTable.draw(false);
+                    window.auditDataTable.draw();
                     this.lastSyncedTime = data.server_time || new Date().toLocaleTimeString('th-TH') + ' น.';
                     this.metrics = data.metrics;
                     this.lastKnownId = data.latest_id;
@@ -1970,9 +2013,32 @@ function auditLogApp() {
                 // Check if row already exists
                 if ($(`#log-row-${log.id}`).length > 0) return;
 
+                let tDate = log.thai_date;
+                let tTime = log.thai_time;
+                if (!tDate && (log.timestamp || log.created_at_raw)) {
+                    const d = log.timestamp ? new Date(log.timestamp * 1000) : new Date(log.created_at_raw);
+                    const day = d.getDate();
+                    const thaiShortMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                    const month = thaiShortMonths[d.getMonth()];
+                    const year = d.getFullYear() + 543;
+                    tDate = `${day} ${month} ${year}`;
+                    const h = String(d.getHours()).padStart(2, '0');
+                    const m = String(d.getMinutes()).padStart(2, '0');
+                    const s = String(d.getSeconds()).padStart(2, '0');
+                    tTime = `${h}:${m}:${s} น.`;
+                }
+
+                const dateHtml = `<div class="font-semibold text-slate-800 dark:text-white flex items-center gap-1.5 whitespace-nowrap"><i class="fa-regular fa-calendar text-indigo-500 text-[11px]"></i><span>${tDate || '-'}</span></div><div class="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 font-mono whitespace-nowrap"><i class="fa-regular fa-clock text-[10px]"></i><span>${tTime || ''}</span></div>`;
+
+                const dateCell = {
+                    display: dateHtml,
+                    '@data-order': log.timestamp || 0,
+                    '@data-filter': `${tDate || ''} ${tTime || ''}`
+                };
+
                 const rowApi = window.auditDataTable.row.add([
                     log.id,
-                    `<div class="font-semibold text-slate-800 dark:text-white flex items-center gap-1.5"><i class="fa-regular fa-calendar text-indigo-500 text-[11px]"></i><span>${log.thai_date}</span></div><div class="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 font-mono"><i class="fa-regular fa-clock text-[10px]"></i><span>${log.thai_time}</span></div>`,
+                    dateCell,
                     `<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[11px] text-slate-600 dark:text-slate-300 shrink-0">${log.user_initial}</div><div class="min-w-0"><div class="font-semibold text-slate-800 dark:text-slate-100 truncate">${log.user_name}</div><div class="text-[10px] text-slate-400 font-mono">${log.user_code}</div></div></div>`,
                     `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${log.badge_class}"><i class="${log.icon}"></i><span>${log.action_label}</span></span>`,
                     `<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${log.module_name}</span>`,
@@ -1983,14 +2049,7 @@ function auditLogApp() {
 
                 const rowNode = rowApi.node();
                 if (rowNode) {
-                    $(rowNode).attr('id', `log-row-${log.id}`).addClass('row-flash');
-                    $(rowNode).find('td:eq(0)').addClass('text-center font-mono text-slate-400');
-                    $(rowNode).find('td:eq(1)').addClass('whitespace-nowrap').attr('data-order', log.timestamp || log.id);
-                    $(rowNode).find('td:eq(3)').addClass('whitespace-nowrap');
-                    $(rowNode).find('td:eq(4)').addClass('whitespace-nowrap');
-                    $(rowNode).find('td:eq(5)').addClass('col-description');
-                    $(rowNode).find('td:eq(6)').addClass('whitespace-nowrap font-mono text-[11px]');
-                    $(rowNode).find('td:eq(7)').addClass('text-center whitespace-nowrap');
+                    $(rowNode).addClass('row-flash');
                 }
             });
 
