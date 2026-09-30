@@ -1318,6 +1318,259 @@ if (!function_exists('renderAuditPreviewHtml')) {
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
 <script>
+let dtOptions = null;
+let auditFilterFn = null;
+
+function registerAuditFilter() {
+    if (window.auditDataTableSearchRegistered) return;
+    const extSearch = (window.$ && window.$.fn && window.$.fn.dataTable && window.$.fn.dataTable.ext && window.$.fn.dataTable.ext.search)
+                   || (window.DataTable && window.DataTable.ext && window.DataTable.ext.search);
+    if (extSearch && Array.isArray(extSearch) && typeof auditFilterFn === 'function') {
+        extSearch.push(auditFilterFn);
+        window.auditDataTableSearchRegistered = true;
+    }
+}
+
+auditFilterFn = function(settings, data, dataIndex) {
+    const tid = settings.sTableId || (settings.nTable ? settings.nTable.id : '');
+    if (tid && tid !== 'auditLogsDataTable') {
+        return true;
+    }
+
+    const app = window.auditApp;
+    if (!app || !app.filters) return true;
+
+    const filters = app.filters;
+
+    const hasAction = filters.action && filters.action !== 'all';
+    const hasModule = filters.module && filters.module !== 'all';
+    const hasStartDate = Boolean(filters.startDate);
+    const hasEndDate = Boolean(filters.endDate);
+    const hasKeyword = Boolean(filters.keyword && filters.keyword.trim());
+
+    // Fast path if no active filter
+    if (!hasAction && !hasModule && !hasStartDate && !hasEndDate && !hasKeyword) {
+        return true;
+    }
+
+    try {
+        const aoRow = (settings.aoData && settings.aoData[dataIndex]) ? settings.aoData[dataIndex] : null;
+        const rawRowData = aoRow ? aoRow._aData : null;
+
+        const rawAct = (rawRowData && rawRowData[3]) ? String(rawRowData[3]).toLowerCase() : '';
+        const rawMod = (rawRowData && rawRowData[4]) ? String(rawRowData[4]).toLowerCase() : '';
+        const rawDesc = (rawRowData && rawRowData[5]) ? String(rawRowData[5]).toLowerCase() : '';
+        const rawUser = (rawRowData && rawRowData[2]) ? String(rawRowData[2]).toLowerCase() : '';
+        const rawIp = (rawRowData && rawRowData[6]) ? String(rawRowData[6]).toLowerCase() : '';
+
+        const actText = ((data[3] || '') + ' ' + rawAct).toLowerCase();
+        const modText = ((data[4] || '') + ' ' + rawMod).toLowerCase();
+        const descText = ((data[5] || '') + ' ' + rawDesc).toLowerCase();
+        const userText = ((data[2] || '') + ' ' + rawUser).toLowerCase();
+        const ipText = ((data[6] || '') + ' ' + rawIp).toLowerCase();
+
+        // 1. Action filter
+        if (hasAction) {
+            if (filters.action === 'backup') {
+                const isExcluded = actText.includes('login') || 
+                                   actText.includes('security') || 
+                                   actText.includes('export') || 
+                                   descText.includes('ขอรับรหัสผ่าน') || 
+                                   descText.includes('ยืนยันตัวตน') ||
+                                   descText.includes('ดาวน์โหลด');
+                const isBackup = !isExcluded && (
+                    actText.includes('backup') || 
+                    actText.includes('สำรองข้อมูล') || 
+                    descText.includes('สำรองฐานข้อมูลสำเร็จ') || 
+                    descText.includes('สร้างไฟล์สำรอง')
+                );
+                if (!isBackup) return false;
+            } else if (filters.action === 'created') {
+                const isCreated = actText.includes('created') || 
+                                  actText.includes('create') || 
+                                  actText.includes('สร้าง') || 
+                                  actText.includes('เพิ่ม') || 
+                                  descText.includes('เพิ่มประกาศ') || 
+                                  descText.includes('เพิ่มหลักสูตร');
+                if (!isCreated) return false;
+            } else if (filters.action === 'updated') {
+                const isUpdated = actText.includes('updated') || 
+                                  actText.includes('update') || 
+                                  actText.includes('แก้ไข') || 
+                                  actText.includes('ปรับปรุง') || 
+                                  descText.includes('ปิดการรับสมัคร');
+                if (!isUpdated) return false;
+            } else if (filters.action === 'deleted') {
+                const isDeleted = actText.includes('deleted') || 
+                                  actText.includes('delete') || 
+                                  actText.includes('ลบ') || 
+                                  actText.includes('ล้าง');
+                if (!isDeleted) return false;
+            } else if (filters.action === 'password') {
+                const isPassword = descText.includes('ขอรับรหัสผ่าน') || 
+                                   descText.includes('รหัสผ่านถอดรหัส') || 
+                                   descText.includes('เปิดดูรหัสผ่าน') ||
+                                   actText.includes('password');
+                if (!isPassword) return false;
+            } else if (filters.action === 'login') {
+                const isLogin = (actText.includes('login') || 
+                                 actText.includes('logout') || 
+                                 actText.includes('เข้าสู่ระบบ') || 
+                                 descText.includes('ยืนยันตัวตน') ||
+                                 descText.includes('เข้าสู่ระบบสำเร็จ')) && 
+                                 !descText.includes('ไม่ผ่านการยืนยัน');
+                if (!isLogin) return false;
+            } else if (filters.action === 'security') {
+                const isSecurity = actText.includes('security') || 
+                                   actText.includes('alert') || 
+                                   actText.includes('warning') || 
+                                   descText.includes('ไม่ผ่านการยืนยัน') || 
+                                   descText.includes('ปฏิเสธการเข้าถึง') || 
+                                   descText.includes('เตือนความปลอดภัย') ||
+                                   actText.includes('login') ||
+                                   actText.includes('logout') ||
+                                   actText.includes('เข้าสู่ระบบ') ||
+                                   descText.includes('ยืนยันตัวตน');
+                if (!isSecurity) return false;
+            } else if (filters.action === 'exported') {
+                const isExport = (actText.includes('export') || 
+                                  descText.includes('ดาวน์โหลด') || 
+                                  descText.includes('ส่งออก')) && 
+                                  !descText.includes('ขอรับรหัสผ่าน');
+                if (!isExport) return false;
+            } else {
+                const target = filters.action.toLowerCase();
+                if (!actText.includes(target) && !descText.includes(target)) {
+                    return false;
+                }
+            }
+        }
+
+        // 2. Module filter
+        if (hasModule) {
+            const targetMod = filters.module.toLowerCase();
+            if (!modText.includes(targetMod)) {
+                return false;
+            }
+        }
+
+        // 3. Date range filter
+        if (hasStartDate || hasEndDate) {
+            let timestamp = 0;
+            if (aoRow) {
+                if (aoRow._aSortData && aoRow._aSortData[1]) {
+                    timestamp = parseInt(aoRow._aSortData[1], 10);
+                }
+                if (!timestamp && rawRowData && rawRowData[1]) {
+                    if (typeof rawRowData[1] === 'object' && rawRowData[1] !== null) {
+                        timestamp = rawRowData[1]['@data-order'] || rawRowData[1].sort || 0;
+                    } else {
+                        const m = String(rawRowData[1]).match(/data-order=["']?(\d+)["']?/);
+                        if (m) timestamp = parseInt(m[1], 10);
+                    }
+                }
+                if (!timestamp && aoRow.anCells && aoRow.anCells[1]) {
+                    const orderAttr = aoRow.anCells[1].getAttribute('data-order');
+                    if (orderAttr) timestamp = parseInt(orderAttr, 10);
+                }
+            }
+
+            if (timestamp > 0) {
+                const d = new Date(timestamp * 1000);
+                const yr = d.getFullYear();
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                const rowDateStr = `${yr}-${mo}-${da}`;
+
+                if (filters.startDate && rowDateStr < filters.startDate) {
+                    return false;
+                }
+                if (filters.endDate && rowDateStr > filters.endDate) {
+                    return false;
+                }
+            }
+        }
+
+        // 4. Keyword filter (User, Module, Action, Description, IP)
+        if (hasKeyword) {
+            const kw = filters.keyword.trim().toLowerCase();
+            const allRowText = userText + ' ' + descText + ' ' + ipText + ' ' + actText + ' ' + modText;
+            if (!allRowText.includes(kw)) {
+                return false;
+            }
+        }
+
+        return true;
+    } catch (e) {
+        console.error('Audit DataTable filter notice:', e);
+        return true;
+    }
+};
+
+const thLanguage = {
+    search: "ค้นหาด่วน:",
+    lengthMenu: "แสดง _MENU_ รายการ",
+    info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
+    infoEmpty: "แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ",
+    infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+    zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+    paginate: {
+        first: "«",
+        previous: "‹",
+        next: "›",
+        last: "»"
+    },
+    emptyTable: "ไม่มีข้อมูลบันทึกกิจกรรมในระบบ"
+};
+
+dtOptions = {
+    language: thLanguage,
+    order: [[1, 'desc'], [0, 'desc']], // เรียงตามวันเวลาล่าสุด (และ ID ล่าสุด)
+    responsive: true,
+    autoWidth: false,
+    pageLength: 25,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
+    dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-slate-50/40 dark:bg-slate-850/20"lf>t<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border-t border-slate-100 dark:border-slate-800"ip>',
+    columnDefs: [
+        {
+            targets: 1,
+            render: function(data, type, row, meta) {
+                if (typeof data === 'object' && data !== null) {
+                    if (type === 'sort' || type === 'type') {
+                        return data['@data-order'] || data.sort || data.timestamp || 0;
+                    }
+                    if (type === 'filter') {
+                        return data['@data-filter'] || data.filter || data.display || '';
+                    }
+                    return data.display || data._ || '';
+                }
+                if (typeof data === 'string') {
+                    if (type === 'sort' || type === 'type') {
+                        const m = data.match(/data-order=["']?(\d+)["']?/);
+                        if (m) return parseInt(m[1], 10);
+                    }
+                    return data;
+                }
+                return data;
+            }
+        },
+        { targets: [5], className: 'col-description' },
+        { targets: [7], orderable: false, searchable: false }
+    ],
+    createdRow: function(row, data, dataIndex) {
+        const $row = $(row);
+        const logId = Array.isArray(data) ? data[0] : (data.id || dataIndex);
+        $row.attr('id', `log-row-${logId}`);
+        $row.find('td:eq(0)').addClass('text-center font-mono text-slate-400');
+        $row.find('td:eq(1)').addClass('whitespace-nowrap');
+        $row.find('td:eq(3)').addClass('whitespace-nowrap');
+        $row.find('td:eq(4)').addClass('whitespace-nowrap');
+        $row.find('td:eq(5)').addClass('col-description');
+        $row.find('td:eq(6)').addClass('whitespace-nowrap font-mono text-[11px]');
+        $row.find('td:eq(7)').addClass('text-center whitespace-nowrap');
+    }
+};
+
 function highlightAuditText(text) {
     if (!text) return '';
     let safe = $('<div>').text(text).html();
@@ -1616,9 +1869,14 @@ function auditLogApp() {
 
         applyFilters() {
             this.updateFilterCount();
+            registerAuditFilter();
             let dt = window.auditDataTable;
-            if ((!dt || typeof dt.draw !== 'function') && window.$ && window.$.fn && window.$.fn.DataTable && $.fn.DataTable.isDataTable('#auditLogsDataTable')) {
-                dt = $('#auditLogsDataTable').DataTable();
+            if ((!dt || typeof dt.draw !== 'function') && window.$ && window.$.fn && window.$.fn.DataTable) {
+                if ($.fn.DataTable.isDataTable('#auditLogsDataTable')) {
+                    dt = $('#auditLogsDataTable').DataTable();
+                } else {
+                    dt = $('#auditLogsDataTable').DataTable(dtOptions);
+                }
                 window.auditDataTable = dt;
             }
             if (dt && typeof dt.draw === 'function') {
@@ -1654,256 +1912,30 @@ function auditLogApp() {
         },
 
         initDataTable() {
-            const self = this;
+            registerAuditFilter();
 
-            // Register custom DataTable filter once
-            if (!window.auditDataTableSearchRegistered) {
-                window.auditDataTableSearchRegistered = true;
-
-                const auditFilterFn = function(settings, data, dataIndex) {
-                    if (!settings.nTable || settings.nTable.id !== 'auditLogsDataTable') {
-                        return true;
-                    }
-
-                    const app = window.auditApp;
-                    if (!app || !app.filters) return true;
-
-                    const filters = app.filters;
-
-                    const hasAction = filters.action && filters.action !== 'all';
-                    const hasModule = filters.module && filters.module !== 'all';
-                    const hasStartDate = Boolean(filters.startDate);
-                    const hasEndDate = Boolean(filters.endDate);
-                    const hasKeyword = Boolean(filters.keyword && filters.keyword.trim());
-
-                    // Fast path if no active filter
-                    if (!hasAction && !hasModule && !hasStartDate && !hasEndDate && !hasKeyword) {
-                        return true;
-                    }
-
-                    try {
-                        // Extract data safely from both rendered array (data) and raw HTML cache (_aData)
-                        const aoRow = (settings.aoData && settings.aoData[dataIndex]) ? settings.aoData[dataIndex] : null;
-                        const rawRowData = aoRow ? aoRow._aData : null;
-
-                        const rawAct = (rawRowData && rawRowData[3]) ? String(rawRowData[3]).toLowerCase() : '';
-                        const rawMod = (rawRowData && rawRowData[4]) ? String(rawRowData[4]).toLowerCase() : '';
-                        const rawDesc = (rawRowData && rawRowData[5]) ? String(rawRowData[5]).toLowerCase() : '';
-                        const rawUser = (rawRowData && rawRowData[2]) ? String(rawRowData[2]).toLowerCase() : '';
-                        const rawIp = (rawRowData && rawRowData[6]) ? String(rawRowData[6]).toLowerCase() : '';
-
-                        const actText = ((data[3] || '') + ' ' + rawAct).toLowerCase();
-                        const modText = ((data[4] || '') + ' ' + rawMod).toLowerCase();
-                        const descText = ((data[5] || '') + ' ' + rawDesc).toLowerCase();
-                        const userText = ((data[2] || '') + ' ' + rawUser).toLowerCase();
-                        const ipText = ((data[6] || '') + ' ' + rawIp).toLowerCase();
-
-                    // 1. Action filter
-                    if (hasAction) {
-                        if (filters.action === 'backup') {
-                            const isExcluded = actText.includes('login') || 
-                                               actText.includes('security') || 
-                                               actText.includes('export') || 
-                                               descText.includes('ขอรับรหัสผ่าน') || 
-                                               descText.includes('ยืนยันตัวตน') ||
-                                               descText.includes('ดาวน์โหลด');
-                            const isBackup = !isExcluded && (
-                                actText.includes('backup') || 
-                                actText.includes('สำรองข้อมูล') || 
-                                descText.includes('สำรองฐานข้อมูลสำเร็จ') || 
-                                descText.includes('สร้างไฟล์สำรอง')
-                            );
-                            if (!isBackup) return false;
-                        } else if (filters.action === 'created') {
-                            const isCreated = actText.includes('created') || 
-                                              actText.includes('create') || 
-                                              actText.includes('สร้าง') || 
-                                              actText.includes('เพิ่ม') || 
-                                              descText.includes('เพิ่มประกาศ') || 
-                                              descText.includes('เพิ่มหลักสูตร');
-                            if (!isCreated) return false;
-                        } else if (filters.action === 'updated') {
-                            const isUpdated = actText.includes('updated') || 
-                                              actText.includes('update') || 
-                                              actText.includes('แก้ไข') || 
-                                              actText.includes('ปรับปรุง') || 
-                                              descText.includes('ปิดการรับสมัคร');
-                            if (!isUpdated) return false;
-                        } else if (filters.action === 'deleted') {
-                            const isDeleted = actText.includes('deleted') || 
-                                              actText.includes('delete') || 
-                                              actText.includes('ลบ') || 
-                                              actText.includes('ล้าง');
-                            if (!isDeleted) return false;
-                        } else if (filters.action === 'password') {
-                            const isPassword = descText.includes('ขอรับรหัสผ่าน') || 
-                                               descText.includes('รหัสผ่านถอดรหัส') || 
-                                               descText.includes('เปิดดูรหัสผ่าน') ||
-                                               actText.includes('password');
-                            if (!isPassword) return false;
-                        } else if (filters.action === 'login') {
-                            const isLogin = (actText.includes('login') || 
-                                             actText.includes('logout') || 
-                                             actText.includes('เข้าสู่ระบบ') || 
-                                             descText.includes('ยืนยันตัวตน') ||
-                                             descText.includes('เข้าสู่ระบบสำเร็จ')) && 
-                                             !descText.includes('ไม่ผ่านการยืนยัน');
-                            if (!isLogin) return false;
-                        } else if (filters.action === 'security') {
-                            const isSecurity = actText.includes('security') || 
-                                               actText.includes('alert') || 
-                                               actText.includes('warning') || 
-                                               descText.includes('ไม่ผ่านการยืนยัน') || 
-                                               descText.includes('ปฏิเสธการเข้าถึง') || 
-                                               descText.includes('เตือนความปลอดภัย');
-                            if (!isSecurity) return false;
-                        } else if (filters.action === 'exported') {
-                            const isExport = (actText.includes('export') || 
-                                              descText.includes('ดาวน์โหลด') || 
-                                              descText.includes('ส่งออก')) && 
-                                              !descText.includes('ขอรับรหัสผ่าน');
-                            if (!isExport) return false;
+            if (!window.$ || !window.$.fn || !window.$.fn.DataTable) {
+                if (typeof window.$ === 'function') {
+                    $(document).ready(() => this.initDataTable());
+                } else {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        if (typeof window.$ === 'function') {
+                            $(document).ready(() => this.initDataTable());
                         } else {
-                            const target = filters.action.toLowerCase();
-                            if (!actText.includes(target) && !descText.includes(target)) {
-                                return false;
-                            }
+                            setTimeout(() => this.initDataTable(), 300);
                         }
-                    }
-
-                    // 2. Module filter
-                    if (hasModule) {
-                        const targetMod = filters.module.toLowerCase();
-                        if (!modText.includes(targetMod)) {
-                            return false;
-                        }
-                    }
-
-                    // 3. Date range filter
-                    if (hasStartDate || hasEndDate) {
-                        let timestamp = 0;
-                        if (aoRow) {
-                            if (aoRow._aSortData && aoRow._aSortData[1]) {
-                                timestamp = parseInt(aoRow._aSortData[1], 10);
-                            }
-                            if (!timestamp && rawRowData && rawRowData[1]) {
-                                const m = String(rawRowData[1]).match(/data-order=["']?(\d+)["']?/);
-                                if (m) timestamp = parseInt(m[1], 10);
-                            }
-                            if (!timestamp && aoRow.anCells && aoRow.anCells[1]) {
-                                const orderAttr = aoRow.anCells[1].getAttribute('data-order');
-                                if (orderAttr) timestamp = parseInt(orderAttr, 10);
-                            }
-                        }
-
-                        if (timestamp > 0) {
-                            const d = new Date(timestamp * 1000);
-                            const yr = d.getFullYear();
-                            const mo = String(d.getMonth() + 1).padStart(2, '0');
-                            const da = String(d.getDate()).padStart(2, '0');
-                            const rowDateStr = `${yr}-${mo}-${da}`;
-
-                            if (filters.startDate && rowDateStr < filters.startDate) {
-                                return false;
-                            }
-                            if (filters.endDate && rowDateStr > filters.endDate) {
-                                return false;
-                            }
-                        }
-                    }
-
-                    // 4. Keyword filter (User, Module, Action, Description, IP)
-                    if (hasKeyword) {
-                        const kw = filters.keyword.trim().toLowerCase();
-                        const allRowText = userText + ' ' + descText + ' ' + ipText + ' ' + actText + ' ' + modText;
-                        if (!allRowText.includes(kw)) {
-                            return false;
-                        }
-                    }
-
-                        return true;
-                    } catch (e) {
-                        console.error('Audit DataTable filter notice:', e);
-                        return true;
-                    }
-                };
-
-                if (window.$ && window.$.fn && window.$.fn.dataTable && window.$.fn.dataTable.ext) {
-                    window.$.fn.dataTable.ext.search.push(auditFilterFn);
-                } else if (window.DataTable && window.DataTable.ext) {
-                    window.DataTable.ext.search.push(auditFilterFn);
+                    });
                 }
+                return;
             }
 
-            const thLanguage = {
-                search: "ค้นหาด่วน:",
-                lengthMenu: "แสดง _MENU_ รายการ",
-                info: "แสดง _START_ ถึง _END_ จากทั้งหมด _TOTAL_ รายการ",
-                infoEmpty: "แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ",
-                infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
-                zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
-                paginate: {
-                    first: "«",
-                    previous: "‹",
-                    next: "›",
-                    last: "»"
-                },
-                emptyTable: "ไม่มีข้อมูลบันทึกกิจกรรมในระบบ"
-            };
-
-            const dtOptions = {
-                language: thLanguage,
-                order: [[1, 'desc'], [0, 'desc']], // เรียงตามวันเวลาล่าสุด (และ ID ล่าสุด)
-                responsive: true,
-                autoWidth: false,
-                pageLength: 25,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
-                dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-slate-50/40 dark:bg-slate-850/20"lf>t<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border-t border-slate-100 dark:border-slate-800"ip>',
-                columnDefs: [
-                    {
-                        targets: 1,
-                        render: function(data, type, row, meta) {
-                            if (typeof data === 'object' && data !== null) {
-                                if (type === 'sort' || type === 'type') {
-                                    return data['@data-order'] || data.sort || data.timestamp || 0;
-                                }
-                                if (type === 'filter') {
-                                    return data['@data-filter'] || data.filter || data.display || '';
-                                }
-                                return data.display || data._ || '';
-                            }
-                            if (typeof data === 'string') {
-                                if (type === 'sort' || type === 'type') {
-                                    const m = data.match(/data-order=["']?(\d+)["']?/);
-                                    if (m) return parseInt(m[1], 10);
-                                }
-                                return data;
-                            }
-                            return data;
-                        }
-                    },
-                    { targets: [5], className: 'col-description' },
-                    { targets: [7], orderable: false, searchable: false }
-                ],
-                createdRow: function(row, data, dataIndex) {
-                    const $row = $(row);
-                    const logId = Array.isArray(data) ? data[0] : (data.id || dataIndex);
-                    $row.attr('id', `log-row-${logId}`);
-                    $row.find('td:eq(0)').addClass('text-center font-mono text-slate-400');
-                    $row.find('td:eq(1)').addClass('whitespace-nowrap');
-                    $row.find('td:eq(3)').addClass('whitespace-nowrap');
-                    $row.find('td:eq(4)').addClass('whitespace-nowrap');
-                    $row.find('td:eq(5)').addClass('col-description');
-                    $row.find('td:eq(6)').addClass('whitespace-nowrap font-mono text-[11px]');
-                    $row.find('td:eq(7)').addClass('text-center whitespace-nowrap');
-                }
-            };
+            registerAuditFilter();
 
             try {
-                if (window.$ && typeof window.$.fn.DataTable === 'function') {
+                if ($.fn.DataTable.isDataTable('#auditLogsDataTable')) {
+                    window.auditDataTable = $('#auditLogsDataTable').DataTable();
+                } else {
                     window.auditDataTable = $('#auditLogsDataTable').DataTable(dtOptions);
-                } else if (typeof window.DataTable === 'function') {
-                    window.auditDataTable = new window.DataTable('#auditLogsDataTable', dtOptions);
                 }
             } catch (err) {
                 console.warn('DataTable init notice:', err);
@@ -2131,5 +2163,15 @@ function auditLogApp() {
     };
 }
 window.auditLogApp = auditLogApp;
+
+$(document).ready(function() {
+    registerAuditFilter();
+    if (window.auditApp && typeof window.auditApp.initDataTable === 'function') {
+        window.auditApp.initDataTable();
+        if (window.auditApp.activeFilterCount > 0) {
+            window.auditApp.applyFilters();
+        }
+    }
+});
 </script>
 @endpush
