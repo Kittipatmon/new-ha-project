@@ -404,12 +404,27 @@
                 </div>
             </div>
 
-            <!-- On-demand Archive Trigger Button -->
-            <button type="button" @click="openArchiveModal()"
-                class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 transition flex items-center gap-2 shrink-0">
-                <i class="fa-solid fa-file-zipper"></i>
-                <span>สั่งบีบอัดไฟล์ Log (Zip Now)</span>
-            </button>
+            <!-- Action Buttons for Archives -->
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Clean Expired Archives (5 Years Retention) -->
+                <form action="{{ route('backend.audit-logs.archives.clean-expired') }}" method="POST"
+                    onsubmit="return confirm('ยืนยันการตรวจสอบและลบไฟล์ ZIP ที่จัดเก็บครบกำหนด 5 ปีออกจากระบบ? (ไฟล์ที่ยังไม่ครบ 5 ปีจะไม่ถูกลบ)');">
+                    @csrf
+                    <button type="submit"
+                        class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-300 dark:border-slate-700 transition flex items-center gap-1.5"
+                        title="ตรวจสอบและลบเฉพาะไฟล์ ZIP ที่จัดเก็บครบตามนโยบาย 5 ปีแล้วเพื่อคืนพื้นที่">
+                        <i class="fa-solid fa-broom text-amber-500"></i>
+                        <span>ทำความสะอาดไฟล์ครบ 5 ปี</span>
+                    </button>
+                </form>
+
+                <!-- On-demand Archive Trigger Button -->
+                <button type="button" @click="openArchiveModal()"
+                    class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-zipper"></i>
+                    <span>สั่งบีบอัดไฟล์ Log (Zip Now)</span>
+                </button>
+            </div>
         </div>
 
         <!-- Archives Table Card -->
@@ -420,7 +435,7 @@
                         <i class="fa-solid fa-box-archive text-purple-600"></i>
                         <span>รายการไฟล์คลังบีบอัดย้อนหลัง (Audit Archive Ledgers)</span>
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">ไฟล์บีบอัดทั้งหมดพร้อมแฮช SHA-256 สำหรับตรวจสอบความถูกต้อง</p>
+                    <p class="text-xs text-slate-400 mt-0.5">จัดเก็บไฟล์บีบอัดไว้นาน 5 ปี พร้อมแฮช SHA-256 สำหรับตรวจสอบความถูกต้องตามมาตรฐาน ISO/IEC 27001</p>
                 </div>
                 <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                     ทั้งหมด {{ count($archives) }} ไฟล์
@@ -433,11 +448,12 @@
                         <tr>
                             <th class="py-3.5 px-4 w-12 text-center">#</th>
                             <th class="py-3.5 px-4">ชื่อไฟล์คลัง (Archive Filename)</th>
-                            <th class="py-3.5 px-4 w-36">ช่วงเวลาข้อมูล</th>
+                            <th class="py-3.5 px-4 w-32">ช่วงเวลาข้อมูล</th>
                             <th class="py-3.5 px-4 w-28 text-center">จำนวนรายการ</th>
                             <th class="py-3.5 px-4 w-24">ขนาดไฟล์</th>
                             <th class="py-3.5 px-4">SHA-256 Checksum (ความปลอดภัย)</th>
                             <th class="py-3.5 px-4 w-36">วันที่สร้างไฟล์</th>
+                            <th class="py-3.5 px-4 w-36">อายุการจัดเก็บ (5 ปี)</th>
                             <th class="py-3.5 px-4 w-44 text-center">การตรวจสอบ (Auditor Actions)</th>
                         </tr>
                     </thead>
@@ -503,6 +519,21 @@
                                     </div>
                                 </td>
 
+                                <!-- 5-Year Retention Status -->
+                                <td class="py-3.5 px-4 whitespace-nowrap">
+                                    <div class="text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                                        เก็บถึง: <span class="font-bold">{{ $arch->thai_retain_until }}</span>
+                                    </div>
+                                    @php
+                                        $retStatus = $arch->retention_status;
+                                    @endphp
+                                    <div class="mt-1">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $retStatus['badge'] }}">
+                                            <i class="fa-solid fa-clock-rotate-left mr-0.5"></i> {{ $retStatus['label'] }}
+                                        </span>
+                                    </div>
+                                </td>
+
                                 <!-- Actions -->
                                 <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-1.5">
@@ -526,7 +557,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="py-12 text-center text-slate-400">
+                                <td colspan="9" class="py-12 text-center text-slate-400">
                                     <i class="fa-solid fa-box-archive text-3xl mb-2 text-slate-300 dark:text-slate-600 block"></i>
                                     ยังไม่มีไฟล์คลังบีบอัดในระบบ คุณสามารถคลิกปุ่ม "สั่งบีบอัดไฟล์ Log" ด้านบนเพื่อเริ่มจัดเก็บได้ทันที
                                 </td>
@@ -803,9 +834,15 @@
                 </button>
             </div>
 
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                ระบบจะรวบรวมประวัติ Log ในปีที่เลือก สร้างเป็นไฟล์ JSON และ CSV สรุป พร้อมคำนวณ Checksum SHA-256 บรรจุในไฟล์ ZIP สำหรับเก็บรักษาตามมาตรฐาน 5 ปี
-            </p>
+            <div class="mb-4 p-3 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 text-xs">
+                <div class="flex items-center gap-1.5 font-bold text-purple-700 dark:text-purple-300 mb-1">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>นโยบายจัดเก็บคลัง Log 5 ปี (5-Year Retention Policy)</span>
+                </div>
+                <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-normal">
+                    ไฟล์ ZIP จะถูกจัดเก็บใน Private Storage เป็นเวลา 5 ปี บรรจุ JSON บันทึกเต็มรูปแบบ + CSV สรุปสำหรับ Excel + Manifest SHA-256 เพื่อการตรวจสอบของ Auditor
+                </p>
+            </div>
 
             <form action="{{ route('backend.audit-logs.archive') }}" method="POST">
                 @csrf
@@ -824,6 +861,21 @@
                             <option value="{{ date('Y') }}">ปี พ.ศ. {{ date('Y') + 543 }} (ค.ศ. {{ date('Y') }})</option>
                         @endif
                     </select>
+                </div>
+
+                <!-- Option to purge live DB logs for the new year -->
+                <div class="mb-4 p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/80">
+                    <label class="flex items-start gap-2.5 cursor-pointer">
+                        <input type="checkbox" name="purge" value="1" class="mt-0.5 rounded border-amber-400 text-purple-600 focus:ring-purple-500">
+                        <div>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                ล้าง Log ในฐานข้อมูลหลังจากสร้างไฟล์ ZIP สำเร็จ (เริ่มรอบปีใหม่)
+                            </span>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5 leading-normal">
+                                ลบประวัติปีที่เลือกออกจากฐานข้อมูลหลังจากไฟล์ ZIP ได้รับการตรวจสอบ Checksum แล้ว เพื่อประหยัดขนาดฐานข้อมูลและเพิ่มความเร็ว โดยไฟล์ ZIP จะถูกเก็บไว้นาน 5 ปี
+                            </span>
+                        </div>
+                    </label>
                 </div>
 
                 <div class="mb-5">

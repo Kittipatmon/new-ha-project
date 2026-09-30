@@ -337,6 +337,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [App\Http\Controllers\Backend\AuditLogController::class, 'index'])->name('index');
             Route::get('/data', [App\Http\Controllers\Backend\AuditLogController::class, 'getLogsData'])->name('data');
             Route::post('/archive', [App\Http\Controllers\Backend\AuditLogController::class, 'createArchive'])->name('archive');
+            Route::post('/archives/clean-expired', [App\Http\Controllers\Backend\AuditLogController::class, 'cleanExpiredArchives'])->name('archives.clean-expired');
             Route::get('/archives/{id}/download', [App\Http\Controllers\Backend\AuditLogController::class, 'downloadArchive'])->name('archives.download');
             Route::get('/archives/{id}/inspect', [App\Http\Controllers\Backend\AuditLogController::class, 'inspectArchive'])->name('archives.inspect');
             Route::get('/{id}', [App\Http\Controllers\Backend\AuditLogController::class, 'show'])->name('show');

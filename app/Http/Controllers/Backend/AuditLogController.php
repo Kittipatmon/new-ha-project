@@ -198,34 +198,38 @@ class AuditLogController extends Controller
         $request->validate([
             'year' => 'required|integer|min:2000|max:2100',
             'notes' => 'nullable|string|max:500',
+            'purge' => 'nullable|boolean',
         ]);
 
         $year = (int)$request->input('year');
         $notes = $request->input('notes', 'สั่งบีบอัดและจัดเก็บคลังข้อมูลผ่านระบบจัดการ');
+        $purge = $request->boolean('purge', false);
 
         try {
-            $archive = AuditLogService::createArchive($year, Auth::user(), $notes);
+            $archive = AuditLogService::createArchive($year, Auth::user(), $notes, $purge);
 
             // Log that an archive was created
             AuditLogService::log(
                 action: 'archived',
-                description: "สร้างไฟล์คลังบีบอัด Audit Log: {$archive->filename} (จำนวน {$archive->records_count} รายการ)",
+                description: "สร้างไฟล์คลังบีบอัด Audit Log: {$archive->filename} (จำนวน {$archive->records_count} รายการ)" . ($purge ? " และล้างข้อมูลตารางเพื่อเริ่มรอบปีใหม่" : ""),
                 model: $archive,
                 module: 'system',
                 moduleName: 'ระบบจัดเก็บข้อมูลคลัง Log',
                 user: Auth::user()
             );
 
+            $successMsg = "สร้างไฟล์คลัง ZIP สำหรับปี {$archive->period_label} สำเร็จเรียบร้อยแล้ว ({$archive->records_count} รายการ) ระบบจะจัดเก็บไฟล์ไว้นาน 5 ปี" . ($purge ? " และล้างข้อมูลปี {$year} ออกจากตารางเพื่อเริ่มบันทึกปีใหม่เรียบร้อยแล้ว" : "");
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => "สร้างไฟล์คลัง ZIP สำหรับปี {$archive->period_label} สำเร็จเรียบร้อยแล้ว ({$archive->records_count} รายการ)",
+                    'message' => $successMsg,
                     'archive' => $archive,
                 ]);
             }
 
             return redirect()->route('backend.audit-logs.index', ['tab' => 'archives'])
-                ->with('success', "สร้างไฟล์คลัง ZIP สำหรับปี {$archive->period_label} สำเร็จเรียบร้อยแล้ว ({$archive->records_count} รายการ)");
+                ->with('success', $successMsg);
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json([
@@ -236,6 +240,36 @@ class AuditLogController extends Controller
 
             return redirect()->route('backend.audit-logs.index', ['tab' => 'archives'])
                 ->with('error', "เกิดข้อผิดพลาดในการสร้างไฟล์ ZIP: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Clean up expired archives older than 5 years
+     */
+    public function cleanExpiredArchives(Request $request)
+    {
+        try {
+            $result = AuditLogService::cleanupExpiredArchives(5);
+
+            if ($result['count'] > 0) {
+                AuditLogService::log(
+                    action: 'deleted',
+                    description: "ล้างไฟล์ ZIP คลัง Log ที่หมดอายุตามนโยบาย 5 ปี จำนวน {$result['count']} ไฟล์ (คืนพื้นที่ {$result['freed_human']})",
+                    module: 'system',
+                    moduleName: 'ระบบจัดเก็บข้อมูลคลัง Log',
+                    user: Auth::user()
+                );
+
+                $msg = "ลบไฟล์ ZIP ที่จัดเก็บครบกำหนด 5 ปีเรียบร้อยแล้วจำนวน {$result['count']} ไฟล์ (คืนพื้นที่ {$result['freed_human']})";
+            } else {
+                $msg = "ไม่มีไฟล์ ZIP ที่จัดเก็บเกิน 5 ปี (ไฟล์ทั้งหมดยังอยู่ในระยะเวลาการเก็บรักษา)";
+            }
+
+            return redirect()->route('backend.audit-logs.index', ['tab' => 'archives'])
+                ->with('success', $msg);
+        } catch (\Exception $e) {
+            return redirect()->route('backend.audit-logs.index', ['tab' => 'archives'])
+                ->with('error', "เกิดข้อผิดพลาดในการล้างไฟล์หมดอายุ: " . $e->getMessage());
         }
     }
 
