@@ -8,17 +8,17 @@ use App\Http\Controllers\Backend\RequestData\DepartmentController;
 use App\Http\Controllers\hrrequest\RequestDataController;
 use App\Http\Controllers\Api\UserController;
 
-// Public user lookup APIs (throttled by 'api' middleware group)
-Route::middleware('api')->group(function () {
+// Internal user and master-data APIs (protected by auth middleware)
+Route::middleware(['auth'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('api.users.index');
     Route::get('/users/{id}', [UserController::class, 'show'])->name('api.users.show');
+
+    Route::get('/sections', [SectionController::class, 'apiSection']);
+    Route::get('/divisions', [DivisionController::class, 'apiDivision']);
+    Route::get('/departments', [DepartmentController::class, 'apiDepartment']);
+    
+    // HR Request dynamic data
+    Route::get('/request-types', [RequestDataController::class, 'types']);
+    Route::get('/request-subtypes', [RequestDataController::class, 'subtypes']);
 });
-
-
-Route::get('/sections', [SectionController::class, 'apiSection']);
-Route::get('/divisions', [DivisionController::class, 'apiDivision']);
-Route::get('/departments', [DepartmentController::class, 'apiDepartment']);
-// HR Request dynamic data
-Route::get('/request-types', [RequestDataController::class, 'types']);
-Route::get('/request-subtypes', [RequestDataController::class, 'subtypes']);
     

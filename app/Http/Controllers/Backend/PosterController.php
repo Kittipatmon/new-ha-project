@@ -30,7 +30,7 @@ class PosterController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'position' => 'required|in:hero_banner,hero_top,main_carousel,side_top,side_bottom,recruitment',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'target_type' => 'required|in:link,file,none',
             'link_url' => 'nullable|url|max:500',
             'attachment_file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,webp,zip,rar|max:20480',
@@ -107,7 +107,7 @@ class PosterController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'position' => 'required|in:hero_banner,hero_top,main_carousel,side_top,side_bottom,recruitment',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'target_type' => 'required|in:link,file,none',
             'link_url' => 'nullable|url|max:500',
             'attachment_file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,webp,zip,rar|max:20480',

@@ -1,0 +1,7 @@
+# Deny direct public HTTP access to HR documents and employee CVs
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>

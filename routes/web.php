@@ -324,8 +324,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/email-templates/{key}/test-send', [App\Http\Controllers\Backend\Recruitment\EmailTemplateController::class, 'testSend'])->name('email-templates.test-send');
         });
 
-        // Microsoft 365 / Azure Entra ID Settings
-        Route::prefix('backend/settings')->name('backend.settings.')->group(function () {
+        // Microsoft 365 / Azure Entra ID Settings (Admin only)
+        Route::prefix('backend/settings')->name('backend.settings.')->middleware('role:admin')->group(function () {
             Route::get('/microsoft', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'index'])->name('microsoft');
             Route::post('/microsoft', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'update'])->name('microsoft.update');
             Route::post('/microsoft/test', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'testConnection'])->name('microsoft.test');
