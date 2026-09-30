@@ -289,7 +289,7 @@
                         :class="filterOpen ? 'bg-indigo-50 border-indigo-300 text-indigo-700 dark:bg-indigo-950/60 dark:border-indigo-700 dark:text-indigo-300' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'">
                         <i class="fa-solid fa-filter text-[11px]" :class="filterOpen ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'"></i>
                         <span>ตัวกรองข้อมูล</span>
-                        <span x-show="activeFilterCount > 0" x-text="activeFilterCount"
+                        <span x-show="activeFilterCount > 0" x-text="activeFilterCount" style="display: none;"
                             class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-600 text-white">
                         </span>
                         <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200 text-slate-400"
@@ -1561,13 +1561,16 @@ function auditLogApp() {
             keyword: '{{ request("search", "") }}'
         },
 
-        get activeFilterCount() {
+        activeFilterCount: 0,
+
+        updateFilterCount() {
             let count = 0;
             if (this.filters.action && this.filters.action !== 'all') count++;
             if (this.filters.module && this.filters.module !== 'all') count++;
             if (this.filters.startDate) count++;
             if (this.filters.endDate) count++;
             if (this.filters.keyword && this.filters.keyword.trim()) count++;
+            this.activeFilterCount = count;
             return count;
         },
 
@@ -1577,7 +1580,8 @@ function auditLogApp() {
 
         setQuickAction(act) {
             this.activeTab = 'logs';
-            this.filters.action = act;
+            // Toggle to 'all' if clicking the active filter, otherwise switch to act
+            this.filters.action = (this.filters.action === act && act !== 'all') ? 'all' : act;
             this.applyFilters();
         },
 
@@ -1611,6 +1615,10 @@ function auditLogApp() {
         },
 
         applyFilters() {
+            this.updateFilterCount();
+            if (!window.auditDataTable && window.$ && window.$.fn && window.$.fn.DataTable && $.fn.DataTable.isDataTable('#auditLogsDataTable')) {
+                window.auditDataTable = $('#auditLogsDataTable').DataTable();
+            }
             if (window.auditDataTable) {
                 window.auditDataTable.draw();
             }
@@ -1635,6 +1643,7 @@ function auditLogApp() {
 
         initApp() {
             window.auditApp = this;
+            this.updateFilterCount();
             this.initDataTable();
             this.startLivePolling();
             if (this.activeFilterCount > 0) {
@@ -1645,10 +1654,11 @@ function auditLogApp() {
         initDataTable() {
             const self = this;
 
-            // Register custom DataTable filter if not already registered
-            if (!window.auditDataTableSearchRegistered && window.$ && window.$.fn && window.$.fn.dataTable) {
+            // Register custom DataTable filter once
+            if (!window.auditDataTableSearchRegistered) {
                 window.auditDataTableSearchRegistered = true;
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+
+                const auditFilterFn = function(settings, data, dataIndex) {
                     if (!settings.nTable || settings.nTable.id !== 'auditLogsDataTable') {
                         return true;
                     }
@@ -1657,93 +1667,167 @@ function auditLogApp() {
                     if (!app || !app.filters) return true;
 
                     const filters = app.filters;
-                    const rowNode = settings.aoData[dataIndex].nTr;
-                    if (!rowNode) return true;
 
-                    const $row = $(rowNode);
+                    const hasAction = filters.action && filters.action !== 'all';
+                    const hasModule = filters.module && filters.module !== 'all';
+                    const hasStartDate = Boolean(filters.startDate);
+                    const hasEndDate = Boolean(filters.endDate);
+                    const hasKeyword = Boolean(filters.keyword && filters.keyword.trim());
+
+                    // Fast path if no active filter
+                    if (!hasAction && !hasModule && !hasStartDate && !hasEndDate && !hasKeyword) {
+                        return true;
+                    }
+
+                    // Extract data safely from both rendered array (data) and raw HTML cache (_aData)
+                    const aoRow = (settings.aoData && settings.aoData[dataIndex]) ? settings.aoData[dataIndex] : null;
+                    const rawRowData = aoRow ? aoRow._aData : null;
+
+                    const rawAct = rawRowData && rawRowData[3] ? String(rawData[3]).toLowerCase() : '';
+                    const rawMod = rawRowData && rawRowData[4] ? String(rawData[4]).toLowerCase() : '';
+                    const rawDesc = rawRowData && rawRowData[5] ? String(rawData[5]).toLowerCase() : '';
+                    const rawUser = rawRowData && rawRowData[2] ? String(rawData[2]).toLowerCase() : '';
+                    const rawIp = rawRowData && rawRowData[6] ? String(rawData[6]).toLowerCase() : '';
+
+                    const actText = ((data[3] || '') + ' ' + rawAct).toLowerCase();
+                    const modText = ((data[4] || '') + ' ' + rawMod).toLowerCase();
+                    const descText = ((data[5] || '') + ' ' + rawDesc).toLowerCase();
+                    const userText = ((data[2] || '') + ' ' + rawUser).toLowerCase();
+                    const ipText = ((data[6] || '') + ' ' + rawIp).toLowerCase();
 
                     // 1. Action filter
-                    if (filters.action && filters.action !== 'all') {
-                        const actText = $row.find('td:eq(3)').text().toLowerCase();
-                        const descText = $row.find('td:eq(5)').text().toLowerCase();
-
+                    if (hasAction) {
                         if (filters.action === 'backup') {
-                            if (!actText.includes('backup') && !descText.includes('สำรองฐานข้อมูล') && !descText.includes('backup_db')) {
-                                return false;
-                            }
+                            const isBackup = actText.includes('backup') || 
+                                             actText.includes('สำรอง') || 
+                                             descText.includes('สำรองฐานข้อมูล') || 
+                                             descText.includes('สำรอง') || 
+                                             descText.includes('backup_db') ||
+                                             descText.includes('backup');
+                            if (!isBackup) return false;
                         } else if (filters.action === 'created') {
-                            if (!actText.includes('created') && !actText.includes('สร้าง') && !descText.includes('เพิ่ม')) {
-                                return false;
-                            }
+                            const isCreated = actText.includes('created') || 
+                                              actText.includes('create') || 
+                                              actText.includes('สร้าง') || 
+                                              actText.includes('เพิ่ม') || 
+                                              descText.includes('สร้าง') || 
+                                              descText.includes('เพิ่ม');
+                            if (!isCreated) return false;
                         } else if (filters.action === 'updated') {
-                            if (!actText.includes('updated') && !actText.includes('แก้ไข') && !descText.includes('แก้ไข') && !descText.includes('ปรับปรุง') && !descText.includes('ปิดการรับสมัคร')) {
-                                return false;
-                            }
+                            const isUpdated = actText.includes('updated') || 
+                                              actText.includes('update') || 
+                                              actText.includes('แก้ไข') || 
+                                              actText.includes('ปรับปรุง') || 
+                                              descText.includes('แก้ไข') || 
+                                              descText.includes('ปรับปรุง') || 
+                                              descText.includes('ปิดการรับสมัคร');
+                            if (!isUpdated) return false;
                         } else if (filters.action === 'deleted') {
-                            if (!actText.includes('deleted') && !actText.includes('ลบ') && !descText.includes('ลบ') && !descText.includes('ล้าง')) {
-                                return false;
-                            }
+                            const isDeleted = actText.includes('deleted') || 
+                                              actText.includes('delete') || 
+                                              actText.includes('ลบ') || 
+                                              actText.includes('ล้าง') || 
+                                              descText.includes('ลบ') || 
+                                              descText.includes('ล้าง');
+                            if (!isDeleted) return false;
                         } else if (filters.action === 'password') {
-                            if (!descText.includes('ขอรับรหัสผ่าน') && !descText.includes('รหัสผ่าน')) {
-                                return false;
-                            }
+                            const isPassword = descText.includes('ขอรับรหัสผ่าน') || 
+                                               descText.includes('รหัสผ่าน') || 
+                                               actText.includes('password') ||
+                                               descText.includes('password');
+                            if (!isPassword) return false;
                         } else if (filters.action === 'login') {
-                            if (!actText.includes('login') && !actText.includes('เข้าสู่ระบบ') && !descText.includes('เข้าสู่ระบบ') && !descText.includes('ยืนยันตัวตน')) {
-                                return false;
-                            }
+                            const isLogin = actText.includes('login') || 
+                                            actText.includes('logout') || 
+                                            actText.includes('เข้าสู่ระบบ') || 
+                                            descText.includes('เข้าสู่ระบบ') || 
+                                            descText.includes('ยืนยันตัวตน') ||
+                                            descText.includes('microsoft 365');
+                            if (!isLogin) return false;
                         } else if (filters.action === 'security') {
-                            if (!actText.includes('security') && !descText.includes('ไม่ผ่านการยืนยัน') && !descText.includes('ปฏิเสธการเข้าถึง') && !actText.includes('เตือน')) {
-                                return false;
-                            }
+                            const isSecurity = actText.includes('security') || 
+                                               actText.includes('warning') || 
+                                               actText.includes('เตือน') || 
+                                               actText.includes('login') || 
+                                               descText.includes('ไม่ผ่านการยืนยัน') || 
+                                               descText.includes('ปฏิเสธการเข้าถึง') || 
+                                               descText.includes('ยืนยันตัวตน') || 
+                                               descText.includes('เข้าสู่ระบบ') || 
+                                               descText.includes('ความปลอดภัย');
+                            if (!isSecurity) return false;
                         } else if (filters.action === 'exported') {
-                            if (!actText.includes('export') && !descText.includes('ดาวน์โหลด')) {
-                                return false;
-                            }
+                            const isExport = actText.includes('export') || 
+                                             actText.includes('ส่งออก') || 
+                                             actText.includes('ดาวน์โหลด') || 
+                                             descText.includes('ส่งออก') || 
+                                             descText.includes('ดาวน์โหลด');
+                            if (!isExport) return false;
                         } else {
-                            if (!actText.includes(filters.action.toLowerCase()) && !descText.includes(filters.action.toLowerCase())) {
+                            const target = filters.action.toLowerCase();
+                            if (!actText.includes(target) && !descText.includes(target)) {
                                 return false;
                             }
                         }
                     }
 
                     // 2. Module filter
-                    if (filters.module && filters.module !== 'all') {
-                        const modText = $row.find('td:eq(4)').text().trim().toLowerCase();
-                        if (!modText.includes(filters.module.toLowerCase())) {
+                    if (hasModule) {
+                        const targetMod = filters.module.toLowerCase();
+                        if (!modText.includes(targetMod)) {
                             return false;
                         }
                     }
 
                     // 3. Date range filter
-                    const rawTimestamp = parseInt($row.find('td:eq(1)').attr('data-order') || 0);
-                    if (rawTimestamp > 0) {
-                        const d = new Date(rawTimestamp * 1000);
-                        const yr = d.getFullYear();
-                        const mo = String(d.getMonth() + 1).padStart(2, '0');
-                        const da = String(d.getDate()).padStart(2, '0');
-                        const rowDateStr = `${yr}-${mo}-${da}`;
-                        if (filters.startDate && rowDateStr < filters.startDate) {
-                            return false;
+                    if (hasStartDate || hasEndDate) {
+                        let timestamp = 0;
+                        if (aoRow) {
+                            if (aoRow._aSortData && aoRow._aSortData[1]) {
+                                timestamp = parseInt(aoRow._aSortData[1], 10);
+                            }
+                            if (!timestamp && rawRowData && rawRowData[1]) {
+                                const m = String(rawRowData[1]).match(/data-order=["']?(\d+)["']?/);
+                                if (m) timestamp = parseInt(m[1], 10);
+                            }
+                            if (!timestamp && aoRow.anCells && aoRow.anCells[1]) {
+                                const orderAttr = aoRow.anCells[1].getAttribute('data-order');
+                                if (orderAttr) timestamp = parseInt(orderAttr, 10);
+                            }
                         }
-                        if (filters.endDate && rowDateStr > filters.endDate) {
-                            return false;
+
+                        if (timestamp > 0) {
+                            const d = new Date(timestamp * 1000);
+                            const yr = d.getFullYear();
+                            const mo = String(d.getMonth() + 1).padStart(2, '0');
+                            const da = String(d.getDate()).padStart(2, '0');
+                            const rowDateStr = `${yr}-${mo}-${da}`;
+
+                            if (filters.startDate && rowDateStr < filters.startDate) {
+                                return false;
+                            }
+                            if (filters.endDate && rowDateStr > filters.endDate) {
+                                return false;
+                            }
                         }
                     }
 
-                    // 4. Keyword filter (User, Employee Code, Description, IP)
-                    if (filters.keyword && filters.keyword.trim()) {
+                    // 4. Keyword filter (User, Module, Action, Description, IP)
+                    if (hasKeyword) {
                         const kw = filters.keyword.trim().toLowerCase();
-                        const userText = $row.find('td:eq(2)').text().toLowerCase();
-                        const descText = $row.find('td:eq(5)').text().toLowerCase();
-                        const ipText = $row.find('td:eq(6)').text().toLowerCase();
-
-                        if (!userText.includes(kw) && !descText.includes(kw) && !ipText.includes(kw)) {
+                        const allRowText = userText + ' ' + descText + ' ' + ipText + ' ' + actText + ' ' + modText;
+                        if (!allRowText.includes(kw)) {
                             return false;
                         }
                     }
 
                     return true;
-                });
+                };
+
+                if (window.$ && window.$.fn && window.$.fn.dataTable && window.$.fn.dataTable.ext) {
+                    window.$.fn.dataTable.ext.search.push(auditFilterFn);
+                } else if (window.DataTable && window.DataTable.ext) {
+                    window.DataTable.ext.search.push(auditFilterFn);
+                }
             }
 
             const thLanguage = {
