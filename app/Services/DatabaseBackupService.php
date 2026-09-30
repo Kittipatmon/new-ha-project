@@ -40,7 +40,7 @@ class DatabaseBackupService
 
         $dbConnection = config('database.default', 'mysql');
         $dbConfig = config("database.connections.{$dbConnection}", []);
-        $dbName = $dbConfig['database'] ?? 'database';
+        $dbName = DB::connection()->getDatabaseName() ?: ($dbConfig['database'] ?? 'appkum_ha');
         $timestamp = date('Ymd_His');
         $zipFilename = "backup_db_{$dbName}_{$timestamp}.zip";
         $zipRelativePath = self::BACKUP_DIR . '/' . $zipFilename;
@@ -444,7 +444,7 @@ HTML;
             throw new \RuntimeException("ไม่สามารถเปิดไฟล์เพื่อเขียนข้อมูล: {$outputFile}");
         }
 
-        $dbName = $dbConfig['database'] ?? 'laravel';
+        $dbName = DB::connection()->getDatabaseName() ?: ($dbConfig['database'] ?? 'appkum_ha');
         $now = now()->toDateTimeString();
 
         // Write SQL Header
