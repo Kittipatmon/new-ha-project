@@ -421,10 +421,10 @@
                             ช่วงวันที่ (Date Range)
                         </label>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <input type="date" x-model="filters.startDate" @change="applyFilters()"
+                            <input type="date" x-model="filters.startDate" @change="applyFilters()" @input="applyFilters()"
                                 class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 px-2 focus:ring-2 focus:ring-indigo-500"
                                 placeholder="เริ่มต้น">
-                            <input type="date" x-model="filters.endDate" @change="applyFilters()"
+                            <input type="date" x-model="filters.endDate" @change="applyFilters()" @input="applyFilters()"
                                 class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 px-2 focus:ring-2 focus:ring-indigo-500"
                                 placeholder="สิ้นสุด">
                         </div>
@@ -436,8 +436,8 @@
                             ค้นหาผู้ดำเนินการ / คำเฉพาะ
                         </label>
                         <div class="relative">
-                            <input type="text" x-model="filters.keyword" @input.debounce.300ms="applyFilters()"
-                                placeholder="ชื่อ, รหัส, IP, หรือคำอธิบาย..."
+                            <input type="text" x-model="filters.keyword" @input="applyFilters()" @keydown.enter.prevent="applyFilters()"
+                                placeholder="พิมพ์เพื่อค้นหาทันที: ชื่อ, รหัส, IP, หรือคำอธิบาย..."
                                 class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 pl-8 pr-3 focus:ring-2 focus:ring-indigo-500">
                             <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         </div>
@@ -1616,11 +1616,13 @@ function auditLogApp() {
 
         applyFilters() {
             this.updateFilterCount();
-            if (!window.auditDataTable && window.$ && window.$.fn && window.$.fn.DataTable && $.fn.DataTable.isDataTable('#auditLogsDataTable')) {
-                window.auditDataTable = $('#auditLogsDataTable').DataTable();
+            let dt = window.auditDataTable;
+            if ((!dt || typeof dt.draw !== 'function') && window.$ && window.$.fn && window.$.fn.DataTable && $.fn.DataTable.isDataTable('#auditLogsDataTable')) {
+                dt = $('#auditLogsDataTable').DataTable();
+                window.auditDataTable = dt;
             }
-            if (window.auditDataTable) {
-                window.auditDataTable.draw();
+            if (dt && typeof dt.draw === 'function') {
+                dt.draw();
             }
         },
 
@@ -1679,21 +1681,22 @@ function auditLogApp() {
                         return true;
                     }
 
-                    // Extract data safely from both rendered array (data) and raw HTML cache (_aData)
-                    const aoRow = (settings.aoData && settings.aoData[dataIndex]) ? settings.aoData[dataIndex] : null;
-                    const rawRowData = aoRow ? aoRow._aData : null;
+                    try {
+                        // Extract data safely from both rendered array (data) and raw HTML cache (_aData)
+                        const aoRow = (settings.aoData && settings.aoData[dataIndex]) ? settings.aoData[dataIndex] : null;
+                        const rawRowData = aoRow ? aoRow._aData : null;
 
-                    const rawAct = rawRowData && rawRowData[3] ? String(rawData[3]).toLowerCase() : '';
-                    const rawMod = rawRowData && rawRowData[4] ? String(rawData[4]).toLowerCase() : '';
-                    const rawDesc = rawRowData && rawRowData[5] ? String(rawData[5]).toLowerCase() : '';
-                    const rawUser = rawRowData && rawRowData[2] ? String(rawData[2]).toLowerCase() : '';
-                    const rawIp = rawRowData && rawRowData[6] ? String(rawData[6]).toLowerCase() : '';
+                        const rawAct = (rawRowData && rawRowData[3]) ? String(rawRowData[3]).toLowerCase() : '';
+                        const rawMod = (rawRowData && rawRowData[4]) ? String(rawRowData[4]).toLowerCase() : '';
+                        const rawDesc = (rawRowData && rawRowData[5]) ? String(rawRowData[5]).toLowerCase() : '';
+                        const rawUser = (rawRowData && rawRowData[2]) ? String(rawRowData[2]).toLowerCase() : '';
+                        const rawIp = (rawRowData && rawRowData[6]) ? String(rawRowData[6]).toLowerCase() : '';
 
-                    const actText = ((data[3] || '') + ' ' + rawAct).toLowerCase();
-                    const modText = ((data[4] || '') + ' ' + rawMod).toLowerCase();
-                    const descText = ((data[5] || '') + ' ' + rawDesc).toLowerCase();
-                    const userText = ((data[2] || '') + ' ' + rawUser).toLowerCase();
-                    const ipText = ((data[6] || '') + ' ' + rawIp).toLowerCase();
+                        const actText = ((data[3] || '') + ' ' + rawAct).toLowerCase();
+                        const modText = ((data[4] || '') + ' ' + rawMod).toLowerCase();
+                        const descText = ((data[5] || '') + ' ' + rawDesc).toLowerCase();
+                        const userText = ((data[2] || '') + ' ' + rawUser).toLowerCase();
+                        const ipText = ((data[6] || '') + ' ' + rawIp).toLowerCase();
 
                     // 1. Action filter
                     if (hasAction) {
@@ -1820,7 +1823,11 @@ function auditLogApp() {
                         }
                     }
 
-                    return true;
+                        return true;
+                    } catch (e) {
+                        console.error('Audit DataTable filter notice:', e);
+                        return true;
+                    }
                 };
 
                 if (window.$ && window.$.fn && window.$.fn.dataTable && window.$.fn.dataTable.ext) {
