@@ -21,6 +21,12 @@ class DatabaseBackup extends Model
         'tables_count',
         'rows_count',
         'checksum_sha256',
+        'is_encrypted',
+        'encryption_algorithm',
+        'encrypted_password',
+        'md_file_path',
+        'email_sent_to',
+        'email_sent_at',
         'dumper_engine',
         'created_by',
         'created_by_name',
@@ -31,6 +37,8 @@ class DatabaseBackup extends Model
         'file_size' => 'integer',
         'tables_count' => 'integer',
         'rows_count' => 'integer',
+        'is_encrypted' => 'boolean',
+        'email_sent_at' => 'datetime',
     ];
 
     public static array $thaiShortMonths = [
@@ -38,6 +46,30 @@ class DatabaseBackup extends Model
         5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
         9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
     ];
+
+    /**
+     * Decrypt the stored password for authorized ICT admin
+     */
+    public function getDecryptedPassword(): ?string
+    {
+        if (!$this->encrypted_password) return null;
+        try {
+            return \Illuminate\Support\Facades\Crypt::decryptString($this->encrypted_password);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Read the companion Markdown guide file if available
+     */
+    public function getMdContent(): ?string
+    {
+        if (!$this->md_file_path || !Storage::disk('local')->exists($this->md_file_path)) {
+            return null;
+        }
+        return Storage::disk('local')->get($this->md_file_path);
+    }
 
     public function creator(): BelongsTo
     {

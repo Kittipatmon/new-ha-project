@@ -151,4 +151,56 @@ class DatabaseBackupController extends Controller
                 ->with('error', "เกิดข้อผิดพลาดในการทำความสะอาด: " . $e->getMessage());
         }
     }
+
+    /**
+     * Download or view the companion Markdown guide file (.md)
+     */
+    public function downloadMd(int $id)
+    {
+        $backup = DatabaseBackup::findOrFail($id);
+
+        if (!$backup->md_file_path || !Storage::disk('local')->exists($backup->md_file_path)) {
+            return back()->with('error', 'ไม่พบไฟล์คู่มือ .md ในระบบจัดเก็บ');
+        }
+
+        $mdName = basename($backup->md_file_path);
+        return Response::download(Storage::disk('local')->path($backup->md_file_path), $mdName, [
+            'Content-Type' => 'text/markdown',
+        ]);
+    }
+
+    /**
+     * Reveal password for authorized Admin (AJAX JSON) with security audit trail
+     */
+    public function showPassword(int $id)
+    {
+        $backup = DatabaseBackup::findOrFail($id);
+        $password = $backup->getDecryptedPassword();
+
+        if (!$password) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ไม่พบข้อมูลรหัสผ่านสำหรับไฟล์นี้ หรือไฟล์นี้ไม่ได้ถูกเข้ารหัส',
+            ], 404);
+        }
+
+        if (class_exists(AuditLogService::class)) {
+            AuditLogService::log(
+                action: 'read',
+                description: "ผู้ดูแลระบบเปิดดูรหัสผ่านถอดรหัสไฟล์สำรองฐานข้อมูล: {$backup->filename}",
+                model: $backup,
+                module: 'system',
+                moduleName: 'ระบบสำรองฐานข้อมูลอัตโนมัติ',
+                user: Auth::user()
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'filename' => $backup->filename,
+            'password' => $password,
+            'email_sent_to' => $backup->email_sent_to ?: 'ไม่ได้ระบุ',
+            'email_sent_at' => $backup->email_sent_at ? $backup->email_sent_at->format('d/m/Y H:i:s') : '-',
+        ]);
+    }
 }

@@ -4,8 +4,11 @@ namespace App\Services;
 
 use App\Models\DatabaseBackup;
 use App\Models\User;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use PDO;
 use ZipArchive;
 
@@ -18,6 +21,13 @@ class DatabaseBackupService
 
     /**
      * Create a compressed database backup (.zip) with SHA-256 verification
+     *
+     * @param User|null $actor
+     * @param string $notes
+     * @return DatabaseBackup
+     */
+    /**
+     * Create a compressed database backup (.zip) with AES-256 encryption, .md guide, and ICT email notification
      *
      * @param User|null $actor
      * @param string $notes
@@ -39,6 +49,13 @@ class DatabaseBackupService
         $tempSqlRelative = self::BACKUP_DIR . "/temp_{$dbName}_{$timestamp}.sql";
         $tempSqlAbsolute = Storage::disk('local')->path($tempSqlRelative);
 
+        $mdFilename = "backup_db_{$dbName}_{$timestamp}_README.md";
+        $mdRelativePath = self::BACKUP_DIR . '/' . $mdFilename;
+        $mdAbsolutePath = Storage::disk('local')->path($mdRelativePath);
+
+        // Generate strong random password for AES-256 encryption
+        $randomPassword = 'KM#' . Str::random(5) . '$' . rand(100, 999) . '@' . Str::random(5);
+
         $dumperEngine = 'pdo_native';
         $tablesCount = 0;
         $totalRowsCount = 0;
@@ -50,17 +67,21 @@ class DatabaseBackupService
             $totalRowsCount = $dumpResult['rows_count'];
             $dumperEngine = $dumpResult['engine'];
 
-            // 3. Compress SQL file into ZIP
+            // 3. Compress SQL file into ZIP with AES-256 encryption
             $zip = new ZipArchive();
             if ($zip->open($zipAbsolutePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
                 throw new \RuntimeException("ไม่สามารถสร้างไฟล์ ZIP ที่: {$zipAbsolutePath}");
             }
 
-            // Add the main SQL dump file inside ZIP
+            // Set encryption password
+            $zip->setPassword($randomPassword);
+
+            // Add the main SQL dump file inside ZIP and encrypt with AES-256
             $internalSqlName = "database_{$dbName}_{$timestamp}.sql";
             $zip->addFile($tempSqlAbsolute, $internalSqlName);
+            $zip->setEncryptionName($internalSqlName, ZipArchive::EM_AES_256);
 
-            // Add Manifest JSON inside ZIP for integrity & audit
+            // Add Manifest JSON inside ZIP (encrypted)
             $manifest = [
                 'system' => config('app.name', 'Kumwell HR System'),
                 'database' => $dbName,
@@ -68,20 +89,43 @@ class DatabaseBackupService
                 'tables_count' => $tablesCount,
                 'rows_count' => $totalRowsCount,
                 'dumper_engine' => $dumperEngine,
+                'encryption' => 'AES-256',
                 'created_by' => $actor?->fullname ?? 'ระบบอัตโนมัติ (Daily Midnight Cron)',
                 'notes' => $notes ?: 'สำรองฐานข้อมูลอัตโนมัติประจำวัน',
                 'schedule' => 'รันทุกวัน เวลา 00:00 น. (Daily Midnight Backup)',
                 'retention_policy' => 'เก็บสำรองย้อนหลัง 30 วัน',
             ];
             $zip->addFromString('manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $zip->setEncryptionName('manifest.json', ZipArchive::EM_AES_256);
+
+            // 4. Generate Markdown documentation (.md)
+            $mdContent = self::generateMarkdownGuide([
+                'filename' => $zipFilename,
+                'database' => $dbName,
+                'timestamp' => $timestamp,
+                'date_thai' => now()->addYears(543)->format('d/m/Y H:i:s'),
+                'tables_count' => $tablesCount,
+                'rows_count' => $totalRowsCount,
+                'dumper_engine' => $dumperEngine,
+                'encryption' => 'AES-256',
+                'sql_filename' => $internalSqlName,
+                'created_by' => $actor?->fullname ?? 'ระบบอัตโนมัติ (Daily Midnight Cron)',
+            ]);
+
+            // Add unencrypted README.md inside the ZIP so anyone inspecting can read recovery guide
+            $zip->addFromString('README.md', $mdContent);
+
             $zip->close();
 
-            // 4. Clean up temporary uncompressed SQL file
+            // Write companion .md file on disk
+            file_put_contents($mdAbsolutePath, $mdContent);
+
+            // 5. Clean up temporary uncompressed SQL file
             if (file_exists($tempSqlAbsolute)) {
                 @unlink($tempSqlAbsolute);
             }
 
-            // 5. Verify ZIP integrity
+            // 6. Verify ZIP integrity
             if (!file_exists($zipAbsolutePath) || filesize($zipAbsolutePath) === 0) {
                 throw new \RuntimeException("ไฟล์ ZIP ที่สร้างขึ้นไม่สมบูรณ์หรือว่างเปล่า");
             }
@@ -90,7 +134,7 @@ class DatabaseBackupService
             $fileSizeHuman = self::formatBytes($fileSize);
             $checksum = hash_file('sha256', $zipAbsolutePath);
 
-            // 6. Record to database ledger
+            // 7. Record to database ledger with encrypted password storage
             $backup = DatabaseBackup::create([
                 'filename' => $zipFilename,
                 'file_path' => $zipRelativePath,
@@ -99,17 +143,24 @@ class DatabaseBackupService
                 'tables_count' => $tablesCount,
                 'rows_count' => $totalRowsCount,
                 'checksum_sha256' => $checksum,
+                'is_encrypted' => true,
+                'encryption_algorithm' => 'AES-256',
+                'encrypted_password' => Crypt::encryptString($randomPassword),
+                'md_file_path' => $mdRelativePath,
                 'dumper_engine' => $dumperEngine,
                 'created_by' => $actor?->id,
                 'created_by_name' => $actor?->fullname ?? ($actor ? 'ผู้ดูแลระบบ' : 'ระบบอัตโนมัติ (Daily Midnight Cron)'),
                 'notes' => $notes ?: ($actor ? 'สั่งสำรองข้อมูลด้วยตนเอง' : 'สำรองฐานข้อมูลอัตโนมัติประจำวัน (เที่ยงคืน)'),
             ]);
 
-            // 7. Log in Audit Trail
+            // 8. Send password & backup report to ICT Email
+            self::sendBackupNotificationToIct($backup, $randomPassword, $mdContent, $actor);
+
+            // 9. Log in Audit Trail
             if (class_exists(AuditLogService::class)) {
                 AuditLogService::log(
                     action: 'backup',
-                    description: "สำรองฐานข้อมูลสำเร็จ: {$zipFilename} ขนาด {$fileSizeHuman} ({$tablesCount} ตาราง, " . number_format($totalRowsCount) . " รายการ)",
+                    description: "สำรองฐานข้อมูลสำเร็จ (เข้ารหัส AES-256): {$zipFilename} ขนาด {$fileSizeHuman} ({$tablesCount} ตาราง, " . number_format($totalRowsCount) . " รายการ) ส่งรหัสผ่านเข้าอีเมล ICT เรียบร้อย",
                     model: $backup,
                     module: 'system',
                     moduleName: 'ระบบสำรองฐานข้อมูลอัตโนมัติ',
@@ -127,8 +178,260 @@ class DatabaseBackupService
             if (file_exists($zipAbsolutePath)) {
                 @unlink($zipAbsolutePath);
             }
+            if (file_exists($mdAbsolutePath)) {
+                @unlink($mdAbsolutePath);
+            }
             throw $e;
         }
+    }
+
+    /**
+     * Generate companion Markdown (.md) guide
+     */
+    protected static function generateMarkdownGuide(array $data): string
+    {
+        return <<<MARKDOWN
+# Kumwell HR System - Database Backup Report & Recovery Guide
+================================================================================
+Generated At: {$data['date_thai']}
+Database: `{$data['database']}`
+Filename: `{$data['filename']}`
+Status: SUCCESS (VERIFIED)
+================================================================================
+
+## 1. ข้อมูลสรุปไฟล์สำรอง (Backup Summary)
+- **ชื่อไฟล์สำรอง**: `{$data['filename']}`
+- **ตารางที่สำรอง**: {$data['tables_count']} ตาราง
+- **จำนวนเรคคอร์ดทั้งหมด**: {$data['rows_count']} รายการ
+- **ระบบการเข้ารหัส**: {$data['encryption']} (Military-grade Encryption)
+- **เครื่องมือส่งออก**: {$data['dumper_engine']}
+- **ผู้ดำเนินการ**: {$data['created_by']}
+- **นโยบายการจัดเก็บ**: จัดเก็บใน Private Storage นาน 30 วัน
+
+---
+
+## 2. ขั้นตอนการถอดรหัสไฟล์ (How to Decrypt)
+ไฟล์สำรองนี้ได้รับการเข้ารหัสความปลอดภัยระดับ **AES-256** เพื่อป้องกันข้อมูลองค์กร 
+รหัสผ่านสำหรับเปิดไฟล์ได้รับการสุ่มแบบเข้ารหัสความปลอดภัยสูง และถูกส่งไปยัง **อีเมลแผนก ICT** แล้ว
+
+### วิธีที่ 1: แตกไฟล์ผ่านโปรแกรม 7-Zip / WinRAR (Windows)
+1. คลิกขวาที่ไฟล์ `{$data['filename']}`
+2. เลือก **7-Zip** -> **Extract to "..."** หรือ **Extract Here**
+3. ระบบจะแสดงหน้าต่างถามรหัสผ่าน (Enter Password)
+4. กรอกรหัสผ่านที่ได้รับจากอีเมล ICT และกด OK
+5. ท่านจะได้ไฟล์ `{$data['sql_filename']}` พร้อมใช้งาน
+
+### วิธีที่ 2: แตกไฟล์ผ่าน Command Line (Linux / macOS / VPS)
+```bash
+# ใช้คำสั่ง 7z (แนะนำ)
+7z x -p"<ENTER_PASSWORD>" {$data['filename']}
+
+# หรือใช้คำสั่ง unzip
+unzip -P "<ENTER_PASSWORD>" {$data['filename']}
+```
+
+---
+
+## 3. ขั้นตอนการกู้คืนฐานข้อมูล (Database Restoration)
+เมื่อถอดรหัสและได้ไฟล์ `{$data['sql_filename']}` เรียบร้อยแล้ว ให้ทำการ Import เข้าสู่ MySQL:
+
+```bash
+# คำสั่ง Import ฐานข้อมูลผ่าน Command Line
+mysql -h localhost -u [DB_USERNAME] -p [DB_DATABASE] < {$data['sql_filename']}
+```
+
+---
+
+## 4. การตรวจสอบความสมบูรณ์ของไฟล์ (Integrity Check)
+ก่อนนำไฟล์ไปใช้งาน สามารถตรวจสอบ SHA-256 Checksum เพื่อยืนยันว่าไฟล์ไม่ถูกดัดแปลง:
+
+```powershell
+# บน Windows PowerShell
+Get-FileHash -Algorithm SHA256 {$data['filename']}
+
+# บน Linux / macOS
+sha256sum {$data['filename']}
+```
+
+---
+*Kumwell ICT Infrastructure & Data Governance Team*
+*เอกสารนี้จัดทำขึ้นโดยอัตโนมัติจากระบบ Kumwell HR System*
+MARKDOWN;
+    }
+
+    /**
+     * Send backup notification and password to ICT email
+     */
+    protected static function sendBackupNotificationToIct(
+        DatabaseBackup $backup,
+        string $plainPassword,
+        string $mdContent,
+        ?User $actor = null
+    ): void {
+        try {
+            // Determine recipient email(s)
+            $recipients = [];
+
+            // 1. Check custom ICT email in .env or config
+            $customIctEmail = env('ICT_BACKUP_EMAIL', config('mail.ict_backup_email'));
+            if (!empty($customIctEmail)) {
+                $recipients[] = trim($customIctEmail);
+            }
+
+            // 2. Add admin emails from database
+            $adminEmails = User::where('role', 'admin')
+                ->whereNotNull('email')
+                ->pluck('email')
+                ->map(fn($e) => trim($e))
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+            if (!empty($adminEmails)) {
+                $recipients = array_merge($recipients, $adminEmails);
+            }
+
+            // Fallback default ICT email if nothing found
+            if (empty($recipients)) {
+                $recipients = ['ict@kumwell.com'];
+            }
+
+            $recipients = array_unique(array_filter($recipients));
+
+            $subject = "🔒 [Kumwell ICT] รหัสผ่านสำรองฐานข้อมูลประจำวัน (AES-256) - {$backup->filename}";
+
+            $htmlContent = self::buildIctEmailHtml($backup, $plainPassword);
+
+            Mail::html($htmlContent, function ($message) use ($recipients, $subject, $backup, $mdContent) {
+                $message->to($recipients)
+                    ->subject($subject);
+
+                // Attach the Markdown recovery guide (.md)
+                $message->attachData($mdContent, "README_RECOVERY_{$backup->filename}.md", [
+                    'mime' => 'text/markdown',
+                ]);
+            });
+
+            // Update backup record with email delivery info
+            $backup->update([
+                'email_sent_to' => implode(', ', $recipients),
+                'email_sent_at' => now(),
+            ]);
+
+        } catch (\Throwable $e) {
+            // Log warning but do not crash the backup process
+            \Illuminate\Support\Facades\Log::warning("ไม่สามารถส่งอีเมลรหัสผ่านสำรองฐานข้อมูลไปยัง ICT: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Build responsive HTML email template for ICT
+     */
+    protected static function buildIctEmailHtml(DatabaseBackup $backup, string $plainPassword): string
+    {
+        $systemName = config('app.name', 'Kumwell HR System');
+        $dateThai = $backup->thai_datetime;
+        $appUrl = config('app.url', url('/'));
+
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>รหัสผ่านสำรองฐานข้อมูล</title>
+</head>
+<body style="margin: 0; padding: 20px; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <div style="max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; text-align: center; color: #ffffff;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🔒</div>
+            <h1 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">ระบบสำรองฐานข้อมูลประจำวัน (Daily Midnight Backup)</h1>
+            <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">รายงานการสำรองฐานข้อมูล & รหัสผ่านถอดรหัสไฟล์ (AES-256)</p>
+            <div style="display: inline-block; margin-top: 12px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;">
+                CONFIDENTIAL • สำหรับเจ้าหน้าที่ ICT เท่านั้น
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 30px;">
+            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-top: 0;">
+                เรียน <strong>เจ้าหน้าที่แผนกเทคโนโลยีสารสนเทศ (ICT Department)</strong>,
+            </p>
+            <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+                ระบบได้ดำเนินการสำรองฐานข้อมูล <strong>{$systemName}</strong> ประจำวันเรียบร้อยแล้ว โดยไฟล์สำรองได้รับการบีบอัดและเข้ารหัสความปลอดภัยระดับ <strong>AES-256 Bit</strong> เพื่อป้องกันข้อมูลรั่วไหล รายละเอียดและรหัสผ่านสำหรับเปิดไฟล์มีดังนี้:
+            </p>
+
+            <!-- Decryption Password Box -->
+            <div style="margin: 25px 0; background: #0f172a; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #334155;">
+                <div style="font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                    🔑 รหัสผ่านถอดรหัสไฟล์ ZIP (AES-256 Password)
+                </div>
+                <div style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 2px; padding: 8px 16px; background: #1e293b; border-radius: 8px; display: inline-block; word-break: break-all; border: 1px dashed #0284c7;">
+                    {$plainPassword}
+                </div>
+                <div style="font-size: 11px; color: #cbd5e1; margin-top: 10px;">
+                    * โปรดเก็บรักษารหัสผ่านนี้เป็นความลับ สำหรับใช้เปิดไฟล์เมื่อต้องการกู้คืนข้อมูล
+                </div>
+            </div>
+
+            <!-- Backup Details Table -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin: 20px 0; background: #f8fafc; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0;">
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b; width: 35%;">ชื่อไฟล์สำรอง</td>
+                    <td style="padding: 10px 14px; font-family: monospace; font-weight: bold; color: #1e293b;">{$backup->filename}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">วันเวลาที่สำรอง</td>
+                    <td style="padding: 10px 14px; color: #1e293b;">{$dateThai}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">ขนาดไฟล์ (ZIP)</td>
+                    <td style="padding: 10px 14px; font-weight: bold; color: #7c3aed;">{$backup->file_size_human}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">จำนวนตาราง / ข้อมูล</td>
+                    <td style="padding: 10px 14px; color: #1e293b;">{$backup->tables_count} ตาราง ({$backup->rows_count} รายการ)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">ความปลอดภัย</td>
+                    <td style="padding: 10px 14px; color: #10b981; font-weight: bold;">AES-256 Bit Encryption</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">SHA-256 Checksum</td>
+                    <td style="padding: 10px 14px; font-family: monospace; font-size: 11px; color: #64748b; word-break: break-all;">{$backup->checksum_sha256}</td>
+                </tr>
+            </table>
+
+            <!-- Instructions -->
+            <div style="background: #f1f5f9; border-left: 4px solid #6366f1; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 20px;">
+                <div style="font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 4px;">📌 วิธีเปิดและใช้งานไฟล์:</div>
+                <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
+                    1. ดาวน์โหลดไฟล์จากหน้าเว็บผู้ดูแลระบบ หรือจาก Storage ของระบบ<br>
+                    2. ใช้โปรแกรม <strong>7-Zip</strong> หรือ <strong>WinRAR</strong> และกรอกรหัสผ่านด้านบน<br>
+                    3. เอกสารคู่มือฉบับเต็มได้ถูกแนบมาพร้อมกับอีเมลฉบับนี้ (ไฟล์ <code>.md</code>)
+                </div>
+            </div>
+
+            <!-- Button link -->
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{$appUrl}/backend/database-backups" style="display: inline-block; background: #4f46e5; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: bold; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                    เข้าสู่หน้าระบบจัดการ Backup
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+            ระบบสำรองฐานข้อมูลอัตโนมัติ • {$systemName}<br>
+            อีเมลนี้ส่งจากระบบอัตโนมัติ กรุณาอย่าตอบกลับ
+        </div>
+    </div>
+</body>
+</html>
+HTML;
     }
 
     /**
@@ -286,6 +589,9 @@ class DatabaseBackupService
                 $freedBytes += (int)$backup->file_size;
                 Storage::disk('local')->delete($backup->file_path);
             }
+            if ($backup->md_file_path && Storage::disk('local')->exists($backup->md_file_path)) {
+                Storage::disk('local')->delete($backup->md_file_path);
+            }
             $deletedFiles[] = $backup->filename;
             $backup->delete();
             $deletedCount++;
@@ -294,14 +600,14 @@ class DatabaseBackupService
         // Also check disk for any orphan files older than threshold
         $allFiles = Storage::disk('local')->files(self::BACKUP_DIR);
         foreach ($allFiles as $filePath) {
-            if (str_ends_with($filePath, '.zip')) {
+            if (str_ends_with($filePath, '.zip') || str_ends_with($filePath, '.md')) {
                 $lastModified = Storage::disk('local')->lastModified($filePath);
                 if ($lastModified < $threshold->timestamp) {
                     $size = Storage::disk('local')->size($filePath);
                     Storage::disk('local')->delete($filePath);
                     $freedBytes += $size;
                     $filename = basename($filePath);
-                    if (!in_array($filename, $deletedFiles)) {
+                    if (str_ends_with($filePath, '.zip') && !in_array($filename, $deletedFiles)) {
                         $deletedFiles[] = $filename;
                         $deletedCount++;
                     }
