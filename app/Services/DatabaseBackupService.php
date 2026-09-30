@@ -325,6 +325,102 @@ TEXT;
     }
 
     /**
+     * Send backup decryption password directly to authorized requester's verified email
+     */
+    public static function sendPasswordToRequesterEmail(
+        DatabaseBackup $backup,
+        string $plainPassword,
+        string $recipientEmail,
+        string $recipientName,
+        ?User $actor = null
+    ): array {
+        $subject = "🔑 [Kumwell ICT] รหัสผ่านถอดรหัสไฟล์สำรองฐานข้อมูล (AES-256) - {$backup->filename}";
+        $htmlContent = self::buildIctEmailHtml($backup, $plainPassword);
+
+        // Get companion guide content if available
+        $txtContent = $backup->getMdContent();
+        if (!$txtContent) {
+            $txtContent = self::generateTextGuide([
+                'filename' => $backup->filename,
+                'sql_filename' => str_replace('.zip', '.sql', $backup->filename),
+                'database' => config('database.connections.mysql.database', 'appkum_ha'),
+                'tables_count' => $backup->tables_count,
+                'rows_count' => $backup->rows_count,
+                'encryption' => $backup->encryption_algorithm ?: 'AES-256',
+                'dumper_engine' => $backup->dumper_engine ?: 'pdo_native',
+                'created_by' => $backup->created_by_name ?: 'เจ้าหน้าที่ ICT',
+                'date_thai' => $backup->thai_datetime,
+            ]);
+        }
+
+        // Try sending via Microsoft Graph API first if actor has active Microsoft token
+        if ($actor && $actor->hasMicrosoftConnected()) {
+            try {
+                $graphService = app(MicrosoftGraphService::class);
+                $attachments = [];
+                if (!empty($txtContent)) {
+                    $txtFilename = str_replace('.zip', '_README.txt', $backup->filename);
+                    $attachments[] = [
+                        'name' => $txtFilename,
+                        'contentType' => 'text/plain; charset=utf-8',
+                        'contentBytes' => base64_encode($txtContent),
+                    ];
+                }
+
+                $sent = $graphService->sendMail(
+                    $actor,
+                    $recipientEmail,
+                    $recipientName,
+                    $subject,
+                    $htmlContent,
+                    $attachments
+                );
+
+                if ($sent) {
+                    return [
+                        'success' => true,
+                        'sent_via' => 'microsoft_graph',
+                        'recipient' => $recipientEmail,
+                        'subject' => $subject,
+                    ];
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::info("Could not send password via Microsoft Graph API ({$e->getMessage()}), falling back to SMTP...");
+            }
+        }
+
+        // Fallback to Laravel Mail (SMTP)
+        try {
+            Mail::html($htmlContent, function ($message) use ($recipientEmail, $recipientName, $subject, $backup, $txtContent) {
+                $message->to($recipientEmail, $recipientName)
+                    ->subject($subject);
+
+                if (!empty($txtContent)) {
+                    $txtFilename = str_replace('.zip', '_README.txt', $backup->filename);
+                    $message->attachData($txtContent, $txtFilename, [
+                        'mime' => 'text/plain; charset=utf-8',
+                    ]);
+                }
+            });
+
+            return [
+                'success' => true,
+                'sent_via' => 'smtp',
+                'recipient' => $recipientEmail,
+                'subject' => $subject,
+            ];
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed to send password email to {$recipientEmail}: " . $e->getMessage());
+            return [
+                'success' => false,
+                'sent_via' => 'failed',
+                'recipient' => $recipientEmail,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Build responsive HTML email template for ICT
      */
     protected static function buildIctEmailHtml(DatabaseBackup $backup, string $plainPassword): string

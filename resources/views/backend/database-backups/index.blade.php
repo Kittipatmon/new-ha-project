@@ -20,6 +20,7 @@
     selectedBackupFilename: '',
     authErrorMsg: '',
     isVerifyingConnected: false,
+    showPasswordOnScreen: false,
 
     openPasswordModal(id, filename) {
         this.selectedBackupId = id;
@@ -27,6 +28,7 @@
         this.currentPasswordInfo = null;
         this.authErrorMsg = '';
         this.copied = false;
+        this.showPasswordOnScreen = false;
         this.passwordModalOpen = true;
     },
 
@@ -640,66 +642,114 @@
                         <span class="font-mono text-xs font-bold text-slate-800 dark:text-white break-all" x-text="selectedBackupFilename"></span>
                     </div>
 
-                    <!-- State A: Not requested yet -> Show "กดขอรหัส" button -->
+                    <!-- State A: Not requested yet -> Show "ส่งรหัสผ่านเข้าอีเมล" button -->
                     <template x-if="!currentPasswordInfo">
-                        <div class="py-4 text-center">
+                        <div class="py-3 text-center space-y-3">
+                            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 text-left space-y-1">
+                                <div class="font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                                    <i class="fa-solid fa-paper-plane text-indigo-600"></i>
+                                    <span>ระบบจะจัดส่งรหัสผ่านไปยังอีเมลของคุณ</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                                    เมื่อกดปุ่มด้านล่าง รหัสผ่านถอดรหัสไฟล์ (AES-256) พร้อมเอกสารคู่มือจะถูกส่งตรงไปยังอีเมล: <strong class="text-indigo-600 dark:text-indigo-400 font-mono" x-text="ictEmail"></strong>
+                                </p>
+                            </div>
+
                             <button type="button" @click="requestPassword()" :disabled="isFetchingPassword"
-                                class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 mx-auto">
+                                class="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2">
                                 <template x-if="!isFetchingPassword">
-                                    <i class="fa-solid fa-key"></i>
+                                    <i class="fa-solid fa-paper-plane text-sm"></i>
                                 </template>
                                 <template x-if="isFetchingPassword">
-                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                    <i class="fa-solid fa-spinner fa-spin text-sm"></i>
                                 </template>
-                                <span x-text="isFetchingPassword ? 'กำลังถอดรหัสและบันทึก Audit Log...' : 'กดขอรหัสผ่าน (Request Decryption Password)'"></span>
+                                <span x-text="isFetchingPassword ? 'กำลังจัดส่งรหัสผ่านเข้าอีเมล...' : `ส่งรหัสผ่านเข้าอีเมล (${ictEmail})`"></span>
                             </button>
-                            <p class="text-[11px] text-slate-400 mt-2">
-                                * การกดขอรหัสผ่านจะถูกบันทึกลงในระบบ Audit Log เพื่อความโปร่งใสและความปลอดภัย
+                            <p class="text-[10px] text-slate-400">
+                                * การจัดส่งรหัสผ่านจะถูกบันทึกลงในระบบ Security Audit Log เพื่อความโปร่งใส
                             </p>
                         </div>
                     </template>
 
-                    <!-- State B: Password Revealed! -->
+                    <!-- State B: Email Dispatched! -->
                     <template x-if="currentPasswordInfo">
                         <div class="space-y-4">
-                            <!-- Password Box -->
-                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center relative group">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                                    AES-256 Decryption Password
-                                </span>
-                                <div class="font-mono text-xl font-black text-cyan-400 tracking-wider break-all select-all py-1"
-                                    x-text="currentPasswordInfo.password">
+                            <!-- Success Email Dispatched Card -->
+                            <div class="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-white dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-[#1E2129] border border-emerald-200 dark:border-emerald-800/60 text-center">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-2.5 shadow-md shadow-emerald-600/25">
+                                    <i class="fa-solid fa-paper-plane text-xl"></i>
                                 </div>
+                                <h4 class="text-sm font-black text-slate-800 dark:text-white">
+                                    ส่งรหัสผ่านเข้าอีเมลเรียบร้อยแล้ว!
+                                </h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-sm mx-auto leading-normal">
+                                    ระบบได้ส่งรหัสผ่าน AES-256 พร้อมไฟล์คู่มือแนะนำการกู้คืน (.txt) ตรงไปยังกล่องข้อความของคุณแล้ว
+                                </p>
+
+                                <div class="mt-3.5 p-3 rounded-xl bg-white/90 dark:bg-slate-900/80 border border-emerald-100 dark:border-emerald-900/40 text-xs text-left space-y-1.5 font-sans">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-400 text-[11px] font-semibold">ส่งไปยังอีเมล:</span>
+                                        <span class="font-mono text-emerald-700 dark:text-emerald-300 font-bold" x-text="currentPasswordInfo.recipient?.email || ictEmail"></span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-400 text-[11px] font-semibold">ผู้รับ (แผนก ICT):</span>
+                                        <span class="text-slate-700 dark:text-slate-200 font-medium" x-text="currentPasswordInfo.recipient?.name || ictName"></span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-400 text-[11px] font-semibold">เวลาที่จัดส่ง:</span>
+                                        <span class="font-mono text-slate-700 dark:text-slate-200" x-text="currentPasswordInfo.recipient?.sent_at || '-'"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons: Outlook Web & Resend -->
                                 <div class="mt-3 flex items-center justify-center gap-2">
-                                    <button type="button" @click="copyPasswordText()"
-                                        class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
-                                        <i :class="copied ? 'fa-solid fa-check text-emerald-300' : 'fa-regular fa-copy'"></i>
-                                        <span x-text="copied ? 'คัดลอกรหัสผ่านแล้ว!' : 'คัดลอกรหัสผ่าน'"></span>
+                                    <a href="https://outlook.office.com/mail/" target="_blank"
+                                        class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                        <span>เปิด Microsoft Outlook</span>
+                                    </a>
+                                    <button type="button" @click="requestPassword()" :disabled="isFetchingPassword"
+                                        class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition">
+                                        <i class="fa-solid fa-rotate-right mr-1"></i> ส่งซ้ำอีกครั้ง
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Requester Info -->
-                            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-1">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-500 font-semibold">ผู้ขอรับรหัสผ่าน:</span>
-                                    <span class="text-slate-800 dark:text-slate-200 font-bold" x-text="currentPasswordInfo.requester?.name || ictName"></span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-500 font-semibold">อีเมล Microsoft:</span>
-                                    <span class="font-mono text-slate-800 dark:text-slate-200 font-bold" x-text="currentPasswordInfo.requester?.email || ictEmail"></span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-500 font-semibold">เวลาที่ตรวจสอบ:</span>
-                                    <span class="text-slate-800 dark:text-slate-200" x-text="currentPasswordInfo.requester?.time || '-'"></span>
-                                </div>
+                            <!-- Optional Reveal on Screen Toggle -->
+                            <div class="text-center pt-0.5">
+                                <button type="button" @click="showPasswordOnScreen = !showPasswordOnScreen"
+                                    class="text-xs text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition inline-flex items-center gap-1.5">
+                                    <i :class="showPasswordOnScreen ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                                    <span x-text="showPasswordOnScreen ? 'ซ่อนรหัสผ่านบนหน้านี้' : 'ดูรหัสผ่านบนหน้านี้ด้วย (Reveal on screen)'"></span>
+                                </button>
                             </div>
 
-                            <!-- Quick Command -->
-                            <div class="p-3 rounded-xl bg-slate-900/90 text-slate-300 font-mono text-[11px] space-y-1">
-                                <span class="text-slate-400 text-[10px] block">คำสั่งแตกไฟล์ผ่าน Linux / macOS CLI:</span>
-                                <code class="text-cyan-300 select-all block" x-text="`7z x -p&quot;${currentPasswordInfo.password}&quot; ${currentPasswordInfo.filename}`"></code>
-                            </div>
+                            <!-- Revealed Password Box (if toggled) -->
+                            <template x-if="showPasswordOnScreen">
+                                <div class="space-y-3 pt-1">
+                                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center relative group">
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                                            AES-256 Decryption Password
+                                        </span>
+                                        <div class="font-mono text-xl font-black text-cyan-400 tracking-wider break-all select-all py-1"
+                                            x-text="currentPasswordInfo.password">
+                                        </div>
+                                        <div class="mt-3 flex items-center justify-center gap-2">
+                                            <button type="button" @click="copyPasswordText()"
+                                                class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+                                                <i :class="copied ? 'fa-solid fa-check text-emerald-300' : 'fa-regular fa-copy'"></i>
+                                                <span x-text="copied ? 'คัดลอกรหัสผ่านแล้ว!' : 'คัดลอกรหัสผ่าน'"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Command -->
+                                    <div class="p-3 rounded-xl bg-slate-900/90 text-slate-300 font-mono text-[11px] space-y-1">
+                                        <span class="text-slate-400 text-[10px] block">คำสั่งแตกไฟล์ผ่าน Linux / macOS CLI:</span>
+                                        <code class="text-cyan-300 select-all block" x-text="`7z x -p&quot;${currentPasswordInfo.password}&quot; ${currentPasswordInfo.filename}`"></code>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </template>
 

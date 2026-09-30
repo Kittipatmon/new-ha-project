@@ -338,10 +338,22 @@ class DatabaseBackupController extends Controller
             ], 404);
         }
 
+        $recipientEmail = $ictAuth['email'];
+        $recipientName = $ictAuth['name'] ?: 'เจ้าหน้าที่ ICT';
+
+        // Dispatch password directly to verified Microsoft email
+        $mailResult = DatabaseBackupService::sendPasswordToRequesterEmail(
+            $backup,
+            $password,
+            $recipientEmail,
+            $recipientName,
+            Auth::user()
+        );
+
         if (class_exists(AuditLogService::class)) {
             AuditLogService::log(
-                action: 'read',
-                description: "เจ้าหน้าที่แผนก ICT ({$ictAuth['name']}, {$ictAuth['email']}) ขอรับรหัสผ่านถอดรหัสไฟล์: {$backup->filename}",
+                action: 'export',
+                description: "เจ้าหน้าที่แผนก ICT ({$recipientName}, {$recipientEmail}) ขอรับรหัสผ่านถอดรหัสไฟล์: {$backup->filename} -> ระบบจัดส่งรหัสผ่านไปยังอีเมล {$recipientEmail} เรียบร้อยแล้ว",
                 model: $backup,
                 module: 'system',
                 moduleName: 'ระบบสำรองฐานข้อมูลอัตโนมัติ',
@@ -351,16 +363,17 @@ class DatabaseBackupController extends Controller
 
         return response()->json([
             'success' => true,
+            'email_sent' => $mailResult['success'],
+            'sent_via' => $mailResult['sent_via'] ?? 'smtp',
             'filename' => $backup->filename,
             'password' => $password,
-            'email_sent_to' => $backup->email_sent_to ?: 'ไม่ได้ระบุ',
-            'email_sent_at' => $backup->email_sent_at ? $backup->email_sent_at->format('d/m/Y H:i:s') : '-',
-            'requester' => [
-                'name' => $ictAuth['name'],
-                'email' => $ictAuth['email'],
+            'recipient' => [
+                'name' => $recipientName,
+                'email' => $recipientEmail,
                 'department' => $ictAuth['department'],
-                'time' => $ictAuth['time_human'],
+                'sent_at' => now()->format('d/m/Y H:i:s'),
             ],
+            'message' => "ระบบได้จัดส่งรหัสผ่านถอดรหัสไฟล์ (AES-256) ไปยังอีเมล {$recipientEmail} เรียบร้อยแล้ว กรุณาตรวจสอบกล่องข้อความ (Inbox) ของคุณ",
         ]);
     }
 }
