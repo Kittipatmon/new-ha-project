@@ -351,6 +351,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}/download-txt', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'downloadTxt'])->name('download-txt');
             Route::get('/{id}/download-md', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'downloadMd'])->name('download-md');
             Route::get('/{id}/password', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'showPassword'])->name('show-password');
+            Route::post('/verify-connected-microsoft', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'verifyConnectedMicrosoft'])->name('verify-connected-microsoft');
+            Route::post('/revoke-ict-auth', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'revokeIctAuth'])->name('revoke-ict-auth');
             Route::delete('/{id}', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'destroy'])->name('destroy');
             Route::post('/clean-old', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'cleanOld'])->name('clean-old');
         });

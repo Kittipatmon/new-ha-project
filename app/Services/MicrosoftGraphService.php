@@ -76,7 +76,7 @@ class MicrosoftGraphService
 
         // Get user profile from Microsoft Graph
         $profileResponse = Http::withToken($tokenData['access_token'])
-            ->get('https://graph.microsoft.com/v1.0/me');
+            ->get('https://graph.microsoft.com/v1.0/me?$select=id,displayName,mail,userPrincipalName,jobTitle,department,officeLocation');
 
         $profile = $profileResponse->successful() ? $profileResponse->json() : null;
 

@@ -10,26 +10,78 @@
     isFetchingPassword: false,
     currentPasswordInfo: null,
     copied: false,
+    isIctVerified: {{ $ictAuth['is_verified'] ? 'true' : 'false' }},
+    ictEmail: '{{ addslashes($ictAuth['email'] ?? '') }}',
+    ictName: '{{ addslashes($ictAuth['name'] ?? '') }}',
+    ictDepartment: '{{ addslashes($ictAuth['department'] ?? 'Information Communication Technology (ICT)') }}',
+    hasConnectedMicrosoft: {{ $ictAuth['has_connected_microsoft'] ? 'true' : 'false' }},
+    connectedEmail: '{{ addslashes($ictAuth['connected_email'] ?? '') }}',
+    selectedBackupId: null,
+    selectedBackupFilename: '',
+    authErrorMsg: '',
+    isVerifyingConnected: false,
 
-    async viewPassword(id) {
-        this.isFetchingPassword = true;
+    openPasswordModal(id, filename) {
+        this.selectedBackupId = id;
+        this.selectedBackupFilename = filename;
         this.currentPasswordInfo = null;
-        this.passwordModalOpen = true;
+        this.authErrorMsg = '';
         this.copied = false;
+        this.passwordModalOpen = true;
+    },
+
+    async requestPassword() {
+        if (!this.selectedBackupId) return;
+        this.isFetchingPassword = true;
+        this.authErrorMsg = '';
         try {
-            const res = await fetch(`{{ url('backend/database-backups') }}/${id}/password`);
+            const res = await fetch(`{{ url('backend/database-backups') }}/${this.selectedBackupId}/password`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
             const data = await res.json();
             if (data.success) {
                 this.currentPasswordInfo = data;
             } else {
-                alert(data.message || 'ไม่สามารถดึงข้อมูลรหัสผ่านได้');
-                this.passwordModalOpen = false;
+                if (data.requires_auth) {
+                    this.isIctVerified = false;
+                }
+                this.authErrorMsg = data.message || 'ไม่สามารถดึงข้อมูลรหัสผ่านได้';
             }
         } catch (e) {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
-            this.passwordModalOpen = false;
+            this.authErrorMsg = 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
         } finally {
             this.isFetchingPassword = false;
+        }
+    },
+
+    async quickVerifyConnected() {
+        this.isVerifyingConnected = true;
+        this.authErrorMsg = '';
+        try {
+            const res = await fetch(`{{ route('backend.database-backups.verify-connected-microsoft') }}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.isIctVerified = true;
+                this.ictEmail = data.verification.email;
+                this.ictName = data.verification.name;
+                this.ictDepartment = data.verification.department;
+            } else {
+                this.authErrorMsg = data.message || 'การตรวจสอบล้มเหลว';
+            }
+        } catch (e) {
+            this.authErrorMsg = 'เกิดข้อผิดพลาดในการตรวจสอบบัญชี Microsoft';
+        } finally {
+            this.isVerifyingConnected = false;
         }
     },
 
@@ -167,22 +219,52 @@
     </div>
 
     <!-- Security & Policy Banner -->
-    <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-purple-50/50 to-white dark:from-indigo-950/20 dark:via-purple-950/10 dark:to-[#1E2129] border border-indigo-100 dark:border-indigo-900/40 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-purple-50/50 to-white dark:from-indigo-950/20 dark:via-purple-950/10 dark:to-[#1E2129] border border-indigo-100 dark:border-indigo-900/40 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div class="flex items-start gap-3.5">
             <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/20">
-                <i class="fa-solid fa-key text-lg"></i>
+                <i class="fa-solid fa-shield-halved text-lg"></i>
             </div>
             <div>
                 <h3 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <span>ความปลอดภัยระดับสูง: เข้ารหัส AES-256 + ส่งรหัสเฉพาะ ICT + คู่มือ .txt</span>
+                    <span>ความปลอดภัยระดับสูง: เข้ารหัส AES-256 + ตรวจสอบสิทธิ์แผนก ICT ผ่าน Microsoft 365</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
-                        Zero-Knowledge Security
+                        Zero-Knowledge & Role Verification
                     </span>
                 </h3>
                 <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                    ไฟล์สำรองถูกบีบอัดและใส่รหัสผ่านแบบสุ่มที่มีความปลอดภัยสูงด้วยอัลกอริทึม <strong>AES-256</strong> (ไม่สามารถเปิดได้หากไม่มีรหัสผ่าน) โดยระบบจะส่งรหัสผ่านพร้อมคู่มือการกู้คืน (<code>.txt</code>) ตรงไปยังอีเมลของแผนก ICT โดยอัตโนมัติทันทีที่สำรองเสร็จ และจัดเก็บไฟล์ไว้ใน Private Storage ปลอดภัยจากการเข้าถึงผ่านเว็บ 100%
+                    ไฟล์สำรองถูกบีบอัดและใส่รหัสผ่านแบบสุ่ม <strong>AES-256</strong> เพื่อความปลอดภัยสูงสุด การขอรับรหัสผ่านจำเป็นต้อง <strong>Login ด้วยบัญชี Microsoft 365 และผ่านการตรวจสอบว่าเป็นเจ้าหน้าที่แผนก ICT</strong> หากไม่ใช่แผนก ICT ระบบจะปฏิเสธการเข้าถึงทันที
                 </p>
             </div>
+        </div>
+
+        <!-- ICT Auth Status Badge / Action -->
+        <div class="shrink-0 flex items-center gap-2">
+            @if($ictAuth['is_verified'])
+                <div class="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-xs flex items-center gap-2.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <div>
+                        <span class="font-bold text-emerald-800 dark:text-emerald-300 block text-[11px]">ยืนยันตัวตน ICT แล้ว</span>
+                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">{{ $ictAuth['email'] }}</span>
+                    </div>
+                    <form action="{{ route('backend.database-backups.revoke-ict-auth') }}" method="POST" class="ml-1 inline">
+                        @csrf
+                        <button type="submit" class="text-[10px] text-slate-400 hover:text-rose-600 underline" title="ออกจากระบบ Microsoft หรือเปลี่ยนบัญชี">
+                            เปลี่ยนบัญชี
+                        </button>
+                    </form>
+                </div>
+            @else
+                <a href="{{ route('auth.microsoft.redirect', ['purpose' => 'backup_password']) }}"
+                    class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-xs font-bold transition flex items-center gap-2 shadow-sm border border-slate-700">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 23 23">
+                        <path fill="#f35325" d="M1 1h10v10H1z"/>
+                        <path fill="#81bc06" d="M12 1h10v10H12z"/>
+                        <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                        <path fill="#ffba08" d="M12 12h10v10H12z"/>
+                    </svg>
+                    <span>Login Microsoft 365 (ICT)</span>
+                </a>
+            @endif
         </div>
     </div>
 
@@ -310,11 +392,11 @@
                                         </a>
                                     @endif
 
-                                    <!-- Show Decrypted Password (Admin only) -->
+                                    <!-- Show Decrypted Password (ICT Verified only) -->
                                     @if($b->encrypted_password)
-                                        <button type="button" @click="viewPassword({{ $b->id }})"
+                                        <button type="button" @click="openPasswordModal({{ $b->id }}, '{{ $b->filename }}')"
                                             class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition flex items-center gap-1 font-semibold text-[11px]"
-                                            title="ดูรหัสผ่านถอดรหัส (สำหรับ ICT / ผู้ดูแลระบบ)">
+                                            title="ขอรับรหัสผ่านถอดรหัส (สำหรับแผนก ICT ผ่านการยืนยัน Microsoft 365)">
                                             <i class="fa-solid fa-key"></i>
                                             <span>รหัสผ่าน</span>
                                         </button>
@@ -422,7 +504,7 @@
     </div>
 
     <!-- ============================================================== -->
-    <!-- MODAL 2: VIEW DECRYPTION PASSWORD (ADMIN ONLY) -->
+    <!-- MODAL 2: REQUEST / VIEW DECRYPTION PASSWORD (MICROSOFT 365 ICT VERIFIED) -->
     <!-- ============================================================== -->
     <div x-show="passwordModalOpen" 
         x-transition:enter="transition ease-out duration-200"
@@ -437,16 +519,25 @@
         <div @click.away="passwordModalOpen = false"
             class="bg-white dark:bg-[#1E2129] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-left">
             
+            <!-- Modal Header -->
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                        <i class="fa-solid fa-key"></i>
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                        :class="isIctVerified ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400'">
+                        <template x-if="isIctVerified">
+                            <i class="fa-solid fa-key text-base"></i>
+                        </template>
+                        <template x-if="!isIctVerified">
+                            <i class="fa-solid fa-shield-halved text-base"></i>
+                        </template>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-800 dark:text-white">
-                            รหัสผ่านถอดรหัสไฟล์ (AES-256 Decryption Key)
+                        <h3 class="text-base font-bold text-slate-800 dark:text-white"
+                            x-text="isIctVerified ? 'ขอรับรหัสผ่านถอดรหัสไฟล์ (AES-256 Key)' : 'ยืนยันตัวตนผ่าน Microsoft 365'">
                         </h3>
-                        <p class="text-[11px] text-slate-400">สำหรับเจ้าหน้าที่ ICT / ผู้ดูแลระบบระดับสูงเท่านั้น</p>
+                        <p class="text-[11px] text-slate-400">
+                            เฉพาะเจ้าหน้าที่แผนก ICT (Information Communication Technology) เท่านั้น
+                        </p>
                     </div>
                 </div>
                 <button type="button" @click="passwordModalOpen = false" class="text-slate-400 hover:text-slate-600">
@@ -454,58 +545,173 @@
                 </button>
             </div>
 
-            <!-- Loading Spinner -->
-            <template x-if="isFetchingPassword">
-                <div class="py-12 text-center text-slate-400">
-                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-indigo-500"></i>
-                    <p class="text-xs">กำลังถอดรหัสความปลอดภัย...</p>
+            <!-- Error Banner (if any) -->
+            <template x-if="authErrorMsg">
+                <div class="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5">
+                    <i class="fa-solid fa-circle-exclamation text-base shrink-0 mt-0.5"></i>
+                    <div class="flex-1" x-text="authErrorMsg"></div>
                 </div>
             </template>
 
-            <!-- Password Content -->
-            <template x-if="!isFetchingPassword && currentPasswordInfo">
+            <!-- ============================================== -->
+            <!-- STEP 1: NOT VERIFIED YET (REQUIRES MICROSOFT 365 LOGIN) -->
+            <!-- ============================================== -->
+            <template x-if="!isIctVerified">
                 <div class="space-y-4">
-                    <div>
-                        <span class="text-[11px] text-slate-400 font-semibold block mb-1">ไฟล์สำรอง:</span>
-                        <span class="font-mono text-xs font-bold text-slate-700 dark:text-slate-200 break-all" x-text="currentPasswordInfo.filename"></span>
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        <div class="flex items-center gap-2 font-bold text-slate-800 dark:text-white mb-1.5">
+                            <i class="fa-solid fa-lock text-indigo-600"></i>
+                            <span>มาตรการความปลอดภัยข้อมูลชั้นสูงสุด</span>
+                        </div>
+                        <p>
+                            รหัสผ่านสำรองฐานข้อมูลได้รับการคุ้มครองด้วยการจำกัดสิทธิ์ระดับสูง หากต้องการขอรหัสผ่าน ท่านต้อง <strong>เข้าสู่ระบบด้วยบัญชี Microsoft 365</strong> ขององค์กร เพื่อให้ระบบตรวจสอบว่าเป็นเจ้าหน้าที่ <strong>แผนก ICT</strong> จริง
+                        </p>
                     </div>
 
-                    <!-- Password Box -->
-                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center relative group">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                            AES-256 Decryption Password
-                        </span>
-                        <div class="font-mono text-xl font-black text-cyan-400 tracking-wider break-all select-all py-1"
-                            x-text="currentPasswordInfo.password">
-                        </div>
-                        <div class="mt-3 flex items-center justify-center gap-2">
-                            <button type="button" @click="copyPasswordText()"
-                                class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
-                                <i :class="copied ? 'fa-solid fa-check text-emerald-300' : 'fa-regular fa-copy'"></i>
-                                <span x-text="copied ? 'คัดลอกรหัสผ่านแล้ว!' : 'คัดลอกรหัสผ่าน'"></span>
+                    <!-- Quick verification if user already linked Microsoft -->
+                    <template x-if="hasConnectedMicrosoft">
+                        <div class="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <span class="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 block">พบบัญชี Microsoft ที่เชื่อมต่อไว้:</span>
+                                <span class="text-xs font-mono font-bold text-slate-800 dark:text-white truncate block" x-text="connectedEmail"></span>
+                            </div>
+                            <button type="button" @click="quickVerifyConnected()" :disabled="isVerifyingConnected"
+                                class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shrink-0 transition flex items-center gap-1.5 shadow-sm">
+                                <template x-if="!isVerifyingConnected">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </template>
+                                <template x-if="isVerifyingConnected">
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                </template>
+                                <span x-text="isVerifyingConnected ? 'กำลังตรวจสอบ...' : 'ตรวจสอบบัญชีนี้'"></span>
                             </button>
                         </div>
-                    </div>
+                    </template>
 
-                    <!-- Email Delivery Info -->
-                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-1">
-                        <div class="flex items-center justify-between">
-                            <span class="text-slate-500 font-semibold">ส่งเข้าอีเมล ICT:</span>
-                            <span class="font-mono text-slate-800 dark:text-slate-200 font-bold truncate max-w-xs" x-text="currentPasswordInfo.email_sent_to"></span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-slate-500 font-semibold">เวลาที่ส่งอีเมล:</span>
-                            <span class="text-slate-800 dark:text-slate-200" x-text="currentPasswordInfo.email_sent_at"></span>
-                        </div>
-                    </div>
-
-                    <!-- Quick Command -->
-                    <div class="p-3 rounded-xl bg-slate-900/90 text-slate-300 font-mono text-[11px] space-y-1">
-                        <span class="text-slate-400 text-[10px] block">คำสั่งแตกไฟล์ผ่าน Linux / macOS CLI:</span>
-                        <code class="text-cyan-300 select-all block" x-text="`7z x -p&quot;${currentPasswordInfo.password}&quot; ${currentPasswordInfo.filename}`"></code>
+                    <!-- Main Microsoft Login Button -->
+                    <div class="pt-2">
+                        <a href="{{ route('auth.microsoft.redirect', ['purpose' => 'backup_password']) }}"
+                            class="w-full py-3 px-4 rounded-xl bg-[#2F2F2F] hover:bg-[#1E1E1E] text-white font-bold text-xs flex items-center justify-center gap-3 transition shadow-md border border-slate-700 hover:border-slate-600">
+                            <svg class="w-5 h-5 shrink-0" viewBox="0 0 23 23">
+                                <path fill="#f35325" d="M1 1h10v10H1z"/>
+                                <path fill="#81bc06" d="M12 1h10v10H12z"/>
+                                <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                                <path fill="#ffba08" d="M12 12h10v10H12z"/>
+                            </svg>
+                            <span>เข้าสู่ระบบด้วย Microsoft 365 เพื่อตรวจสอบสิทธิ์แผนก ICT</span>
+                        </a>
+                        <p class="text-[11px] text-slate-400 text-center mt-2">
+                            * หากอีเมลที่ล็อกอินไม่ได้สังกัดแผนก ICT ระบบจะปฏิเสธการเข้าถึงทันที
+                        </p>
                     </div>
 
                     <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                        <button type="button" @click="passwordModalOpen = false"
+                            class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                            ปิดหน้าต่าง
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ============================================== -->
+            <!-- STEP 2: VERIFIED ICT (CAN REQUEST PASSWORD) -->
+            <!-- ============================================== -->
+            <template x-if="isIctVerified">
+                <div class="space-y-4">
+                    <!-- Verified ICT Card -->
+                    <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-3 text-xs">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                                    <span>ผ่านการยืนยันสิทธิ์แผนก ICT แล้ว</span>
+                                </div>
+                                <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono truncate block" x-text="`${ictName} (${ictEmail})`"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Backup Filename -->
+                    <div class="text-xs">
+                        <span class="text-[11px] text-slate-400 font-semibold block mb-0.5">ไฟล์สำรองที่ต้องการเปิด:</span>
+                        <span class="font-mono text-xs font-bold text-slate-800 dark:text-white break-all" x-text="selectedBackupFilename"></span>
+                    </div>
+
+                    <!-- State A: Not requested yet -> Show "กดขอรหัส" button -->
+                    <template x-if="!currentPasswordInfo">
+                        <div class="py-4 text-center">
+                            <button type="button" @click="requestPassword()" :disabled="isFetchingPassword"
+                                class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2 mx-auto">
+                                <template x-if="!isFetchingPassword">
+                                    <i class="fa-solid fa-key"></i>
+                                </template>
+                                <template x-if="isFetchingPassword">
+                                    <i class="fa-solid fa-spinner fa-spin"></i>
+                                </template>
+                                <span x-text="isFetchingPassword ? 'กำลังถอดรหัสและบันทึก Audit Log...' : 'กดขอรหัสผ่าน (Request Decryption Password)'"></span>
+                            </button>
+                            <p class="text-[11px] text-slate-400 mt-2">
+                                * การกดขอรหัสผ่านจะถูกบันทึกลงในระบบ Audit Log เพื่อความโปร่งใสและความปลอดภัย
+                            </p>
+                        </div>
+                    </template>
+
+                    <!-- State B: Password Revealed! -->
+                    <template x-if="currentPasswordInfo">
+                        <div class="space-y-4">
+                            <!-- Password Box -->
+                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center relative group">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                                    AES-256 Decryption Password
+                                </span>
+                                <div class="font-mono text-xl font-black text-cyan-400 tracking-wider break-all select-all py-1"
+                                    x-text="currentPasswordInfo.password">
+                                </div>
+                                <div class="mt-3 flex items-center justify-center gap-2">
+                                    <button type="button" @click="copyPasswordText()"
+                                        class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+                                        <i :class="copied ? 'fa-solid fa-check text-emerald-300' : 'fa-regular fa-copy'"></i>
+                                        <span x-text="copied ? 'คัดลอกรหัสผ่านแล้ว!' : 'คัดลอกรหัสผ่าน'"></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Requester Info -->
+                            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500 font-semibold">ผู้ขอรับรหัสผ่าน:</span>
+                                    <span class="text-slate-800 dark:text-slate-200 font-bold" x-text="currentPasswordInfo.requester?.name || ictName"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500 font-semibold">อีเมล Microsoft:</span>
+                                    <span class="font-mono text-slate-800 dark:text-slate-200 font-bold" x-text="currentPasswordInfo.requester?.email || ictEmail"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-500 font-semibold">เวลาที่ตรวจสอบ:</span>
+                                    <span class="text-slate-800 dark:text-slate-200" x-text="currentPasswordInfo.requester?.time || '-'"></span>
+                                </div>
+                            </div>
+
+                            <!-- Quick Command -->
+                            <div class="p-3 rounded-xl bg-slate-900/90 text-slate-300 font-mono text-[11px] space-y-1">
+                                <span class="text-slate-400 text-[10px] block">คำสั่งแตกไฟล์ผ่าน Linux / macOS CLI:</span>
+                                <code class="text-cyan-300 select-all block" x-text="`7z x -p&quot;${currentPasswordInfo.password}&quot; ${currentPasswordInfo.filename}`"></code>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                        <template x-if="isIctVerified">
+                            <form action="{{ route('backend.database-backups.revoke-ict-auth') }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="text-[11px] text-slate-400 hover:text-rose-600 underline">
+                                    ออกจากระบบ Microsoft
+                                </button>
+                            </form>
+                        </template>
                         <button type="button" @click="passwordModalOpen = false"
                             class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
                             ปิดหน้าต่าง

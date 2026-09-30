@@ -647,4 +647,135 @@ HTML;
 
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
+
+    /**
+     * Verify whether a user or Microsoft 365 profile belongs to ICT department
+     *
+     * @param User|null $user The local authenticated user
+     * @param array $profile Microsoft Graph /v1.0/me user profile
+     * @param string|null $email Microsoft email
+     * @return array ['allowed' => bool, 'email' => string, 'name' => string, 'department' => string, 'reason' => string]
+     */
+    public static function verifyIctAccess(?User $user, array $profile = [], ?string $email = null): array
+    {
+        $rawEmail = $email ?: ($profile['mail'] ?? ($profile['userPrincipalName'] ?? ($user?->email ?? '')));
+        $email = trim(strtolower((string)$rawEmail));
+        $displayName = $profile['displayName'] ?? ($user?->fullname ?? 'เจ้าหน้าที่');
+        $msDept = trim((string)($profile['department'] ?? ''));
+        $msJobTitle = trim((string)($profile['jobTitle'] ?? ''));
+
+        // 1. Check against configured ICT emails in .env / config
+        $authorizedEmails = [];
+        $configuredEmail = env('ICT_BACKUP_EMAIL', config('mail.ict_backup_email'));
+        if (!empty($configuredEmail)) {
+            $authorizedEmails[] = strtolower(trim((string)$configuredEmail));
+        }
+
+        $extraIctEmails = env('ICT_AUTHORIZED_EMAILS');
+        if (!empty($extraIctEmails)) {
+            foreach (explode(',', (string)$extraIctEmails) as $e) {
+                if (trim($e) !== '') {
+                    $authorizedEmails[] = strtolower(trim($e));
+                }
+            }
+        }
+
+        // Add known ICT department emails from local database (dept_id = 16)
+        try {
+            $dbIctEmails = User::where('dept_id', 16)
+                ->whereNotNull('email')
+                ->pluck('email')
+                ->map(fn($e) => strtolower(trim((string)$e)))
+                ->filter()
+                ->toArray();
+            $authorizedEmails = array_merge($authorizedEmails, $dbIctEmails);
+        } catch (\Throwable) {
+            // Ignore DB errors in fallback
+        }
+
+        $authorizedEmails = array_unique(array_filter($authorizedEmails));
+
+        if (!empty($email) && in_array($email, $authorizedEmails, true)) {
+            return [
+                'allowed' => true,
+                'email' => $email,
+                'name' => $displayName,
+                'department' => 'Information Communication Technology (ICT)',
+                'reason' => 'ตรงกับรายชื่ออีเมลที่ได้รับอนุญาตของแผนก ICT',
+            ];
+        }
+
+        // 2. Check if local database user has ICT department (dept_id = 16 or isIctDepartment)
+        $targetUser = $user;
+        if ((!$targetUser || strtolower((string)$targetUser->email) !== $email) && !empty($email)) {
+            try {
+                $targetUser = User::whereRaw('LOWER(email) = ?', [$email])->first();
+            } catch (\Throwable) {
+                // Ignore
+            }
+        }
+
+        if ($targetUser && (method_exists($targetUser, 'isIctDepartment') && $targetUser->isIctDepartment() || (int)$targetUser->dept_id === 16)) {
+            return [
+                'allowed' => true,
+                'email' => $email,
+                'name' => $displayName,
+                'department' => $targetUser->department?->department_name ?: 'Information Communication Technology (ICT)',
+                'reason' => 'ผู้ใช้งานสังกัดแผนก ICT (Department ID 16) ในระบบ',
+            ];
+        }
+
+        // 3. Check Microsoft Graph profile department & job title
+        $searchDept = strtolower($msDept);
+        $searchJob = strtolower($msJobTitle);
+
+        if (
+            str_contains($searchDept, 'ict') ||
+            str_contains($searchDept, 'information communication technology') ||
+            str_contains($searchDept, 'information technology') ||
+            str_contains($searchDept, 'it') ||
+            str_contains($searchDept, 'เทคโนโลยีสารสนเทศ') ||
+            str_contains($searchJob, 'ict') ||
+            str_contains($searchJob, 'network') ||
+            str_contains($searchJob, 'system admin') ||
+            str_contains($searchJob, 'programmer') ||
+            str_contains($searchJob, 'developer')
+        ) {
+            return [
+                'allowed' => true,
+                'email' => $email,
+                'name' => $displayName,
+                'department' => $msDept ?: 'Information Communication Technology (ICT)',
+                'reason' => "ตรวจพบสังกัดแผนก ICT จากข้อมูล Microsoft 365 ({$msDept})",
+            ];
+        }
+
+        // 4. Check if email starts with ict or it
+        if (!empty($email)) {
+            $parts = explode('@', $email);
+            $localPart = $parts[0] ?? '';
+            if (
+                in_array($localPart, ['ict', 'it', 'ict-admin', 'ict_admin', 'helpdesk']) ||
+                str_starts_with($localPart, 'ict.') ||
+                str_starts_with($localPart, 'it.')
+            ) {
+                return [
+                    'allowed' => true,
+                    'email' => $email,
+                    'name' => $displayName,
+                    'department' => 'Information Communication Technology (ICT)',
+                    'reason' => 'ที่อยู่อีเมลจัดอยู่ในกลุ่มแผนก ICT',
+                ];
+            }
+        }
+
+        // FAILED - NOT ICT
+        return [
+            'allowed' => false,
+            'email' => $email ?: 'ไม่พบอีเมล',
+            'name' => $displayName,
+            'department' => $msDept ?: 'ไม่ระบุแผนก',
+            'reason' => 'บัญชี Microsoft 365 นี้ไม่ได้สังกัดแผนก ICT (Information Communication Technology)',
+        ];
+    }
 }
