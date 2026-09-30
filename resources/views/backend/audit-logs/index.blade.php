@@ -180,7 +180,9 @@
     <!-- ============================================================== -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         <!-- Total Logs -->
-        <div class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-transform duration-200">
+        <div @click="setQuickAction('all')"
+            class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-200 cursor-pointer select-none hover:-translate-y-0.5 hover:shadow-md"
+            :class="filters.action === 'all' ? 'ring-2 ring-indigo-500 shadow-indigo-500/10' : ''">
             <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">
                 <span>บันทึกทั้งหมด</span>
                 <i class="fa-solid fa-database text-slate-400"></i>
@@ -192,7 +194,9 @@
         </div>
 
         <!-- Created -->
-        <div class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-emerald-100 dark:border-emerald-950/40 shadow-sm bg-gradient-to-br from-emerald-50/40 via-transparent to-transparent">
+        <div @click="setQuickAction('created')"
+            class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-emerald-100 dark:border-emerald-950/40 shadow-sm bg-gradient-to-br from-emerald-50/40 via-transparent to-transparent transition-all duration-200 cursor-pointer select-none hover:-translate-y-0.5 hover:shadow-md"
+            :class="filters.action === 'created' ? 'ring-2 ring-emerald-500 shadow-emerald-500/10' : ''">
             <div class="flex items-center justify-between text-emerald-600 dark:text-emerald-400 text-xs font-medium mb-1">
                 <span>เพิ่มข้อมูล (Created)</span>
                 <i class="fa-solid fa-plus-circle text-emerald-500"></i>
@@ -204,7 +208,9 @@
         </div>
 
         <!-- Updated -->
-        <div class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-amber-100 dark:border-amber-950/40 shadow-sm bg-gradient-to-br from-amber-50/40 via-transparent to-transparent">
+        <div @click="setQuickAction('updated')"
+            class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-amber-100 dark:border-amber-950/40 shadow-sm bg-gradient-to-br from-amber-50/40 via-transparent to-transparent transition-all duration-200 cursor-pointer select-none hover:-translate-y-0.5 hover:shadow-md"
+            :class="filters.action === 'updated' ? 'ring-2 ring-amber-500 shadow-amber-500/10' : ''">
             <div class="flex items-center justify-between text-amber-600 dark:text-amber-400 text-xs font-medium mb-1">
                 <span>แก้ไขข้อมูล (Updated)</span>
                 <i class="fa-solid fa-pen-to-square text-amber-500"></i>
@@ -216,7 +222,9 @@
         </div>
 
         <!-- Deleted -->
-        <div class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-rose-100 dark:border-rose-950/40 shadow-sm bg-gradient-to-br from-rose-50/40 via-transparent to-transparent">
+        <div @click="setQuickAction('deleted')"
+            class="bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-rose-100 dark:border-rose-950/40 shadow-sm bg-gradient-to-br from-rose-50/40 via-transparent to-transparent transition-all duration-200 cursor-pointer select-none hover:-translate-y-0.5 hover:shadow-md"
+            :class="filters.action === 'deleted' ? 'ring-2 ring-rose-500 shadow-rose-500/10' : ''">
             <div class="flex items-center justify-between text-rose-600 dark:text-rose-400 text-xs font-medium mb-1">
                 <span>ลบข้อมูล (Deleted)</span>
                 <i class="fa-solid fa-trash-can text-rose-500"></i>
@@ -228,7 +236,9 @@
         </div>
 
         <!-- Archives -->
-        <div class="col-span-2 sm:col-span-1 bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-purple-100 dark:border-purple-950/40 shadow-sm bg-gradient-to-br from-purple-50/40 via-transparent to-transparent">
+        <div @click="activeTab = 'archives'"
+            class="col-span-2 sm:col-span-1 bg-white dark:bg-[#1E2129] p-4 rounded-xl border border-purple-100 dark:border-purple-950/40 shadow-sm bg-gradient-to-br from-purple-50/40 via-transparent to-transparent transition-all duration-200 cursor-pointer select-none hover:-translate-y-0.5 hover:shadow-md"
+            :class="activeTab === 'archives' ? 'ring-2 ring-purple-500 shadow-purple-500/10' : ''">
             <div class="flex items-center justify-between text-purple-600 dark:text-purple-400 text-xs font-medium mb-1">
                 <span>ไฟล์คลัง (ZIP Archives)</span>
                 <i class="fa-solid fa-file-zipper text-purple-500"></i>
@@ -273,12 +283,205 @@
                 </div>
 
                 <div class="flex items-center gap-2">
+                    <!-- ปุ่มเปิด/ปิด (กดเก็บได้) ตัวกรอง -->
+                    <button type="button" @click="toggleFilter()"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1.5 shadow-2xs"
+                        :class="filterOpen ? 'bg-indigo-50 border-indigo-300 text-indigo-700 dark:bg-indigo-950/60 dark:border-indigo-700 dark:text-indigo-300' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'">
+                        <i class="fa-solid fa-filter text-[11px]" :class="filterOpen ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'"></i>
+                        <span>ตัวกรองข้อมูล</span>
+                        <span x-show="activeFilterCount > 0" x-text="activeFilterCount"
+                            class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-600 text-white">
+                        </span>
+                        <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200 text-slate-400"
+                            :class="{ 'rotate-180': filterOpen }"></i>
+                    </button>
+
                     <button type="button" @click="manualRefresh()" :disabled="isRefreshing"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm transition flex items-center gap-1.5">
                         <i class="fa-solid fa-arrows-rotate" :class="{ 'fa-spin': isRefreshing }"></i>
                         <span>รีเฟรชข้อมูล</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Collapsible Filter Panel (สามารถกดเก็บได้) -->
+            <div x-show="filterOpen"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-2"
+                class="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 space-y-4">
+                
+                <!-- Quick Filter Chips -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bolt text-amber-500"></i>
+                            <span>คัดกรองด่วนตามประเภทกิจกรรม:</span>
+                        </span>
+                        <button type="button" @click="toggleFilter()" class="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1">
+                            <i class="fa-solid fa-chevron-up text-[9px]"></i>
+                            <span>กดเก็บตัวกรอง</span>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" @click="setQuickAction('all')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1"
+                            :class="filters.action === 'all' ? 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'">
+                            <i class="fa-solid fa-list-ul text-[10px]"></i>
+                            <span>ทั้งหมด</span>
+                        </button>
+
+                        <button type="button" @click="setQuickAction('backup')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1"
+                            :class="filters.action === 'backup' ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-blue-50/70 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 hover:bg-blue-100'">
+                            <i class="fa-solid fa-database text-[10px]"></i>
+                            <span>สำรองข้อมูล (Backup)</span>
+                        </button>
+
+                        <button type="button" @click="setQuickAction('created')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1"
+                            :class="filters.action === 'created' ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-emerald-50/70 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100'">
+                            <i class="fa-solid fa-circle-plus text-[10px]"></i>
+                            <span>เพิ่มข้อมูล (Created)</span>
+                        </button>
+
+                        <button type="button" @click="setQuickAction('updated')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1"
+                            :class="filters.action === 'updated' ? 'bg-amber-600 text-white border-amber-600 shadow-sm' : 'bg-amber-50/70 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 hover:bg-amber-100'">
+                            <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                            <span>แก้ไขข้อมูล (Updated)</span>
+                        </button>
+
+                        <button type="button" @click="setQuickAction('deleted')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1"
+                            :class="filters.action === 'deleted' ? 'bg-rose-600 text-white border-rose-600 shadow-sm' : 'bg-rose-50/70 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 hover:bg-rose-100'">
+                            <i class="fa-solid fa-trash-can text-[10px]"></i>
+                            <span>ลบข้อมูล (Deleted)</span>
+                        </button>
+
+                        <button type="button" @click="setQuickAction('password')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1"
+                            :class="filters.action === 'password' ? 'bg-amber-500 text-white border-amber-500 shadow-sm' : 'bg-amber-50/70 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 hover:bg-amber-100'">
+                            <i class="fa-solid fa-key text-[10px]"></i>
+                            <span>ขอรับรหัสผ่าน (Password)</span>
+                        </button>
+
+                        <button type="button" @click="setQuickAction('security')"
+                            class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1"
+                            :class="filters.action === 'security' ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-purple-50/70 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800 hover:bg-purple-100'">
+                            <i class="fa-solid fa-shield-halved text-[10px]"></i>
+                            <span>ความปลอดภัย / Login</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Controls Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    
+                    <!-- Action Dropdown -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            ประเภทกิจกรรม (Action)
+                        </label>
+                        <select x-model="filters.action" @change="applyFilters()"
+                            class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 px-2.5 focus:ring-2 focus:ring-indigo-500">
+                            <option value="all">-- ทุกประเภทกิจกรรม --</option>
+                            <option value="backup">💾 สำรองฐานข้อมูล (Backup)</option>
+                            <option value="created">➕ เพิ่มข้อมูล (Created)</option>
+                            <option value="updated">✏️ แก้ไขข้อมูล (Updated)</option>
+                            <option value="deleted">🗑️ ลบข้อมูล (Deleted)</option>
+                            <option value="password">🔑 ขอรับรหัสผ่านถอดรหัสไฟล์</option>
+                            <option value="login">🚪 เข้าสู่ระบบ / ตรวจสอบสิทธิ์</option>
+                            <option value="exported">📥 ดาวน์โหลด / ส่งออกไฟล์</option>
+                            <option value="security">⚠️ แจ้งเตือนความปลอดภัย</option>
+                        </select>
+                    </div>
+
+                    <!-- Module Dropdown -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            ระบบ / โมดูล (Module)
+                        </label>
+                        <select x-model="filters.module" @change="applyFilters()"
+                            class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 px-2.5 focus:ring-2 focus:ring-indigo-500">
+                            <option value="all">-- ทุกระบบ / โมดูล --</option>
+                            @foreach($modules as $m)
+                                <option value="{{ $m->module_name ?: $m->module }}">{{ $m->module_name ?: ucfirst($m->module) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            ช่วงวันที่ (Date Range)
+                        </label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <input type="date" x-model="filters.startDate" @change="applyFilters()"
+                                class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 px-2 focus:ring-2 focus:ring-indigo-500"
+                                placeholder="เริ่มต้น">
+                            <input type="date" x-model="filters.endDate" @change="applyFilters()"
+                                class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 px-2 focus:ring-2 focus:ring-indigo-500"
+                                placeholder="สิ้นสุด">
+                        </div>
+                    </div>
+
+                    <!-- Search / Keyword & User -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            ค้นหาผู้ดำเนินการ / คำเฉพาะ
+                        </label>
+                        <div class="relative">
+                            <input type="text" x-model="filters.keyword" @input.debounce.300ms="applyFilters()"
+                                placeholder="ชื่อ, รหัส, IP, หรือคำอธิบาย..."
+                                class="w-full text-xs rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white py-1.5 pl-8 pr-3 focus:ring-2 focus:ring-indigo-500">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Bottom Filter Toolbar: Quick dates + Reset + Collapse -->
+                <div class="pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                    <div class="flex items-center flex-wrap gap-1.5">
+                        <span class="text-[11px] text-slate-400 mr-1 font-medium">ลัดช่วงเวลา:</span>
+                        <button type="button" @click="setDateShortcut('today')"
+                            class="px-2 py-0.5 rounded text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            วันนี้
+                        </button>
+                        <button type="button" @click="setDateShortcut('7days')"
+                            class="px-2 py-0.5 rounded text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            7 วันล่าสุด
+                        </button>
+                        <button type="button" @click="setDateShortcut('30days')"
+                            class="px-2 py-0.5 rounded text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            30 วันล่าสุด
+                        </button>
+                        <button type="button" @click="setDateShortcut('all')"
+                            class="px-2 py-0.5 rounded text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            ทุกช่วงเวลา
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="resetFilters()"
+                            class="px-3 py-1 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>ล้างตัวกรองทั้งหมด</span>
+                        </button>
+
+                        <button type="button" @click="toggleFilter()"
+                            class="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-chevron-up"></i>
+                            <span>กดเก็บตัวกรอง</span>
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
 @php
@@ -1348,6 +1551,80 @@ function auditLogApp() {
         inspectedLogs: [],
         inspectSearch: '',
         
+        // Filter State
+        filterOpen: {{ (request('action') || request('module') || request('start_date') || request('end_date') || request('search')) ? 'true' : 'false' }},
+        filters: {
+            action: '{{ request("action", "all") }}',
+            module: '{{ request("module", "all") }}',
+            startDate: '{{ request("start_date", "") }}',
+            endDate: '{{ request("end_date", "") }}',
+            keyword: '{{ request("search", "") }}'
+        },
+
+        get activeFilterCount() {
+            let count = 0;
+            if (this.filters.action && this.filters.action !== 'all') count++;
+            if (this.filters.module && this.filters.module !== 'all') count++;
+            if (this.filters.startDate) count++;
+            if (this.filters.endDate) count++;
+            if (this.filters.keyword && this.filters.keyword.trim()) count++;
+            return count;
+        },
+
+        toggleFilter() {
+            this.filterOpen = !this.filterOpen;
+        },
+
+        setQuickAction(act) {
+            this.activeTab = 'logs';
+            this.filters.action = act;
+            this.applyFilters();
+        },
+
+        setDateShortcut(preset) {
+            const today = new Date();
+            const formatYMD = d => {
+                const yr = d.getFullYear();
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                return `${yr}-${mo}-${da}`;
+            };
+
+            if (preset === 'today') {
+                this.filters.startDate = formatYMD(today);
+                this.filters.endDate = formatYMD(today);
+            } else if (preset === '7days') {
+                const past = new Date();
+                past.setDate(past.getDate() - 7);
+                this.filters.startDate = formatYMD(past);
+                this.filters.endDate = formatYMD(today);
+            } else if (preset === '30days') {
+                const past = new Date();
+                past.setDate(past.getDate() - 30);
+                this.filters.startDate = formatYMD(past);
+                this.filters.endDate = formatYMD(today);
+            } else if (preset === 'all') {
+                this.filters.startDate = '';
+                this.filters.endDate = '';
+            }
+            this.applyFilters();
+        },
+
+        applyFilters() {
+            if (window.auditDataTable) {
+                window.auditDataTable.draw();
+            }
+        },
+
+        resetFilters() {
+            this.filters.action = 'all';
+            this.filters.module = 'all';
+            this.filters.startDate = '';
+            this.filters.endDate = '';
+            this.filters.keyword = '';
+            this.applyFilters();
+        },
+        
         // Real-time Engine State
         isLive: true,
         isRefreshing: false,
@@ -1360,10 +1637,115 @@ function auditLogApp() {
             window.auditApp = this;
             this.initDataTable();
             this.startLivePolling();
+            if (this.activeFilterCount > 0) {
+                this.applyFilters();
+            }
         },
 
         initDataTable() {
             const self = this;
+
+            // Register custom DataTable filter if not already registered
+            if (!window.auditDataTableSearchRegistered && window.$ && window.$.fn && window.$.fn.dataTable) {
+                window.auditDataTableSearchRegistered = true;
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    if (!settings.nTable || settings.nTable.id !== 'auditLogsDataTable') {
+                        return true;
+                    }
+
+                    const app = window.auditApp;
+                    if (!app || !app.filters) return true;
+
+                    const filters = app.filters;
+                    const rowNode = settings.aoData[dataIndex].nTr;
+                    if (!rowNode) return true;
+
+                    const $row = $(rowNode);
+
+                    // 1. Action filter
+                    if (filters.action && filters.action !== 'all') {
+                        const actText = $row.find('td:eq(3)').text().toLowerCase();
+                        const descText = $row.find('td:eq(5)').text().toLowerCase();
+
+                        if (filters.action === 'backup') {
+                            if (!actText.includes('backup') && !descText.includes('สำรองฐานข้อมูล') && !descText.includes('backup_db')) {
+                                return false;
+                            }
+                        } else if (filters.action === 'created') {
+                            if (!actText.includes('created') && !actText.includes('สร้าง') && !descText.includes('เพิ่ม')) {
+                                return false;
+                            }
+                        } else if (filters.action === 'updated') {
+                            if (!actText.includes('updated') && !actText.includes('แก้ไข') && !descText.includes('แก้ไข') && !descText.includes('ปรับปรุง') && !descText.includes('ปิดการรับสมัคร')) {
+                                return false;
+                            }
+                        } else if (filters.action === 'deleted') {
+                            if (!actText.includes('deleted') && !actText.includes('ลบ') && !descText.includes('ลบ') && !descText.includes('ล้าง')) {
+                                return false;
+                            }
+                        } else if (filters.action === 'password') {
+                            if (!descText.includes('ขอรับรหัสผ่าน') && !descText.includes('รหัสผ่าน')) {
+                                return false;
+                            }
+                        } else if (filters.action === 'login') {
+                            if (!actText.includes('login') && !actText.includes('เข้าสู่ระบบ') && !descText.includes('เข้าสู่ระบบ') && !descText.includes('ยืนยันตัวตน')) {
+                                return false;
+                            }
+                        } else if (filters.action === 'security') {
+                            if (!actText.includes('security') && !descText.includes('ไม่ผ่านการยืนยัน') && !descText.includes('ปฏิเสธการเข้าถึง') && !actText.includes('เตือน')) {
+                                return false;
+                            }
+                        } else if (filters.action === 'exported') {
+                            if (!actText.includes('export') && !descText.includes('ดาวน์โหลด')) {
+                                return false;
+                            }
+                        } else {
+                            if (!actText.includes(filters.action.toLowerCase()) && !descText.includes(filters.action.toLowerCase())) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    // 2. Module filter
+                    if (filters.module && filters.module !== 'all') {
+                        const modText = $row.find('td:eq(4)').text().trim().toLowerCase();
+                        if (!modText.includes(filters.module.toLowerCase())) {
+                            return false;
+                        }
+                    }
+
+                    // 3. Date range filter
+                    const rawTimestamp = parseInt($row.find('td:eq(1)').attr('data-order') || 0);
+                    if (rawTimestamp > 0) {
+                        const d = new Date(rawTimestamp * 1000);
+                        const yr = d.getFullYear();
+                        const mo = String(d.getMonth() + 1).padStart(2, '0');
+                        const da = String(d.getDate()).padStart(2, '0');
+                        const rowDateStr = `${yr}-${mo}-${da}`;
+                        if (filters.startDate && rowDateStr < filters.startDate) {
+                            return false;
+                        }
+                        if (filters.endDate && rowDateStr > filters.endDate) {
+                            return false;
+                        }
+                    }
+
+                    // 4. Keyword filter (User, Employee Code, Description, IP)
+                    if (filters.keyword && filters.keyword.trim()) {
+                        const kw = filters.keyword.trim().toLowerCase();
+                        const userText = $row.find('td:eq(2)').text().toLowerCase();
+                        const descText = $row.find('td:eq(5)').text().toLowerCase();
+                        const ipText = $row.find('td:eq(6)').text().toLowerCase();
+
+                        if (!userText.includes(kw) && !descText.includes(kw) && !ipText.includes(kw)) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
+            }
+
             const thLanguage = {
                 search: "ค้นหาด่วน:",
                 lengthMenu: "แสดง _MENU_ รายการ",
