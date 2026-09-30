@@ -353,7 +353,7 @@ class DatabaseBackupController extends Controller
         if (class_exists(AuditLogService::class)) {
             AuditLogService::log(
                 action: 'export',
-                description: "เจ้าหน้าที่แผนก ICT ({$recipientName}, {$recipientEmail}) ขอรับรหัสผ่านถอดรหัสไฟล์: {$backup->filename} -> ระบบจัดส่งรหัสผ่านไปยังอีเมล {$recipientEmail} เรียบร้อยแล้ว",
+                description: "ขอรับรหัสผ่านถอดรหัสไฟล์: {$backup->filename} -> ระบบจัดส่งรหัสผ่านไปยังอีเมล {$recipientEmail} ({$recipientName}) เรียบร้อยแล้ว",
                 model: $backup,
                 module: 'system',
                 moduleName: 'ระบบสำรองฐานข้อมูลอัตโนมัติ',

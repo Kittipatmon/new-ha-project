@@ -281,6 +281,68 @@
                 </div>
             </div>
 
+@php
+if (!function_exists('renderAuditDescHtml')) {
+    function renderAuditDescHtml($desc) {
+        if (!$desc) return '-';
+        $safe = e($desc);
+
+        // Highlight: ขอรับรหัสผ่านถอดรหัสไฟล์
+        $safe = preg_replace(
+            '/ขอรับรหัสผ่านถอดรหัสไฟล์(?:\:)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์:</span>',
+            $safe
+        );
+
+        // Highlight: ยืนยันตัวตนบัญชี Microsoft 365
+        $safe = preg_replace(
+            '/ยืนยันตัวตนบัญชี Microsoft 365(?:\s*แผนก ICT)?/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px]"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>',
+            $safe
+        );
+
+        // Highlight: พยายามเข้าถึงรหัสผ่าน...
+        $safe = preg_replace(
+            '/พยายามเข้าถึงรหัสผ่านสำรองฐานข้อมูลโดยไม่ผ่านการยืนยันตัวตน/u',
+            '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px]"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันสิทธิ์ ICT</span>',
+            $safe
+        );
+
+        // Highlight backup filenames: backup_db_*.zip
+        $safe = preg_replace(
+            '/(backup_db_[a-zA-Z0-9_\.]+\.zip)/u',
+            '<code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800 break-all">$1</code>',
+            $safe
+        );
+
+        return $safe;
+    }
+}
+
+if (!function_exists('renderAuditPreviewHtml')) {
+    function renderAuditPreviewHtml($desc) {
+        if (!$desc) return '-';
+
+        if (str_contains($desc, 'ขอรับรหัสผ่านถอดรหัสไฟล์')) {
+            if (preg_match('/(backup_db_[a-zA-Z0-9_\.]+\.zip)/u', $desc, $matches)) {
+                return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[140px] inline-block align-bottom">' . e($matches[1]) . '</code>';
+            }
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์</span>';
+        }
+
+        if (str_contains($desc, 'ยืนยันตัวตนบัญชี Microsoft 365')) {
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shrink-0"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>';
+        }
+
+        if (str_contains($desc, 'ไม่ผ่านการยืนยันตัวตน')) {
+            return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันตัวตน</span>';
+        }
+
+        return e(mb_substr($desc, 0, 50)) . (mb_strlen($desc) > 50 ? '...' : '');
+    }
+}
+@endphp
+
             <!-- DataTable Component -->
             <div class="p-2 sm:p-3 overflow-x-auto">
                 <table id="auditLogsDataTable" class="display responsive nowrap w-full text-left text-xs">
@@ -351,10 +413,10 @@
                                 <!-- Description -->
                                 <td class="col-description">
                                     <div class="desc-container" style="max-width: 320px; white-space: normal; word-break: break-word;">
-                                        @if(mb_strlen($log->description) > 60)
+                                        @if(mb_strlen($log->description) > 50 || str_contains($log->description, 'ขอรับรหัสผ่านถอดรหัสไฟล์') || str_contains($log->description, 'ยืนยันตัวตนบัญชี Microsoft 365'))
                                             <div class="text-xs text-slate-800 dark:text-slate-100 font-medium leading-relaxed">
-                                                <span class="desc-short-text">{{ mb_substr($log->description, 0, 55) }}...</span>
-                                                <span class="desc-full-text" style="display: none;">{{ $log->description }}</span>
+                                                <span class="desc-short-text">{!! renderAuditPreviewHtml($log->description) !!}</span>
+                                                <span class="desc-full-text" style="display: none;">{!! renderAuditDescHtml($log->description) !!}</span>
                                             </div>
                                             <div class="mt-1">
                                                 <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer">
@@ -364,7 +426,7 @@
                                             </div>
                                         @else
                                             <div class="text-xs text-slate-800 dark:text-slate-100 font-medium leading-relaxed">
-                                                {{ $log->description }}
+                                                {!! renderAuditDescHtml($log->description) !!}
                                             </div>
                                         @endif
                                         @if($log->diff)
@@ -938,19 +1000,72 @@
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
 <script>
+function highlightAuditText(text) {
+    if (!text) return '';
+    let safe = $('<div>').text(text).html();
+
+    // Highlight: ขอรับรหัสผ่านถอดรหัสไฟล์
+    safe = safe.replace(
+        /ขอรับรหัสผ่านถอดรหัสไฟล์(?:\:)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shadow-2xs"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์:</span>'
+    );
+
+    // Highlight: ยืนยันตัวตนบัญชี Microsoft 365
+    safe = safe.replace(
+        /ยืนยันตัวตนบัญชี Microsoft 365(?:\s*แผนก ICT)?/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px]"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>'
+    );
+
+    // Highlight: ไม่ผ่านการยืนยันตัวตน
+    safe = safe.replace(
+        /พยายามเข้าถึงรหัสผ่านสำรองฐานข้อมูลโดยไม่ผ่านการยืนยันตัวตน/g,
+        '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px]"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันสิทธิ์ ICT</span>'
+    );
+
+    // Highlight backup filenames: backup_db_*.zip
+    safe = safe.replace(
+        /(backup_db_[a-zA-Z0-9_\.]+\.zip)/g,
+        '<code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800 break-all">$1</code>'
+    );
+
+    return safe;
+}
+
+function getAuditPreviewHtml(text) {
+    if (!text) return '-';
+    if (text.includes('ขอรับรหัสผ่านถอดรหัสไฟล์')) {
+        const match = text.match(/(backup_db_[a-zA-Z0-9_\.]+\.zip)/);
+        if (match) {
+            const fname = $('<div>').text(match[1]).html();
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่าน:</span> <code class="font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300 truncate max-w-[140px] inline-block align-bottom">${fname}</code>`;
+        }
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 text-[11px] shrink-0"><i class="fa-solid fa-key text-[10px] text-amber-500"></i> ขอรับรหัสผ่านถอดรหัสไฟล์</span>';
+    }
+
+    if (text.includes('ยืนยันตัวตนบัญชี Microsoft 365')) {
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 text-[11px] shrink-0"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i> ยืนยันตัวตน Microsoft 365</span>';
+    }
+
+    if (text.includes('ไม่ผ่านการยืนยันตัวตน')) {
+        return '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 text-[11px] shrink-0"><i class="fa-solid fa-triangle-exclamation text-[10px] text-rose-500"></i> ไม่ผ่านการยืนยันตัวตน</span>';
+    }
+
+    const shortStr = text.substring(0, 50) + (text.length > 50 ? '...' : '');
+    return $('<div>').text(shortStr).html();
+}
+
 function renderAuditDescription(description, diffCount) {
     if (!description) return '-';
     const diffBadge = diffCount > 0 ? `<div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1">มีการแก้ไข ${diffCount} ฟิลด์</div>` : '';
-    const safeFull = $('<div>').text(description).html();
+    const fullHtml = highlightAuditText(description);
 
-    if (description.length > 60) {
-        const shortStr = description.substring(0, 55) + '...';
-        const safeShort = $('<div>').text(shortStr).html();
+    if (description.length > 50 || description.includes('ขอรับรหัสผ่านถอดรหัสไฟล์') || description.includes('ยืนยันตัวตนบัญชี Microsoft 365')) {
+        const previewHtml = getAuditPreviewHtml(description);
         return `
             <div class="desc-container" style="max-width: 320px; white-space: normal; word-break: break-word;">
                 <div class="text-xs text-slate-800 dark:text-slate-100 font-medium leading-relaxed">
-                    <span class="desc-short-text">${safeShort}</span>
-                    <span class="desc-full-text" style="display: none;">${safeFull}</span>
+                    <span class="desc-short-text">${previewHtml}</span>
+                    <span class="desc-full-text" style="display: none;">${fullHtml}</span>
                 </div>
                 <div class="mt-1">
                     <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer">
@@ -965,7 +1080,7 @@ function renderAuditDescription(description, diffCount) {
         return `
             <div class="desc-container" style="max-width: 320px; white-space: normal; word-break: break-word;">
                 <div class="text-xs text-slate-800 dark:text-slate-100 font-medium leading-relaxed">
-                    ${safeFull}
+                    ${fullHtml}
                 </div>
                 ${diffBadge}
             </div>
