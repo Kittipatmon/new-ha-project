@@ -20,15 +20,12 @@
     selectedBackupFilename: '',
     authErrorMsg: '',
     isVerifyingConnected: false,
-    showPasswordOnScreen: false,
 
     openPasswordModal(id, filename) {
         this.selectedBackupId = id;
         this.selectedBackupFilename = filename;
         this.currentPasswordInfo = null;
         this.authErrorMsg = '';
-        this.copied = false;
-        this.showPasswordOnScreen = false;
         this.passwordModalOpen = true;
     },
 
@@ -85,13 +82,6 @@
         } finally {
             this.isVerifyingConnected = false;
         }
-    },
-
-    copyPasswordText() {
-        if (!this.currentPasswordInfo?.password) return;
-        navigator.clipboard.writeText(this.currentPasswordInfo.password);
-        this.copied = true;
-        setTimeout(() => { this.copied = false; }, 2500);
     }
 }">
 
@@ -714,42 +704,6 @@
                                     </button>
                                 </div>
                             </div>
-
-                            <!-- Optional Reveal on Screen Toggle -->
-                            <div class="text-center pt-0.5">
-                                <button type="button" @click="showPasswordOnScreen = !showPasswordOnScreen"
-                                    class="text-xs text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition inline-flex items-center gap-1.5">
-                                    <i :class="showPasswordOnScreen ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                                    <span x-text="showPasswordOnScreen ? 'ซ่อนรหัสผ่านบนหน้านี้' : 'ดูรหัสผ่านบนหน้านี้ด้วย (Reveal on screen)'"></span>
-                                </button>
-                            </div>
-
-                            <!-- Revealed Password Box (if toggled) -->
-                            <template x-if="showPasswordOnScreen">
-                                <div class="space-y-3 pt-1">
-                                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center relative group">
-                                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                                            AES-256 Decryption Password
-                                        </span>
-                                        <div class="font-mono text-xl font-black text-cyan-400 tracking-wider break-all select-all py-1"
-                                            x-text="currentPasswordInfo.password">
-                                        </div>
-                                        <div class="mt-3 flex items-center justify-center gap-2">
-                                            <button type="button" @click="copyPasswordText()"
-                                                class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
-                                                <i :class="copied ? 'fa-solid fa-check text-emerald-300' : 'fa-regular fa-copy'"></i>
-                                                <span x-text="copied ? 'คัดลอกรหัสผ่านแล้ว!' : 'คัดลอกรหัสผ่าน'"></span>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Quick Command -->
-                                    <div class="p-3 rounded-xl bg-slate-900/90 text-slate-300 font-mono text-[11px] space-y-1">
-                                        <span class="text-slate-400 text-[10px] block">คำสั่งแตกไฟล์ผ่าน Linux / macOS CLI:</span>
-                                        <code class="text-cyan-300 select-all block" x-text="`7z x -p&quot;${currentPasswordInfo.password}&quot; ${currentPasswordInfo.filename}`"></code>
-                                    </div>
-                                </div>
-                            </template>
                         </div>
                     </template>
 

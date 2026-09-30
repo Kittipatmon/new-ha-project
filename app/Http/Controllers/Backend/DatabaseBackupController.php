@@ -366,7 +366,6 @@ class DatabaseBackupController extends Controller
             'email_sent' => $mailResult['success'],
             'sent_via' => $mailResult['sent_via'] ?? 'smtp',
             'filename' => $backup->filename,
-            'password' => $password,
             'recipient' => [
                 'name' => $recipientName,
                 'email' => $recipientEmail,
