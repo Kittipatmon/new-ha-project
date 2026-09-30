@@ -174,13 +174,13 @@
             </div>
             <div>
                 <h3 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <span>ความปลอดภัยระดับสูง: เข้ารหัส AES-256 + ส่งรหัสเฉพาะ ICT + คู่มือ .md</span>
+                    <span>ความปลอดภัยระดับสูง: เข้ารหัส AES-256 + ส่งรหัสเฉพาะ ICT + คู่มือ .txt</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
                         Zero-Knowledge Security
                     </span>
                 </h3>
                 <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                    ไฟล์สำรองถูกบีบอัดและใส่รหัสผ่านแบบสุ่มที่มีความปลอดภัยสูงด้วยอัลกอริทึม <strong>AES-256</strong> (ไม่สามารถเปิดได้หากไม่มีรหัสผ่าน) โดยระบบจะส่งรหัสผ่านพร้อมคู่มือการกู้คืน (<code>.md</code>) ตรงไปยังอีเมลของแผนก ICT โดยอัตโนมัติทันทีที่สำรองเสร็จ และจัดเก็บไฟล์ไว้ใน Private Storage ปลอดภัยจากการเข้าถึงผ่านเว็บ 100%
+                    ไฟล์สำรองถูกบีบอัดและใส่รหัสผ่านแบบสุ่มที่มีความปลอดภัยสูงด้วยอัลกอริทึม <strong>AES-256</strong> (ไม่สามารถเปิดได้หากไม่มีรหัสผ่าน) โดยระบบจะส่งรหัสผ่านพร้อมคู่มือการกู้คืน (<code>.txt</code>) ตรงไปยังอีเมลของแผนก ICT โดยอัตโนมัติทันทีที่สำรองเสร็จ และจัดเก็บไฟล์ไว้ใน Private Storage ปลอดภัยจากการเข้าถึงผ่านเว็บ 100%
                 </p>
             </div>
         </div>
@@ -300,13 +300,13 @@
                                         <span>โหลด ZIP</span>
                                     </a>
 
-                                    <!-- Download .md Guide -->
+                                    <!-- Download .txt Guide -->
                                     @if($b->md_file_path)
-                                        <a href="{{ route('backend.database-backups.download-md', $b->id) }}"
+                                        <a href="{{ route('backend.database-backups.download-txt', $b->id) }}"
                                             class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:hover:bg-purple-900/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition flex items-center gap-1 font-semibold text-[11px]"
-                                            title="ดาวน์โหลดคู่มือการกู้คืน (.md)">
+                                            title="ดาวน์โหลดคู่มือการกู้คืน (.txt)">
                                             <i class="fa-solid fa-file-lines"></i>
-                                            <span>คู่มือ .md</span>
+                                            <span>คู่มือ .txt</span>
                                         </a>
                                     @endif
 
@@ -386,7 +386,7 @@
                     <span>ระบบจะสุ่มรหัสผ่านและเข้ารหัส AES-256 อัตโนมัติ</span>
                 </div>
                 <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-normal">
-                    รหัสผ่านสำหรับเปิดไฟล์จะถูกส่งไปยังอีเมล ICT ทันที พร้อมสร้างเอกสารคู่มือ <code>.md</code> แนบไปด้วย
+                    รหัสผ่านสำหรับเปิดไฟล์จะถูกส่งไปยังอีเมล ICT ทันที พร้อมสร้างเอกสารคู่มือ <code>.txt</code> แนบไปด้วย
                 </p>
             </div>
 

@@ -153,20 +153,30 @@ class DatabaseBackupController extends Controller
     }
 
     /**
-     * Download or view the companion Markdown guide file (.md)
+     * Download or view the companion Plain Text guide file (.txt)
      */
-    public function downloadMd(int $id)
+    public function downloadTxt(int $id)
     {
         $backup = DatabaseBackup::findOrFail($id);
 
         if (!$backup->md_file_path || !Storage::disk('local')->exists($backup->md_file_path)) {
-            return back()->with('error', 'ไม่พบไฟล์คู่มือ .md ในระบบจัดเก็บ');
+            return back()->with('error', 'ไม่พบไฟล์คู่มือ .txt ในระบบจัดเก็บ');
         }
 
-        $mdName = basename($backup->md_file_path);
-        return Response::download(Storage::disk('local')->path($backup->md_file_path), $mdName, [
-            'Content-Type' => 'text/markdown',
+        $fileName = basename($backup->md_file_path);
+        $mime = str_ends_with($fileName, '.md') ? 'text/markdown' : 'text/plain; charset=utf-8';
+
+        return Response::download(Storage::disk('local')->path($backup->md_file_path), $fileName, [
+            'Content-Type' => $mime,
         ]);
+    }
+
+    /**
+     * Backward-compatible alias for downloadTxt
+     */
+    public function downloadMd(int $id)
+    {
+        return $this->downloadTxt($id);
     }
 
     /**

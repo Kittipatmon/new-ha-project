@@ -49,9 +49,9 @@ class DatabaseBackupService
         $tempSqlRelative = self::BACKUP_DIR . "/temp_{$dbName}_{$timestamp}.sql";
         $tempSqlAbsolute = Storage::disk('local')->path($tempSqlRelative);
 
-        $mdFilename = "backup_db_{$dbName}_{$timestamp}_README.md";
-        $mdRelativePath = self::BACKUP_DIR . '/' . $mdFilename;
-        $mdAbsolutePath = Storage::disk('local')->path($mdRelativePath);
+        $txtFilename = "backup_db_{$dbName}_{$timestamp}_README.txt";
+        $txtRelativePath = self::BACKUP_DIR . '/' . $txtFilename;
+        $txtAbsolutePath = Storage::disk('local')->path($txtRelativePath);
 
         // Generate strong random password for AES-256 encryption
         $randomPassword = 'KM#' . Str::random(5) . '$' . rand(100, 999) . '@' . Str::random(5);
@@ -98,8 +98,8 @@ class DatabaseBackupService
             $zip->addFromString('manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             $zip->setEncryptionName('manifest.json', ZipArchive::EM_AES_256);
 
-            // 4. Generate Markdown documentation (.md)
-            $mdContent = self::generateMarkdownGuide([
+            // 4. Generate Plain Text documentation (.txt)
+            $txtContent = self::generateTextGuide([
                 'filename' => $zipFilename,
                 'database' => $dbName,
                 'timestamp' => $timestamp,
@@ -112,13 +112,13 @@ class DatabaseBackupService
                 'created_by' => $actor?->fullname ?? 'ระบบอัตโนมัติ (Daily Midnight Cron)',
             ]);
 
-            // Add unencrypted README.md inside the ZIP so anyone inspecting can read recovery guide
-            $zip->addFromString('README.md', $mdContent);
+            // Add unencrypted README.txt inside the ZIP so anyone inspecting can open directly with Notepad
+            $zip->addFromString('README.txt', $txtContent);
 
             $zip->close();
 
-            // Write companion .md file on disk
-            file_put_contents($mdAbsolutePath, $mdContent);
+            // Write companion .txt file on disk
+            file_put_contents($txtAbsolutePath, $txtContent);
 
             // 5. Clean up temporary uncompressed SQL file
             if (file_exists($tempSqlAbsolute)) {
@@ -146,7 +146,7 @@ class DatabaseBackupService
                 'is_encrypted' => true,
                 'encryption_algorithm' => 'AES-256',
                 'encrypted_password' => Crypt::encryptString($randomPassword),
-                'md_file_path' => $mdRelativePath,
+                'md_file_path' => $txtRelativePath,
                 'dumper_engine' => $dumperEngine,
                 'created_by' => $actor?->id,
                 'created_by_name' => $actor?->fullname ?? ($actor ? 'ผู้ดูแลระบบ' : 'ระบบอัตโนมัติ (Daily Midnight Cron)'),
@@ -154,7 +154,7 @@ class DatabaseBackupService
             ]);
 
             // 8. Send password & backup report to ICT Email
-            self::sendBackupNotificationToIct($backup, $randomPassword, $mdContent, $actor);
+            self::sendBackupNotificationToIct($backup, $randomPassword, $txtContent, $actor);
 
             // 9. Log in Audit Trail
             if (class_exists(AuditLogService::class)) {
@@ -178,85 +178,83 @@ class DatabaseBackupService
             if (file_exists($zipAbsolutePath)) {
                 @unlink($zipAbsolutePath);
             }
-            if (file_exists($mdAbsolutePath)) {
-                @unlink($mdAbsolutePath);
+            if (isset($txtAbsolutePath) && file_exists($txtAbsolutePath)) {
+                @unlink($txtAbsolutePath);
             }
             throw $e;
         }
     }
 
     /**
-     * Generate companion Markdown (.md) guide
+     * Generate companion Plain Text (.txt) recovery guide readable in Notepad
      */
-    protected static function generateMarkdownGuide(array $data): string
+    protected static function generateTextGuide(array $data): string
     {
-        return <<<MARKDOWN
-# Kumwell HR System - Database Backup Report & Recovery Guide
+        return <<<TEXT
 ================================================================================
-Generated At: {$data['date_thai']}
-Database: `{$data['database']}`
-Filename: `{$data['filename']}`
-Status: SUCCESS (VERIFIED)
+KUMWELL HR SYSTEM - DATABASE BACKUP REPORT & RECOVERY GUIDE
+================================================================================
+Generated At : {$data['date_thai']}
+Database     : {$data['database']}
+Filename     : {$data['filename']}
+Status       : SUCCESS (VERIFIED)
 ================================================================================
 
-## 1. ข้อมูลสรุปไฟล์สำรอง (Backup Summary)
-- **ชื่อไฟล์สำรอง**: `{$data['filename']}`
-- **ตารางที่สำรอง**: {$data['tables_count']} ตาราง
-- **จำนวนเรคคอร์ดทั้งหมด**: {$data['rows_count']} รายการ
-- **ระบบการเข้ารหัส**: {$data['encryption']} (Military-grade Encryption)
-- **เครื่องมือส่งออก**: {$data['dumper_engine']}
-- **ผู้ดำเนินการ**: {$data['created_by']}
-- **นโยบายการจัดเก็บ**: จัดเก็บใน Private Storage นาน 30 วัน
+[1] ข้อมูลสรุปไฟล์สำรอง (BACKUP SUMMARY)
+--------------------------------------------------------------------------------
+- ชื่อไฟล์สำรอง       : {$data['filename']}
+- ฐานข้อมูลเป้าหมาย  : {$data['database']}
+- ตารางที่สำรอง      : {$data['tables_count']} ตาราง
+- ข้อมูลทั้งหมด       : {$data['rows_count']} รายการ
+- ระบบการเข้ารหัส     : {$data['encryption']} (Military-grade Encryption)
+- เครื่องมือส่งออก     : {$data['dumper_engine']}
+- ผู้ดำเนินการ        : {$data['created_by']}
+- นโยบายการจัดเก็บ   : จัดเก็บใน Private Storage นาน 30 วัน
 
----
+--------------------------------------------------------------------------------
+[2] ขั้นตอนการถอดรหัสและเปิดไฟล์ (HOW TO DECRYPT)
+--------------------------------------------------------------------------------
+ไฟล์สำรองนี้ได้รับการเข้ารหัสความปลอดภัยระดับ AES-256 เพื่อป้องกันข้อมูลองค์กร
+รหัสผ่านสำหรับเปิดไฟล์ได้รับการสุ่มแบบความปลอดภัยสูง และส่งไปยัง "อีเมลแผนก ICT" แล้ว
 
-## 2. ขั้นตอนการถอดรหัสไฟล์ (How to Decrypt)
-ไฟล์สำรองนี้ได้รับการเข้ารหัสความปลอดภัยระดับ **AES-256** เพื่อป้องกันข้อมูลองค์กร 
-รหัสผ่านสำหรับเปิดไฟล์ได้รับการสุ่มแบบเข้ารหัสความปลอดภัยสูง และถูกส่งไปยัง **อีเมลแผนก ICT** แล้ว
+วิธีที่ 1: แตกไฟล์ผ่านโปรแกรม WinRAR หรือ 7-Zip บน Windows
+  1. ดับเบิ้ลคลิก หรือคลิกขวาที่ไฟล์ {$data['filename']}
+  2. เลือก Extract to "..." หรือ Extract Here
+  3. ระบบจะแสดงหน้าต่างถามรหัสผ่าน (Enter Password)
+  4. กรอกรหัสผ่านที่ได้รับจากอีเมล ICT แล้วกด OK
+  5. จะได้ไฟล์ {$data['sql_filename']} พร้อมใช้งาน
 
-### วิธีที่ 1: แตกไฟล์ผ่านโปรแกรม 7-Zip / WinRAR (Windows)
-1. คลิกขวาที่ไฟล์ `{$data['filename']}`
-2. เลือก **7-Zip** -> **Extract to "..."** หรือ **Extract Here**
-3. ระบบจะแสดงหน้าต่างถามรหัสผ่าน (Enter Password)
-4. กรอกรหัสผ่านที่ได้รับจากอีเมล ICT และกด OK
-5. ท่านจะได้ไฟล์ `{$data['sql_filename']}` พร้อมใช้งาน
+วิธีที่ 2: แตกไฟล์ผ่าน Command Line (Linux / macOS / VPS)
+  # ใช้คำสั่ง 7z (แนะนำ)
+  7z x -p"<ENTER_PASSWORD>" {$data['filename']}
 
-### วิธีที่ 2: แตกไฟล์ผ่าน Command Line (Linux / macOS / VPS)
-```bash
-# ใช้คำสั่ง 7z (แนะนำ)
-7z x -p"<ENTER_PASSWORD>" {$data['filename']}
+  # หรือใช้คำสั่ง unzip
+  unzip -P "<ENTER_PASSWORD>" {$data['filename']}
 
-# หรือใช้คำสั่ง unzip
-unzip -P "<ENTER_PASSWORD>" {$data['filename']}
-```
+--------------------------------------------------------------------------------
+[3] ขั้นตอนการกู้คืนฐานข้อมูลเข้าสู่ MYSQL (DATABASE RESTORATION)
+--------------------------------------------------------------------------------
+เมื่อถอดรหัสและได้ไฟล์ {$data['sql_filename']} เรียบร้อยแล้ว ให้ทำการ Import:
 
----
+  # คำสั่ง Import ฐานข้อมูลผ่าน Command Line บนโฮสต์
+  mysql -h localhost -u [DB_USERNAME] -p {$data['database']} < {$data['sql_filename']}
 
-## 3. ขั้นตอนการกู้คืนฐานข้อมูล (Database Restoration)
-เมื่อถอดรหัสและได้ไฟล์ `{$data['sql_filename']}` เรียบร้อยแล้ว ให้ทำการ Import เข้าสู่ MySQL:
-
-```bash
-# คำสั่ง Import ฐานข้อมูลผ่าน Command Line
-mysql -h localhost -u [DB_USERNAME] -p [DB_DATABASE] < {$data['sql_filename']}
-```
-
----
-
-## 4. การตรวจสอบความสมบูรณ์ของไฟล์ (Integrity Check)
+--------------------------------------------------------------------------------
+[4] การตรวจสอบความสมบูรณ์ของไฟล์ (INTEGRITY CHECK)
+--------------------------------------------------------------------------------
 ก่อนนำไฟล์ไปใช้งาน สามารถตรวจสอบ SHA-256 Checksum เพื่อยืนยันว่าไฟล์ไม่ถูกดัดแปลง:
 
-```powershell
-# บน Windows PowerShell
-Get-FileHash -Algorithm SHA256 {$data['filename']}
+  # บน Windows PowerShell:
+  Get-FileHash -Algorithm SHA256 {$data['filename']}
 
-# บน Linux / macOS
-sha256sum {$data['filename']}
-```
+  # บน Linux / macOS:
+  sha256sum {$data['filename']}
 
----
-*Kumwell ICT Infrastructure & Data Governance Team*
-*เอกสารนี้จัดทำขึ้นโดยอัตโนมัติจากระบบ Kumwell HR System*
-MARKDOWN;
+================================================================================
+Kumwell ICT Infrastructure & Data Governance Team
+เอกสารนี้จัดทำขึ้นโดยอัตโนมัติจากระบบ Kumwell HR System
+================================================================================
+TEXT;
     }
 
     /**
@@ -265,7 +263,7 @@ MARKDOWN;
     protected static function sendBackupNotificationToIct(
         DatabaseBackup $backup,
         string $plainPassword,
-        string $mdContent,
+        string $txtContent,
         ?User $actor = null
     ): void {
         try {
@@ -303,13 +301,14 @@ MARKDOWN;
 
             $htmlContent = self::buildIctEmailHtml($backup, $plainPassword);
 
-            Mail::html($htmlContent, function ($message) use ($recipients, $subject, $backup, $mdContent) {
+            Mail::html($htmlContent, function ($message) use ($recipients, $subject, $backup, $txtContent) {
                 $message->to($recipients)
                     ->subject($subject);
 
-                // Attach the Markdown recovery guide (.md)
-                $message->attachData($mdContent, "README_RECOVERY_{$backup->filename}.md", [
-                    'mime' => 'text/markdown',
+                // Attach the Plain Text recovery guide (.txt)
+                $txtFilename = str_replace('.zip', '_README.txt', $backup->filename);
+                $message->attachData($txtContent, $txtFilename, [
+                    'mime' => 'text/plain; charset=utf-8',
                 ]);
             });
 
