@@ -332,8 +332,8 @@ Route::middleware('auth')->group(function () {
             Route::delete('/microsoft/users/{id}', [App\Http\Controllers\Backend\Settings\MicrosoftSettingController::class, 'disconnectUser'])->name('microsoft.disconnect-user');
         });
 
-        // System Audit Logs & 5-Year Archive Ledger
-        Route::prefix('backend/audit-logs')->name('backend.audit-logs.')->group(function () {
+        // System Audit Logs & 5-Year Archive Ledger (Admin only)
+        Route::prefix('backend/audit-logs')->name('backend.audit-logs.')->middleware('role:admin')->group(function () {
             Route::get('/', [App\Http\Controllers\Backend\AuditLogController::class, 'index'])->name('index');
             Route::get('/data', [App\Http\Controllers\Backend\AuditLogController::class, 'getLogsData'])->name('data');
             Route::post('/archive', [App\Http\Controllers\Backend\AuditLogController::class, 'createArchive'])->name('archive');
