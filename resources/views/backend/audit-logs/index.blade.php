@@ -111,6 +111,12 @@
         .row-flash {
             animation: flashRow 3.5s ease-out;
         }
+        table.dataTable tbody td.col-description {
+            white-space: normal !important;
+            word-break: break-word;
+            min-width: 250px;
+            max-width: 480px;
+        }
     </style>
 @endpush
 
@@ -279,7 +285,7 @@
                             <th class="w-48">ผู้ดำเนินการ</th>
                             <th class="w-36">ประเภทกิจกรรม</th>
                             <th class="w-44">ระบบ / โมดูล</th>
-                            <th>คำอธิบายและรายละเอียด</th>
+                            <th style="min-width: 250px;">คำอธิบายและรายละเอียด</th>
                             <th class="w-32">IP / วิธี</th>
                             <th class="w-28 text-center">ดูค่าเก่า-ใหม่</th>
                         </tr>
@@ -337,9 +343,18 @@
                                 </td>
 
                                 <!-- Description -->
-                                <td>
-                                    <div class="font-medium text-slate-800 dark:text-slate-100">
-                                        {{ $log->description }}
+                                <td class="col-description">
+                                    <div class="font-medium text-slate-800 dark:text-slate-100 text-xs leading-relaxed" title="{{ $log->description }}">
+                                        @if(mb_strlen($log->description) > 65)
+                                            <span class="desc-short">{{ mb_substr($log->description, 0, 65) }}...</span>
+                                            <span class="desc-full hidden">{{ $log->description }}</span>
+                                            <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-bold text-[11px] underline ml-1 inline-flex items-center gap-0.5 cursor-pointer">
+                                                <span class="btn-text">เพิ่มเติม</span>
+                                                <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200"></i>
+                                            </button>
+                                        @else
+                                            <span>{{ $log->description }}</span>
+                                        @endif
                                     </div>
                                     @if($log->diff)
                                         <div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">
@@ -911,6 +926,62 @@
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
 <script>
+function renderAuditDescription(description, diffCount) {
+    if (!description) return '-';
+    const diffBadge = diffCount > 0 ? `<div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">มีการแก้ไข ${diffCount} ฟิลด์</div>` : '';
+    const safeFull = $('<div>').text(description).html();
+
+    if (description.length > 65) {
+        const shortText = description.substring(0, 65) + '...';
+        const safeShort = $('<div>').text(shortText).html();
+        return `
+            <div class="font-medium text-slate-800 dark:text-slate-100 text-xs leading-relaxed" title="${safeFull}">
+                <span class="desc-short">${safeShort}</span>
+                <span class="desc-full hidden">${safeFull}</span>
+                <button type="button" onclick="toggleAuditDesc(this)" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-bold text-[11px] underline ml-1 inline-flex items-center gap-0.5 cursor-pointer">
+                    <span class="btn-text">เพิ่มเติม</span>
+                    <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200"></i>
+                </button>
+            </div>
+            ${diffBadge}
+        `;
+    } else {
+        return `
+            <div class="font-medium text-slate-800 dark:text-slate-100 text-xs leading-relaxed" title="${safeFull}">
+                <span>${safeFull}</span>
+            </div>
+            ${diffBadge}
+        `;
+    }
+}
+
+window.toggleAuditDesc = function(btn) {
+    const parent = btn.closest('.font-medium');
+    if (!parent) return;
+    const shortSpan = parent.querySelector('.desc-short');
+    const fullSpan = parent.querySelector('.desc-full');
+    const btnText = btn.querySelector('.btn-text');
+    const icon = btn.querySelector('i');
+
+    if (fullSpan && shortSpan) {
+        if (fullSpan.classList.contains('hidden')) {
+            fullSpan.classList.remove('hidden');
+            shortSpan.classList.add('hidden');
+            if (btnText) btnText.textContent = 'ย่อลง';
+            if (icon) icon.classList.add('rotate-180');
+        } else {
+            fullSpan.classList.add('hidden');
+            shortSpan.classList.remove('hidden');
+            if (btnText) btnText.textContent = 'เพิ่มเติม';
+            if (icon) icon.classList.remove('rotate-180');
+        }
+    }
+
+    if (window.auditDataTable) {
+        window.auditDataTable.columns.adjust().responsive.recalc();
+    }
+};
+
 function auditLogApp() {
     return {
         activeTab: '{{ request("tab", "logs") }}',
@@ -963,6 +1034,7 @@ function auditLogApp() {
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
                 dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-slate-50/40 dark:bg-slate-850/20"lf>t<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border-t border-slate-100 dark:border-slate-800"ip>',
                 columnDefs: [
+                    { targets: [5], className: 'col-description' },
                     { targets: [7], orderable: false, searchable: false }
                 ]
             };
@@ -1030,7 +1102,7 @@ function auditLogApp() {
                             `<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[11px] text-slate-600 dark:text-slate-300 shrink-0">${log.user_initial}</div><div class="min-w-0"><div class="font-semibold text-slate-800 dark:text-slate-100 truncate">${log.user_name}</div><div class="text-[10px] text-slate-400 font-mono">${log.user_code}</div></div></div>`,
                             `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${log.badge_class}"><i class="${log.icon}"></i><span>${log.action_label}</span></span>`,
                             `<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${log.module_name}</span>`,
-                            `<div class="font-medium text-slate-800 dark:text-slate-100">${log.description}</div>${log.diff_count > 0 ? `<div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">มีการแก้ไข ${log.diff_count} ฟิลด์</div>` : ''}`,
+                            renderAuditDescription(log.description, log.diff_count),
                             `<div class="font-mono text-[11px] text-slate-700 dark:text-slate-300">${log.ip_address}</div><div class="text-[10px] text-slate-400">${log.method}</div>`,
                             log.has_diff ? `<button type="button" onclick="window.auditApp.openDiffModal(${log.id})" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition flex items-center gap-1 mx-auto"><i class="fa-solid fa-code-compare"></i><span>ดูรายละเอียด</span></button>` : `<span class="text-slate-400">-</span>`
                         ]);
@@ -1042,6 +1114,7 @@ function auditLogApp() {
                             $(rowNode).find('td:eq(1)').addClass('whitespace-nowrap').attr('data-order', log.timestamp || log.id);
                             $(rowNode).find('td:eq(3)').addClass('whitespace-nowrap');
                             $(rowNode).find('td:eq(4)').addClass('whitespace-nowrap');
+                            $(rowNode).find('td:eq(5)').addClass('col-description');
                             $(rowNode).find('td:eq(6)').addClass('whitespace-nowrap font-mono text-[11px]');
                             $(rowNode).find('td:eq(7)').addClass('text-center whitespace-nowrap');
                         }
@@ -1075,7 +1148,7 @@ function auditLogApp() {
                     `<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[11px] text-slate-600 dark:text-slate-300 shrink-0">${log.user_initial}</div><div class="min-w-0"><div class="font-semibold text-slate-800 dark:text-slate-100 truncate">${log.user_name}</div><div class="text-[10px] text-slate-400 font-mono">${log.user_code}</div></div></div>`,
                     `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${log.badge_class}"><i class="${log.icon}"></i><span>${log.action_label}</span></span>`,
                     `<span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${log.module_name}</span>`,
-                    `<div class="font-medium text-slate-800 dark:text-slate-100">${log.description}</div>${log.diff_count > 0 ? `<div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5">มีการแก้ไข ${log.diff_count} ฟิลด์</div>` : ''}`,
+                    renderAuditDescription(log.description, log.diff_count),
                     `<div class="font-mono text-[11px] text-slate-700 dark:text-slate-300">${log.ip_address}</div><div class="text-[10px] text-slate-400">${log.method}</div>`,
                     log.has_diff ? `<button type="button" onclick="window.auditApp.openDiffModal(${log.id})" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800 transition flex items-center gap-1 mx-auto"><i class="fa-solid fa-code-compare"></i><span>ดูรายละเอียด</span></button>` : `<span class="text-slate-400">-</span>`
                 ]);
@@ -1087,6 +1160,7 @@ function auditLogApp() {
                     $(rowNode).find('td:eq(1)').addClass('whitespace-nowrap').attr('data-order', log.timestamp || log.id);
                     $(rowNode).find('td:eq(3)').addClass('whitespace-nowrap');
                     $(rowNode).find('td:eq(4)').addClass('whitespace-nowrap');
+                    $(rowNode).find('td:eq(5)').addClass('col-description');
                     $(rowNode).find('td:eq(6)').addClass('whitespace-nowrap font-mono text-[11px]');
                     $(rowNode).find('td:eq(7)').addClass('text-center whitespace-nowrap');
                 }
