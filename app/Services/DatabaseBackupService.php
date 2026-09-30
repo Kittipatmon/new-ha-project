@@ -54,7 +54,7 @@ class DatabaseBackupService
         $txtAbsolutePath = Storage::disk('local')->path($txtRelativePath);
 
         // Generate strong random password for AES-256 encryption
-        $randomPassword = 'KM#' . Str::random(5) . '$' . rand(100, 999) . '@' . Str::random(5);
+        $randomPassword = self::generateSecurePassword();
 
         $dumperEngine = 'pdo_native';
         $tablesCount = 0;
@@ -421,7 +421,20 @@ TEXT;
     }
 
     /**
-     * Build responsive HTML email template for ICT
+     * Generate a cryptographically secure random password with high entropy for AES-256 encryption
+     * Format: KM#<5 chars>$<3 digits>@<5 chars>
+     */
+    public static function generateSecurePassword(): string
+    {
+        $part1 = Str::random(5);
+        $num = random_int(100, 999);
+        $part2 = Str::random(5);
+
+        return "KM#{$part1}\${$num}@{$part2}";
+    }
+
+    /**
+     * Build responsive HTML email template for ICT (Email-safe for Outlook, Webmail, Gmail)
      */
     protected static function buildIctEmailHtml(DatabaseBackup $backup, string $plainPassword): string
     {
@@ -434,96 +447,113 @@ TEXT;
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รหัสผ่านสำรองฐานข้อมูล</title>
 </head>
 <body style="margin: 0; padding: 20px; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-    <div style="max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
-        
-        <!-- Header -->
-        <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; text-align: center; color: #ffffff;">
-            <div style="font-size: 32px; margin-bottom: 8px;">🔒</div>
-            <h1 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px;">ระบบสำรองฐานข้อมูลประจำวัน (Daily Midnight Backup)</h1>
-            <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">รายงานการสำรองฐานข้อมูล & รหัสผ่านถอดรหัสไฟล์ (AES-256)</p>
-            <div style="display: inline-block; margin-top: 12px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;">
-                CONFIDENTIAL • สำหรับเจ้าหน้าที่ ICT เท่านั้น
-            </div>
-        </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f1f5f9; margin: 0; padding: 0;">
+        <tr>
+            <td align="center" style="padding: 10px 0 30px 0;">
+                <div style="max-width: 620px; width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; text-align: left;">
+                    
+                    <!-- Header: Robust Email-Safe Navy Background with High Contrast Explicit Text -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #1e1b4b; border-bottom: 3px solid #6366f1;">
+                        <tr>
+                            <td style="padding: 28px 24px; text-align: center; background-color: #1e1b4b;">
+                                <div style="font-size: 36px; line-height: 1; margin-bottom: 10px;">🔐</div>
+                                <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff !important; letter-spacing: -0.3px; line-height: 1.4; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">
+                                    ระบบสำรองฐานข้อมูลประจำวัน (Daily Midnight Backup)
+                                </h1>
+                                <p style="margin: 8px 0 0 0; font-size: 13px; color: #c7d2fe !important; line-height: 1.4; text-align: center;">
+                                    รายงานการสำรองฐานข้อมูล &amp; รหัสผ่านถอดรหัสไฟล์ (AES-256)
+                                </p>
+                                <div style="margin-top: 14px; text-align: center;">
+                                    <span style="display: inline-block; background-color: #312e81; color: #a5b4fc !important; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid #4338ca; letter-spacing: 0.5px;">
+                                        CONFIDENTIAL • สำหรับเจ้าหน้าที่ ICT เท่านั้น
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
 
-        <!-- Body -->
-        <div style="padding: 30px;">
-            <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-top: 0;">
-                เรียน <strong>เจ้าหน้าที่แผนกเทคโนโลยีสารสนเทศ (ICT Department)</strong>,
-            </p>
-            <p style="font-size: 13px; color: #475569; line-height: 1.6;">
-                ระบบได้ดำเนินการสำรองฐานข้อมูล <strong>{$systemName}</strong> ประจำวันเรียบร้อยแล้ว โดยไฟล์สำรองได้รับการบีบอัดและเข้ารหัสความปลอดภัยระดับ <strong>AES-256 Bit</strong> เพื่อป้องกันข้อมูลรั่วไหล รายละเอียดและรหัสผ่านสำหรับเปิดไฟล์มีดังนี้:
-            </p>
+                    <!-- Body -->
+                    <div style="padding: 28px 24px; background-color: #ffffff;">
+                        <p style="font-size: 14px; color: #334155; line-height: 1.6; margin-top: 0;">
+                            เรียน <strong>เจ้าหน้าที่แผนกเทคโนโลยีสารสนเทศ (ICT Department)</strong>,
+                        </p>
+                        <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+                            ระบบได้ดำเนินการสำรองฐานข้อมูล <strong>{$systemName}</strong> ประจำวันเรียบร้อยแล้ว โดยไฟล์สำรองได้รับการบีบอัดและเข้ารหัสความปลอดภัยระดับ <strong>AES-256 Bit</strong> เพื่อป้องกันข้อมูลรั่วไหล รายละเอียดและรหัสผ่านสำหรับเปิดไฟล์มีดังนี้:
+                        </p>
 
-            <!-- Decryption Password Box -->
-            <div style="margin: 25px 0; background: #0f172a; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #334155;">
-                <div style="font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                    🔑 รหัสผ่านถอดรหัสไฟล์ ZIP (AES-256 Password)
+                        <!-- Decryption Password Box -->
+                        <div style="margin: 22px 0; background-color: #0f172a; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #334155;">
+                            <div style="font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                                🔑 รหัสผ่านถอดรหัสไฟล์ ZIP (AES-256 PASSWORD)
+                            </div>
+                            <div style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 2px; padding: 10px 18px; background-color: #1e293b; border-radius: 8px; display: inline-block; word-break: break-all; border: 1px dashed #0284c7;">
+                                {$plainPassword}
+                            </div>
+                            <div style="font-size: 11px; color: #cbd5e1; margin-top: 10px;">
+                                * โปรดเก็บรักษารหัสผ่านนี้เป็นความลับ สำหรับใช้เปิดไฟล์เมื่อต้องการกู้คืนข้อมูล
+                            </div>
+                        </div>
+
+                        <!-- Backup Details Table -->
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin: 20px 0; background-color: #f8fafc; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0;">
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 10px 14px; font-weight: bold; color: #64748b; width: 35%;">ชื่อไฟล์สำรอง</td>
+                                <td style="padding: 10px 14px; font-family: monospace; font-weight: bold; color: #1e293b;">{$backup->filename}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">วันเวลาที่สำรอง</td>
+                                <td style="padding: 10px 14px; color: #1e293b;">{$dateThai}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">ขนาดไฟล์ (ZIP)</td>
+                                <td style="padding: 10px 14px; font-weight: bold; color: #7c3aed;">{$backup->file_size_human}</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">จำนวนตาราง / ข้อมูล</td>
+                                <td style="padding: 10px 14px; color: #1e293b;">{$backup->tables_count} ตาราง ({$backup->rows_count} รายการ)</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">ความปลอดภัย</td>
+                                <td style="padding: 10px 14px; color: #10b981; font-weight: bold;">AES-256 Bit Encryption</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">SHA-256 Checksum</td>
+                                <td style="padding: 10px 14px; font-family: monospace; font-size: 11px; color: #64748b; word-break: break-all;">{$backup->checksum_sha256}</td>
+                            </tr>
+                        </table>
+
+                        <!-- Instructions -->
+                        <div style="background-color: #f1f5f9; border-left: 4px solid #6366f1; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 20px;">
+                            <div style="font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 4px;">📌 วิธีเปิดและใช้งานไฟล์:</div>
+                            <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
+                                1. ดาวน์โหลดไฟล์จากหน้าเว็บผู้ดูแลระบบ หรือจาก Storage ของระบบ<br>
+                                2. ใช้โปรแกรม <strong>WinRAR</strong> หรือ <strong>7-Zip</strong> และกรอกรหัสผ่านด้านบน<br>
+                                3. เอกสารคู่มือฉบับเต็มได้ถูกแนบมาพร้อมกับอีเมลฉบับนี้ (ไฟล์ <code>.txt</code>)
+                            </div>
+                        </div>
+
+                        <!-- Button link -->
+                        <div style="text-align: center; margin-top: 26px;">
+                            <a href="{$appUrl}/backend/database-backups" style="display: inline-block; background-color: #4f46e5; color: #ffffff !important; text-decoration: none; font-size: 13px; font-weight: bold; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
+                                เข้าสู่หน้าระบบจัดการ Backup
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+                        ระบบสำรองฐานข้อมูลอัตโนมัติ • {$systemName}<br>
+                        อีเมลนี้ส่งจากระบบอัตโนมัติ กรุณาอย่าตอบกลับ
+                    </div>
                 </div>
-                <div style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 2px; padding: 8px 16px; background: #1e293b; border-radius: 8px; display: inline-block; word-break: break-all; border: 1px dashed #0284c7;">
-                    {$plainPassword}
-                </div>
-                <div style="font-size: 11px; color: #cbd5e1; margin-top: 10px;">
-                    * โปรดเก็บรักษารหัสผ่านนี้เป็นความลับ สำหรับใช้เปิดไฟล์เมื่อต้องการกู้คืนข้อมูล
-                </div>
-            </div>
-
-            <!-- Backup Details Table -->
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin: 20px 0; background: #f8fafc; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0;">
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b; width: 35%;">ชื่อไฟล์สำรอง</td>
-                    <td style="padding: 10px 14px; font-family: monospace; font-weight: bold; color: #1e293b;">{$backup->filename}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">วันเวลาที่สำรอง</td>
-                    <td style="padding: 10px 14px; color: #1e293b;">{$dateThai}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">ขนาดไฟล์ (ZIP)</td>
-                    <td style="padding: 10px 14px; font-weight: bold; color: #7c3aed;">{$backup->file_size_human}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">จำนวนตาราง / ข้อมูล</td>
-                    <td style="padding: 10px 14px; color: #1e293b;">{$backup->tables_count} ตาราง ({$backup->rows_count} รายการ)</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">ความปลอดภัย</td>
-                    <td style="padding: 10px 14px; color: #10b981; font-weight: bold;">AES-256 Bit Encryption</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">SHA-256 Checksum</td>
-                    <td style="padding: 10px 14px; font-family: monospace; font-size: 11px; color: #64748b; word-break: break-all;">{$backup->checksum_sha256}</td>
-                </tr>
-            </table>
-
-            <!-- Instructions -->
-            <div style="background: #f1f5f9; border-left: 4px solid #6366f1; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 20px;">
-                <div style="font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 4px;">📌 วิธีเปิดและใช้งานไฟล์:</div>
-                <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
-                    1. ดาวน์โหลดไฟล์จากหน้าเว็บผู้ดูแลระบบ หรือจาก Storage ของระบบ<br>
-                    2. ใช้โปรแกรม <strong>7-Zip</strong> หรือ <strong>WinRAR</strong> และกรอกรหัสผ่านด้านบน<br>
-                    3. เอกสารคู่มือฉบับเต็มได้ถูกแนบมาพร้อมกับอีเมลฉบับนี้ (ไฟล์ <code>.md</code>)
-                </div>
-            </div>
-
-            <!-- Button link -->
-            <div style="text-align: center; margin-top: 30px;">
-                <a href="{$appUrl}/backend/database-backups" style="display: inline-block; background: #4f46e5; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: bold; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
-                    เข้าสู่หน้าระบบจัดการ Backup
-                </a>
-            </div>
-
-        </div>
-
-        <!-- Footer -->
-        <div style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-            ระบบสำรองฐานข้อมูลอัตโนมัติ • {$systemName}<br>
-            อีเมลนี้ส่งจากระบบอัตโนมัติ กรุณาอย่าตอบกลับ
-        </div>
-    </div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
 HTML;
