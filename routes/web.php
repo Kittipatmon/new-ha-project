@@ -342,6 +342,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/archives/{id}/inspect', [App\Http\Controllers\Backend\AuditLogController::class, 'inspectArchive'])->name('archives.inspect');
             Route::get('/{id}', [App\Http\Controllers\Backend\AuditLogController::class, 'show'])->name('show');
         });
+
+        // Database Automated Backups (Admin only)
+        Route::prefix('backend/database-backups')->name('backend.database-backups.')->middleware('role:admin')->group(function () {
+            Route::get('/', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'index'])->name('index');
+            Route::post('/create', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'create'])->name('create');
+            Route::get('/{id}/download', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'download'])->name('download');
+            Route::delete('/{id}', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'destroy'])->name('destroy');
+            Route::post('/clean-old', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'cleanOld'])->name('clean-old');
+        });
     });
 
     // Microsoft 365 OAuth

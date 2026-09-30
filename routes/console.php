@@ -20,3 +20,18 @@ Schedule::command('audit:archive --auto-yearly --purge --clean-expired --years=5
     ->name('annual-audit-archive-5years')
     ->withoutOverlapping()
     ->runInBackground();
+
+/**
+ * กำหนดเวลางานสำรองฐานข้อมูลอัตโนมัติประจำวัน (Daily Midnight Database Backup):
+ * รันทุกวัน เวลา 00:00 น. (เที่ยงคืน) เพื่อ:
+ * 1. บันทึกโครงสร้างและข้อมูลของทุกตารางใน MySQL
+ * 2. บีบอัดเป็นไฟล์ ZIP (.zip) พร้อมแฮช SHA-256 ป้องกันความเสียหาย
+ * 3. จัดเก็บใน Private Storage นอกเว็บ (storage/app/backups/db/)
+ * 4. ลบไฟล์สำรองเก่าที่เกิน 30 วันออกอัตโนมัติเพื่อป้องกันพื้นที่โฮสต์เต็ม
+ */
+Schedule::command('db:backup --clean --keep=30')
+    ->dailyAt('00:00')
+    ->name('daily-database-backup-midnight')
+    ->withoutOverlapping()
+    ->runInBackground();
+

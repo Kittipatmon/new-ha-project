@@ -98,6 +98,9 @@
 
                         <x-sidebar.link title="ตั้งค่า Microsoft 365" icon="microsoft" href="{{ route('backend.settings.microsoft') }}" :active="request()->routeIs('backend.settings.microsoft*')" />
                         <x-sidebar.link title="ประวัติกิจกรรม (Audit Logs)" icon="clock-rotate-left" href="{{ route('backend.audit-logs.index') }}" :active="request()->routeIs('backend.audit-logs.*')" />
+                        @if(Auth::user()->isAdmin())
+                            <x-sidebar.link title="สำรองฐานข้อมูล (DB Backups)" icon="database" href="{{ route('backend.database-backups.index') }}" :active="request()->routeIs('backend.database-backups.*')" />
+                        @endif
                     @endif
 
                 @endif
