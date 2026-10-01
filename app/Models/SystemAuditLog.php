@@ -59,6 +59,7 @@ class SystemAuditLog extends Model
         return match ($this->action) {
             'created' => 'เพิ่มข้อมูล (Create)',
             'updated' => 'แก้ไขข้อมูล (Update)',
+            'renewed' => 'ต่ออายุ (Renew)',
             'deleted' => 'ลบข้อมูล (Delete)',
             'login' => 'เข้าสู่ระบบ (Login)',
             'logout' => 'ออกจากระบบ (Logout)',
@@ -77,6 +78,7 @@ class SystemAuditLog extends Model
         return match ($this->action) {
             'created' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800',
             'updated' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800',
+            'renewed' => 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-800',
             'deleted' => 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800',
             'login', 'logout' => 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800',
             'archived' => 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800',
@@ -92,6 +94,7 @@ class SystemAuditLog extends Model
         return match ($this->action) {
             'created' => 'fa-solid fa-plus-circle',
             'updated' => 'fa-solid fa-pen-to-square',
+            'renewed' => 'fa-solid fa-arrows-rotate',
             'deleted' => 'fa-solid fa-trash-can',
             'login' => 'fa-solid fa-right-to-bracket',
             'logout' => 'fa-solid fa-right-from-bracket',

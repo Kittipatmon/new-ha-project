@@ -92,7 +92,7 @@ class AuditLogService
         return SystemAuditLog::create([
             'user_id' => $actor?->id,
             'user_code' => $actor?->emp_code ?? $actor?->user_code,
-            'user_name' => $actor?->fullname ?? $actor?->name ?? 'ระบบอัตโนมัติ (System)',
+            'user_name' => $actor?->fullname ?? ($actor?->firstname ? trim(($actor->firstname ?? '') . ' ' . ($actor->lastname ?? '')) : null) ?? $actor?->name ?? 'ระบบอัตโนมัติ (System)',
             'user_email' => $actor?->email,
             'user_role' => $actor?->role ?? ($actor?->is_admin ? 'Admin' : 'User'),
             'action' => $action,

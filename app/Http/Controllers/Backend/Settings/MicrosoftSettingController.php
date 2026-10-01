@@ -82,6 +82,14 @@ class MicrosoftSettingController extends Controller
         $isAdmin = Auth::check() && Auth::user()->isAdmin();
         $clientSecretForView = $isAdmin ? $clientSecret : '';
 
+        // Load audit logs history for Microsoft 365 settings & renewals
+        $historyLogs = class_exists(\App\Models\SystemAuditLog::class)
+            ? \App\Models\SystemAuditLog::where('module', 'microsoft_setting')
+                ->latest('id')
+                ->take(8)
+                ->get()
+            : collect();
+
         return view('backend.settings.microsoft.index', compact(
             'clientId',
             'hasSecret',
@@ -96,7 +104,8 @@ class MicrosoftSettingController extends Controller
             'expiryStatus',
             'isConfigured',
             'connectedUsersCount',
-            'connectedUsers'
+            'connectedUsers',
+            'historyLogs'
         ))->with('clientSecret', $clientSecretForView);
     }
 
@@ -136,6 +145,13 @@ class MicrosoftSettingController extends Controller
         $redirectUri = trim($validated['redirect_uri']);
         $secretExpiresAt = !empty($validated['secret_expires_at']) ? trim($validated['secret_expires_at']) : '';
 
+        // Capture previous values for audit trail
+        $oldClientId = (string) config('services.microsoft.client_id', env('MICROSOFT_CLIENT_ID', ''));
+        $oldTenantId = (string) config('services.microsoft.tenant_id', env('MICROSOFT_TENANT_ID', ''));
+        $oldRedirectUri = (string) config('services.microsoft.redirect_uri', env('MICROSOFT_REDIRECT_URI', ''));
+        $oldExpiresAt = (string) config('services.microsoft.secret_expires_at', env('MICROSOFT_SECRET_EXPIRES_AT', ''));
+        $oldHasSecret = !empty($existingSecret);
+
         try {
             $envPath = base_path('.env');
             if (File::exists($envPath)) {
@@ -168,6 +184,65 @@ class MicrosoftSettingController extends Controller
                     Artisan::call('config:clear');
                 } catch (Exception $e) {
                     Log::warning('Config clear error: ' . $e->getMessage());
+                }
+            }
+
+            // Record audit trail for setting changes and renewals
+            if (class_exists(\App\Services\AuditLogService::class)) {
+                $isSecretRenewed = ($newSecret !== null);
+                $isExpiryChanged = ($oldExpiresAt !== $secretExpiresAt && !empty($secretExpiresAt));
+
+                $changedParts = [];
+                if ($isSecretRenewed) {
+                    $changedParts[] = 'ต่ออายุ Client Secret ชุดใหม่';
+                }
+                if ($isExpiryChanged) {
+                    try {
+                        $newDateFormatted = Carbon::parse($secretExpiresAt)->format('d/m/Y');
+                        $changedParts[] = 'ปรับปรุงวันหมดอายุเป็น ' . $newDateFormatted;
+                    } catch (Exception $e) {
+                        $changedParts[] = 'ปรับปรุงวันหมดอายุเป็น ' . $secretExpiresAt;
+                    }
+                }
+                if ($oldClientId !== $clientId) {
+                    $changedParts[] = 'แก้ไข Client ID';
+                }
+                if ($oldTenantId !== $tenantId) {
+                    $changedParts[] = 'แก้ไข Tenant ID';
+                }
+                if ($oldRedirectUri !== $redirectUri) {
+                    $changedParts[] = 'แก้ไข Redirect URI';
+                }
+
+                $action = ($isSecretRenewed || $isExpiryChanged) ? 'renewed' : 'updated';
+                $description = !empty($changedParts)
+                    ? implode(', ', $changedParts)
+                    : 'บันทึกยืนยันข้อมูลการตั้งค่า Microsoft 365';
+
+                try {
+                    \App\Services\AuditLogService::log(
+                        action: $action,
+                        description: $description,
+                        model: null,
+                        oldValues: [
+                            'client_id' => $oldClientId,
+                            'tenant_id' => $oldTenantId,
+                            'redirect_uri' => $oldRedirectUri,
+                            'secret_expires_at' => $oldExpiresAt,
+                            'secret_status' => $oldHasSecret ? 'มี Secret เดิม' : 'ยังไม่ได้ระบุ',
+                        ],
+                        newValues: [
+                            'client_id' => $clientId,
+                            'tenant_id' => $tenantId,
+                            'redirect_uri' => $redirectUri,
+                            'secret_expires_at' => $secretExpiresAt,
+                            'secret_status' => $isSecretRenewed ? 'ต่ออายุรหัสชุดใหม่เรียบร้อย' : 'ใช้รหัสเดิม',
+                        ],
+                        module: 'microsoft_setting',
+                        moduleName: 'ตั้งค่า Microsoft 365'
+                    );
+                } catch (Exception $logEx) {
+                    Log::warning('AuditLog recording failed for Microsoft settings: ' . $logEx->getMessage());
                 }
             }
 

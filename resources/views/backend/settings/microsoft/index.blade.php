@@ -667,6 +667,102 @@
                 </div>
             </div>
 
+            <!-- Change & Renewal History Card -->
+            <div class="bg-white dark:bg-[#1E2129] rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
+                        <span>ประวัติการเปลี่ยนข้อมูลและการต่ออายุ</span>
+                    </h3>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        {{ $historyLogs->count() }} รายการ
+                    </span>
+                </div>
+
+                @if($historyLogs->isNotEmpty())
+                    <div class="relative pl-5 space-y-4 border-l-2 border-slate-100 dark:border-slate-800 ml-2.5 my-2">
+                        @foreach($historyLogs as $log)
+                            @php
+                                $isRenew = ($log->action === 'renewed') || str_contains($log->description, 'ต่ออายุ');
+                            @endphp
+                            <div class="relative group">
+                                <!-- Marker Node -->
+                                <div class="absolute -left-[27px] top-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] ring-4 ring-white dark:ring-[#1E2129] {{ $isRenew ? 'bg-emerald-500 text-white shadow-emerald-500/30' : 'bg-indigo-500 text-white shadow-indigo-500/30' }} shadow-sm">
+                                    <i class="{{ $isRenew ? 'fa-solid fa-arrows-rotate' : 'fa-solid fa-pen' }}"></i>
+                                </div>
+
+                                <div class="bg-slate-50/70 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-200/60 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition">
+                                    <!-- Header line: Action badge + Relative Time -->
+                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            @if($isRenew)
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                                                    <i class="fa-solid fa-shield-halved text-[9px]"></i> ต่ออายุ Secret
+                                                </span>
+                                            @else
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+                                                    <i class="fa-solid fa-pen-to-square text-[9px]"></i> แก้ไขข้อมูล
+                                                </span>
+                                            @endif
+                                            <span class="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate max-w-[130px]" title="{{ $log->user_name }}">
+                                                {{ $log->user_name }}
+                                            </span>
+                                            @if($log->user_role)
+                                                <span class="text-[9px] px-1 py-0.2 rounded bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold uppercase">
+                                                    {{ $log->user_role }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <span class="text-[10px] text-slate-400 whitespace-nowrap" title="{{ $log->created_at->format('d/m/Y H:i:s') }}">
+                                            {{ $log->created_at->diffForHumans() }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <p class="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                                        {{ $log->description }}
+                                    </p>
+
+                                    <!-- Meta Footer: Date time & IP -->
+                                    <div class="mt-2 pt-2 border-t border-slate-200/40 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+                                        <span>
+                                            <i class="fa-regular fa-calendar-check mr-1"></i>
+                                            {{ $log->created_at->format('d/m/Y H:i') }} น.
+                                        </span>
+                                        @if($log->ip_address)
+                                            <span class="font-mono">
+                                                <i class="fa-solid fa-network-wired mr-0.5"></i>
+                                                {{ $log->ip_address }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <!-- Empty State -->
+                    <div class="py-8 text-center px-4 rounded-xl bg-slate-50/50 dark:bg-slate-800/20 border border-dashed border-slate-200 dark:border-slate-800">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3 text-lg">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ยังไม่มีประวัติการแก้ไขระบบ</h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            ระบบจะบันทึกประวัติการเปลี่ยนข้อมูลและต่ออายุ Client Secret อัตโนมัติเมื่อมีการกดบันทึกการตั้งค่า
+                        </p>
+                    </div>
+                @endif
+
+                @if($isAdmin && Route::has('backend.audit-logs.index'))
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <a href="{{ route('backend.audit-logs.index', ['module' => 'microsoft_setting']) }}" class="w-full inline-flex items-center justify-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 py-1 transition">
+                            <span>ดูบันทึกกิจกรรมทั้งหมด (Audit Logs)</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
+                    </div>
+                @endif
+            </div>
+
         </div>
 
     </div>
