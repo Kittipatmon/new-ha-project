@@ -14,6 +14,26 @@ use Illuminate\Support\Facades\Storage;
 class DatabaseBackupController extends Controller
 {
     /**
+     * Authorize only ICT personnel/admins to access database backups
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $user = Auth::user();
+            if (!$user || !method_exists($user, 'canAccessDatabaseBackups') || !$user->canAccessDatabaseBackups()) {
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'คุณไม่มีสิทธิ์เข้าถึงระบบสำรองฐานข้อมูล (เฉพาะผู้ดูแลระบบฝ่ายเทคโนโลยีสารสนเทศ - ICT เท่านั้น)'
+                    ], 403);
+                }
+                abort(403, 'คุณไม่มีสิทธิ์เข้าถึงระบบสำรองฐานข้อมูล (เฉพาะผู้ดูแลระบบฝ่ายเทคโนโลยีสารสนเทศ - ICT เท่านั้น)');
+            }
+            return $next($request);
+        });
+    }
+
+    /**
      * Display list of database backups and system status
      */
     public function index()

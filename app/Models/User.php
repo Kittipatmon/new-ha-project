@@ -381,6 +381,68 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is an ICT personnel or authorized IT developer
+     */
+    public function isIct(): bool
+    {
+        // 1. Department 16 (ICT)
+        if ($this->isIctDepartment()) {
+            return true;
+        }
+
+        // 2. Division check
+        if ($this->division) {
+            $divName = strtolower($this->division->division_name ?? '');
+            $divFull = strtolower($this->division->division_fullname ?? '');
+            if (str_contains($divName, 'ict') || str_contains($divFull, 'information communication technology')) {
+                return true;
+            }
+        }
+
+        // 3. Known ICT admin/developer email whitelist
+        $allowedEmails = [
+            'it@kumwell.com',
+            'ict@kumwell.com',
+            'admin@company.com',
+            'boonsurm.kr@kumwell.com',
+            'dunupong.pa@kumwell.com',
+            'napapan.so@kumwell.com',
+            'kriangsak.duk@kumwell.com',
+            'kittipat.ma@kumwell.com',
+        ];
+        $email = strtolower(trim((string)$this->email));
+        if (in_array($email, $allowedEmails, true)) {
+            return true;
+        }
+
+        // 4. Position title
+        $pos = strtolower($this->position ?? '');
+        if (
+            str_contains($pos, 'ict') ||
+            str_contains($pos, 'developer') ||
+            str_contains($pos, 'programmer') ||
+            str_contains($pos, 'software') ||
+            str_contains($pos, 'network') ||
+            str_contains($pos, 'system admin') ||
+            str_contains($pos, 'it specialist') ||
+            str_contains($pos, 'it support')
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user is permitted to view & manage Database Backups (ICT only)
+     */
+    public function canAccessDatabaseBackups(): bool
+    {
+        // Must be an admin or CEO, AND belong to ICT
+        return ($this->isAdmin() || $this->isCeo() || (string)$this->level_user === '9') && $this->isIct();
+    }
+
+    /**
      * Check if user can assign the ADMIN role:
      * ADMIN can grant EDITOR, VIEWER.
      * Only Department 16 (Information Communication Technology) can grant ADMIN.
