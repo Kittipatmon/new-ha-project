@@ -30,6 +30,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+        if (class_exists(\App\Services\AuditLogService::class) && $user) {
+            try {
+                \App\Services\AuditLogService::log(
+                    action: 'login',
+                    description: "เข้าสู่ระบบสำเร็จ (" . ($user->fullname ?: $user->name) . ")",
+                    module: 'auth',
+                    moduleName: 'ระบบยืนยันตัวตน',
+                    user: $user
+                );
+            } catch (\Throwable $e) {
+                logger()->error('AuditLog login error: ' . $e->getMessage());
+            }
+        }
+
         $intended = $request->session()->get('url.intended');
         if ($intended && (str_contains($intended, '/data') || str_contains($intended, '/api/') || str_ends_with($intended, '.json'))) {
             $request->session()->forget('url.intended');
@@ -43,6 +58,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        if (class_exists(\App\Services\AuditLogService::class) && $user) {
+            try {
+                \App\Services\AuditLogService::log(
+                    action: 'logout',
+                    description: "ออกจากระบบ (" . ($user->fullname ?: $user->name) . ")",
+                    module: 'auth',
+                    moduleName: 'ระบบยืนยันตัวตน',
+                    user: $user
+                );
+            } catch (\Throwable $e) {
+                logger()->error('AuditLog logout error: ' . $e->getMessage());
+            }
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

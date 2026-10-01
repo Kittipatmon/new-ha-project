@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Auditable;
 
 class ProbationEvaluation extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Auditable;
 
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database

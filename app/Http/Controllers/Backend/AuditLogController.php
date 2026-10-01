@@ -19,6 +19,26 @@ class AuditLogController extends Controller
      */
     public function index(Request $request)
     {
+        // Auto-seed an initialization log if the audit log table is completely empty
+        if (SystemAuditLog::count() === 0) {
+            try {
+                $user = Auth::user();
+                $userName = $user ? ($user->fullname ?: $user->name) : 'ผู้ดูแลระบบ (Admin)';
+                AuditLogService::log(
+                    action: 'created',
+                    description: "เริ่มต้นระบบประวัติกิจกรรมและตรวจสอบย้อนหลัง (System Audit Ledger Initialized) โดย {$userName}",
+                    model: null,
+                    oldValues: null,
+                    newValues: ['initialized_at' => now()->toIso8601String(), 'status' => 'active'],
+                    module: 'system',
+                    moduleName: 'ระบบจัดการ',
+                    user: $user
+                );
+            } catch (\Throwable $e) {
+                logger()->error('Auto-seed audit log error: ' . $e->getMessage());
+            }
+        }
+
         $query = SystemAuditLog::query();
 
         // 1. Keyword search
@@ -334,6 +354,46 @@ class AuditLogController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'ไม่สามารถอ่านข้อมูลจากไฟล์ ZIP: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Create a test audit log on demand
+     */
+    public function generateTestLog()
+    {
+        try {
+            $user = Auth::user();
+            $userName = $user ? ($user->fullname ?: $user->name) : 'ผู้ดูแลระบบ (Admin)';
+
+            $log = AuditLogService::log(
+                action: 'created',
+                description: "ทดสอบการบันทึกกิจกรรมระบบ (Verification Ping) โดย {$userName}",
+                model: null,
+                oldValues: ['system_status' => 'idle', 'ping_counter' => 0],
+                newValues: ['system_status' => 'verified_active', 'ping_counter' => 1, 'verified_at' => now()->toIso8601String()],
+                module: 'system',
+                moduleName: 'ทดสอบระบบ',
+                user: $user
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'สร้างบันทึกทดสอบเรียบร้อยแล้ว รายการจะปรากฏบนตารางทันที',
+                'log' => [
+                    'id' => $log->id,
+                    'thai_date' => $log->thai_date,
+                    'thai_time' => $log->thai_time,
+                    'user_name' => $log->user_name,
+                    'action' => $log->action,
+                    'description' => $log->description,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ไม่สามารถสร้างบันทึกทดสอบได้: ' . $e->getMessage(),
             ], 500);
         }
     }

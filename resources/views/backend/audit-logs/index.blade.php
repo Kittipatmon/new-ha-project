@@ -296,6 +296,13 @@
                             :class="{ 'rotate-180': filterOpen }"></i>
                     </button>
 
+                    <button type="button" @click="sendTestLog()" :disabled="isSendingTestLog"
+                        title="คลิกเพื่อทดสอบการบันทึกกิจกรรมจริงลงฐานข้อมูล"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-vial-circle-check" :class="{ 'fa-bounce': isSendingTestLog }"></i>
+                        <span>ทดสอบบันทึก</span>
+                    </button>
+
                     <button type="button" @click="manualRefresh()" :disabled="isRefreshing"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm transition flex items-center gap-1.5">
                         <i class="fa-solid fa-arrows-rotate" :class="{ 'fa-spin': isRefreshing }"></i>
@@ -1896,6 +1903,7 @@ function auditLogApp() {
         // Real-time Engine State
         isLive: true,
         isRefreshing: false,
+        isSendingTestLog: false,
         lastKnownId: {{ \App\Models\SystemAuditLog::max('id') ?? 0 }},
         lastSyncedTime: '{{ (new \App\Models\SystemAuditLog(["created_at" => now()]))->thai_time }}',
         liveTimer: null,
@@ -2147,6 +2155,42 @@ function auditLogApp() {
                 return `${day} ${month} ${year} เวลา ${hours}:${mins}:${secs} น.`;
             } catch (e) {
                 return dateStr;
+            }
+        },
+
+        async sendTestLog() {
+            if (this.isSendingTestLog) return;
+            this.isSendingTestLog = true;
+            try {
+                const res = await fetch('{{ route("backend.audit-logs.test-log") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await res.json();
+                this.isSendingTestLog = false;
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'บันทึกสำเร็จ!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+                    this.fetchLiveFeed();
+                } else {
+                    alert(data.message || 'ไม่สามารถทดสอบได้');
+                }
+            } catch (err) {
+                this.isSendingTestLog = false;
+                alert('เกิดข้อผิดพลาด: ' + err.message);
             }
         },
 

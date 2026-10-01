@@ -4,12 +4,13 @@ namespace App\Models\hrrequest;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Auditable;
 
 use App\Models\User;
 
 class HrRequests extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Auditable;
 
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database

@@ -52,6 +52,24 @@ class AuditLogService
             } elseif (str_contains($class, 'Training')) {
                 $module = 'training';
                 $moduleName = $moduleName ?: 'ระบบฝึกอบรม';
+            } elseif (str_contains($class, 'ManpowerRequest')) {
+                $module = 'manpower';
+                $moduleName = $moduleName ?: 'ใบขออัตรากำลังคน';
+            } elseif (str_contains($class, 'HrRequests')) {
+                $module = 'hr_request';
+                $moduleName = $moduleName ?: 'คำร้อง HR';
+            } elseif (str_contains($class, 'ProbationEvaluation')) {
+                $module = 'probation';
+                $moduleName = $moduleName ?: 'แบบประเมินทดลองงาน';
+            } elseif (str_contains($class, 'InterviewEvaluation')) {
+                $module = 'interview';
+                $moduleName = $moduleName ?: 'แบบประเมินสัมภาษณ์';
+            } elseif (str_contains($class, 'Poster')) {
+                $module = 'poster';
+                $moduleName = $moduleName ?: 'สื่อประชาสัมพันธ์';
+            } elseif (str_contains($class, 'DatabaseBackup')) {
+                $module = 'backup';
+                $moduleName = $moduleName ?: 'สำรองฐานข้อมูล';
             } elseif (str_contains($class, 'User') || str_contains($class, 'Employee')) {
                 $module = 'users';
                 $moduleName = $moduleName ?: 'จัดการผู้ใช้งานและพนักงาน';
