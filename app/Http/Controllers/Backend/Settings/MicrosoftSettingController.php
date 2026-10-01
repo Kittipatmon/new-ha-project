@@ -70,9 +70,6 @@ class MicrosoftSettingController extends Controller
         }
 
         $isConfigured = !empty($clientId) && !empty($clientSecret);
-        $hasSecret = !empty($clientSecret);
-        $maskedSecret = $hasSecret ? ('••••••••••••••••' . (strlen($clientSecret) > 4 ? substr($clientSecret, -4) : '')) : '';
-
         $connectedUsersCount = UserMicrosoftToken::whereNotNull('access_token')->count();
         $connectedUsers = UserMicrosoftToken::with('user')
             ->whereNotNull('access_token')
@@ -80,8 +77,12 @@ class MicrosoftSettingController extends Controller
             ->take(10)
             ->get();
 
+        $hasSecret = !empty($clientSecret);
+        $maskedSecret = $hasSecret ? ('••••••••••••••••' . (strlen($clientSecret) > 4 ? substr($clientSecret, -4) : '')) : '';
+
         return view('backend.settings.microsoft.index', compact(
             'clientId',
+            'clientSecret',
             'hasSecret',
             'maskedSecret',
             'tenantId',
@@ -133,22 +134,20 @@ class MicrosoftSettingController extends Controller
 
         try {
             $envPath = base_path('.env');
-            if (!File::exists($envPath)) {
-                return back()->with('error', 'ไม่พบไฟล์ .env ในระบบ กรุณาตรวจสอบสิทธิ์การเข้าถึงไฟล์');
+            if (File::exists($envPath)) {
+                $updates = [
+                    'MICROSOFT_CLIENT_ID' => $clientId,
+                    'MICROSOFT_TENANT_ID' => $tenantId,
+                    'MICROSOFT_REDIRECT_URI' => $redirectUri,
+                    'MICROSOFT_SECRET_EXPIRES_AT' => $secretExpiresAt,
+                ];
+
+                if ($newSecret !== null) {
+                    $updates['MICROSOFT_CLIENT_SECRET'] = $newSecret;
+                }
+
+                $this->updateEnvFile($envPath, $updates);
             }
-
-            $updates = [
-                'MICROSOFT_CLIENT_ID' => $clientId,
-                'MICROSOFT_TENANT_ID' => $tenantId,
-                'MICROSOFT_REDIRECT_URI' => $redirectUri,
-                'MICROSOFT_SECRET_EXPIRES_AT' => $secretExpiresAt,
-            ];
-
-            if ($newSecret !== null) {
-                $updates['MICROSOFT_CLIENT_SECRET'] = $newSecret;
-            }
-
-            $this->updateEnvFile($envPath, $updates);
 
             // Update in runtime config
             config([
@@ -159,17 +158,34 @@ class MicrosoftSettingController extends Controller
                 'services.microsoft.secret_expires_at' => $secretExpiresAt,
             ]);
 
-            // Clear config cache safely
-            try {
-                Artisan::call('config:clear');
-            } catch (Exception $e) {
-                Log::warning('Config clear error: ' . $e->getMessage());
+            // Clear config cache safely ONLY if already cached
+            if (app()->configurationIsCached()) {
+                try {
+                    Artisan::call('config:clear');
+                } catch (Exception $e) {
+                    Log::warning('Config clear error: ' . $e->getMessage());
+                }
+            }
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'บันทึกและอัปเดตการตั้งค่า Microsoft 365 เรียบร้อยแล้ว'
+                ]);
             }
 
             return redirect()->route('backend.settings.microsoft')
                 ->with('success', 'บันทึกและอัปเดตการตั้งค่า Microsoft 365 เรียบร้อยแล้ว');
         } catch (Exception $e) {
             Log::error('Microsoft setting update error: ' . $e->getMessage());
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'เกิดข้อผิดพลาดในการบันทึก: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()->with('error', 'เกิดข้อผิดพลาดในการบันทึก: ' . $e->getMessage())
                 ->withInput();
         }

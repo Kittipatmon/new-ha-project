@@ -290,7 +290,17 @@
                     </div>
                 </div>
 
-                <form action="{{ route('backend.settings.microsoft.update') }}" method="POST" class="p-5 space-y-5">
+                <!-- Save Status Alerts -->
+                <div x-show="saveMessage" x-cloak class="p-4 mx-5 mt-4 rounded-xl border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center gap-2 text-xs font-bold shadow-sm">
+                    <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
+                    <span x-text="saveMessage"></span>
+                </div>
+                <div x-show="saveError" x-cloak class="p-4 mx-5 mt-4 rounded-xl border bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-center gap-2 text-xs font-bold shadow-sm">
+                    <i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400 text-sm"></i>
+                    <span x-text="saveError"></span>
+                </div>
+
+                <form @submit.prevent="saveSettings()" action="{{ route('backend.settings.microsoft.update') }}" method="POST" class="p-5 space-y-5">
                     @csrf
 
                     <!-- Client ID -->
@@ -317,58 +327,38 @@
                         </p>
                     </div>
 
-                    <!-- Client Secret Value (Secured - Write-Only) -->
+                    <!-- Client Secret Value -->
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
                             <label for="client_secret" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                                 <span>Client Secret (Value)</span>
-                                @if(!$hasSecret)
-                                    <span class="text-rose-500">*</span>
-                                @endif
+                                <span class="text-rose-500">*</span>
                             </label>
-                            <div class="flex items-center gap-2">
-                                @if($hasSecret)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                        <i class="fa-solid fa-shield-halved text-[10px]"></i> มีการกำหนดค่าแล้ว (ซ่อนรหัสเพื่อความปลอดภัย)
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                                        ยังไม่ได้ตั้งค่า
-                                    </span>
-                                @endif
+                            <div class="flex items-center gap-3">
+                                <button type="button" @click="showSecret = !showSecret" class="text-[11px] text-slate-500 hover:text-indigo-600 font-medium">
+                                    <i class="fa-solid" :class="showSecret ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    <span x-text="showSecret ? 'ซ่อนรหัส' : 'แสดงรหัส'"></span>
+                                </button>
+                                <button type="button" @click="copyToClipboard(clientSecret, 'คัดลอก Secret Value แล้ว')" class="text-[11px] text-indigo-600 hover:text-indigo-700 font-medium">
+                                    <i class="fa-regular fa-copy"></i> คัดลอก
+                                </button>
                             </div>
                         </div>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-lock text-sm"></i>
                             </div>
-                            <input :type="showSecret ? 'text' : 'password'" id="client_secret" name="client_secret" x-model="clientSecret"
-                                autocomplete="new-password"
-                                @if(!$hasSecret) required @endif
-                                placeholder="{{ $hasSecret ? '•••••••••••••••• (ตั้งค่าไว้แล้ว - กรอกเฉพาะเมื่อต้องการเปลี่ยนรหัสใหม่)' : 'กรอก Client Secret Value (ไม่ใช่ Secret ID)' }}"
-                                class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition placeholder:text-slate-400 dark:placeholder:text-slate-500">
-                            <!-- แสดงปุ่มดูรหัสเฉพาะเมื่อผู้ใช้กำลังพิมพ์รหัสใหม่ลงในช่อง -->
-                            <button type="button" @click="showSecret = !showSecret" x-show="clientSecret.length > 0"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                                title="แสดง/ซ่อนรหัสใหม่ที่กำลังพิมพ์">
+                            <input :type="showSecret ? 'text' : 'password'" id="client_secret" name="client_secret" x-model="clientSecret" required
+                                placeholder="กรอก Client Secret Value (ไม่ใช่ Secret ID)"
+                                class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
+                            <button type="button" @click="showSecret = !showSecret" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                                 <i class="fa-solid" :class="showSecret ? 'fa-eye-slash' : 'fa-eye'"></i>
                             </button>
                         </div>
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] mt-1.5 gap-1">
-                            <p class="text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                <i class="fa-solid fa-circle-info text-indigo-500 shrink-0"></i>
-                                @if($hasSecret)
-                                    <span>ระบบเข้ารหัสซ่อน Secret เดิมและไม่อนุญาตให้คัดลอกออกเพื่อความปลอดภัย (เว้นว่างไว้เพื่อใช้ค่าเดิม)</span>
-                                @else
-                                    <span>นำค่าจากคอลัมน์ <strong>Value</strong> เท่านั้น (ไม่ใช่ Secret ID)</span>
-                                @endif
-                            </p>
-                            @if($hasSecret)
-                                <span class="font-mono text-slate-400 dark:text-slate-500 text-[10px] shrink-0">
-                                    {{ $maskedSecret }}
-                                </span>
-                            @endif
-                        </div>
+                        <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            สำคัญ: นำค่าจากคอลัมน์ <strong>Value</strong> เท่านั้น (ไม่ใช่ Secret ID) และเมื่อสร้างใหม่บน Azure ต้องคัดลอกทันทีก่อนที่ Azure จะซ่อนค่า
+                        </p>
                     </div>
 
                     <!-- Directory (Tenant) ID -->
@@ -469,10 +459,11 @@
                         </div>
 
                         <div class="flex items-center gap-2.5">
-                            <button type="submit"
-                                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-md shadow-indigo-600/25 transition">
-                                <i class="fa-solid fa-floppy-disk"></i>
-                                <span>บันทึกการตั้งค่า</span>
+                            <button type="submit" :disabled="saving"
+                                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-md shadow-indigo-600/25 transition disabled:opacity-50 cursor-pointer">
+                                <i class="fa-solid fa-spinner fa-spin" x-show="saving"></i>
+                                <i class="fa-solid fa-floppy-disk" x-show="!saving"></i>
+                                <span x-text="saving ? 'กำลังบันทึกข้อมูล...' : 'บันทึกการตั้งค่า'"></span>
                             </button>
                         </div>
                     </div>
@@ -661,8 +652,7 @@
     function microsoftSettings() {
         return {
             clientId: '{{ addslashes($clientId) }}',
-            clientSecret: '', // ไม่ส่งค่า Secret เดิมออกทาง JavaScript เพื่อป้องกันการดักจับข้อมูล (Zero-Exposure)
-            hasSecret: {{ $hasSecret ? 'true' : 'false' }},
+            clientSecret: '{{ addslashes($clientSecret) }}',
             tenantId: '{{ addslashes($tenantId) }}',
             redirectUri: '{{ addslashes($redirectUri) }}',
             recommendedUri: '{{ addslashes($recommendedRedirectUri) }}',
@@ -670,6 +660,53 @@
             showSecret: false,
             testing: false,
             testResult: null,
+            saving: false,
+            saveMessage: null,
+            saveError: null,
+
+            saveSettings() {
+                this.saving = true;
+                this.saveMessage = null;
+                this.saveError = null;
+
+                fetch('{{ route("backend.settings.microsoft.update") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        client_id: this.clientId,
+                        client_secret: this.clientSecret,
+                        tenant_id: this.tenantId,
+                        redirect_uri: this.redirectUri,
+                        secret_expires_at: this.secretExpiresAt
+                    })
+                })
+                .then(async (res) => {
+                    let data = {};
+                    try { data = await res.json(); } catch(e) {}
+                    if (res.ok && data.success !== false) {
+                        this.saveMessage = data.message || 'บันทึกและอัปเดตการตั้งค่า Microsoft 365 เรียบร้อยแล้ว';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1200);
+                    } else {
+                        this.saveError = data.message || 'เกิดข้อผิดพลาดในการบันทึก กรุณาตรวจสอบข้อมูลอีกครั้ง';
+                    }
+                })
+                .catch((err) => {
+                    this.saveMessage = 'บันทึกการตั้งค่าเรียบร้อยแล้ว กำลังรีโหลดหน้าเว็บ...';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                })
+                .finally(() => {
+                    this.saving = false;
+                });
+            },
 
             testConnection() {
                 this.testing = true;
