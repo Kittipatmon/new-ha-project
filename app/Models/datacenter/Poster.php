@@ -3,12 +3,9 @@
 namespace App\Models\datacenter;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class Poster extends Model
 {
-    use Auditable;
-
     protected $table = 'posters';
     protected $primaryKey = 'id';
     public $timestamps = true;

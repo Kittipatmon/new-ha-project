@@ -39,13 +39,28 @@ trait Auditable
                 $title = method_exists($model, 'getAuditTitle') ? $model->getAuditTitle() : ($model->title ?? $model->name ?? '#' . $model->getKey());
 
                 $changes = $model->getChanges();
-                // If only updated_at changed, ignore
-                if (count($changes) === 1 && isset($changes['updated_at'])) {
+
+                // Fields to ignore from triggering "Update" audit logs (counters, timestamps)
+                $ignoredFields = [
+                    'updated_at',
+                    'views',
+                    'clicks',
+                    'impressions',
+                    'last_login_at',
+                    'last_seen_at',
+                    'remember_token',
+                ];
+
+                // Remove ignored fields from changes
+                $meaningfulChanges = array_diff_key($changes, array_flip($ignoredFields));
+
+                // If no meaningful changes remain, do not log
+                if (empty($meaningfulChanges)) {
                     return;
                 }
 
                 $original = [];
-                foreach (array_keys($changes) as $key) {
+                foreach (array_keys($meaningfulChanges) as $key) {
                     $original[$key] = $model->getOriginal($key);
                 }
 
@@ -54,7 +69,7 @@ trait Auditable
                     description: "แก้ไขข้อมูล {$title}",
                     model: $model,
                     oldValues: $original,
-                    newValues: $changes,
+                    newValues: $meaningfulChanges,
                     module: $module,
                     moduleName: $moduleName
                 );
