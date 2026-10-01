@@ -21,22 +21,25 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if ($this->app->environment('production')) {
-            // ตรวจสอบว่า request มาจาก HTTPS (ผ่าน proxy/CDN) หรือไม่
-            // แทนที่จะ forceScheme('https') ตลอด
-            URL::macro('currentScheme', function () {
-                return request()->isSecure() ? 'https' : 'http';
-            });
+        $host = request()->getHost();
+        $appUrl = config('app.url', '');
 
-            // Force HTTPS เฉพาะเมื่อ request จริงเป็น HTTPS เท่านั้น
-            if (
-                isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'
-                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-                || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
-                || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
-            ) {
-                URL::forceScheme('https');
-            }
+        $isHttps = request()->isSecure()
+            || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
+            || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
+            || str_starts_with($appUrl, 'https://');
+
+        $isProductionHost = str_contains($host, 'appkumwell.com')
+            || str_contains($appUrl, 'appkumwell.com')
+            || $this->app->environment('production');
+
+        $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1'])
+            && !str_starts_with($appUrl, 'https://');
+
+        if (($isProductionHost || $isHttps) && !$isLocalhost) {
+            URL::forceScheme('https');
         }
     }
 }

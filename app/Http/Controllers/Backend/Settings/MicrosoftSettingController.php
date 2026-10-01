@@ -40,6 +40,10 @@ class MicrosoftSettingController extends Controller
 
         // Recommended redirect URI based on current APP_URL
         $recommendedRedirectUri = url('/auth/microsoft/callback');
+        if (str_contains($recommendedRedirectUri, 'ha.appkumwell.com') || str_starts_with(config('app.url'), 'https://')) {
+            $recommendedRedirectUri = preg_replace('/^http:/i', 'https:', $recommendedRedirectUri);
+            $redirectUri = preg_replace('/^http:/i', 'https:', $redirectUri);
+        }
 
         // Expiration status
         $expiryDate = null;

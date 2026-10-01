@@ -21,7 +21,43 @@ class MicrosoftGraphService
         $this->clientId = (string) config('services.microsoft.client_id', env('MICROSOFT_CLIENT_ID', ''));
         $this->clientSecret = (string) config('services.microsoft.client_secret', env('MICROSOFT_CLIENT_SECRET', ''));
         $this->tenantId = (string) config('services.microsoft.tenant_id', env('MICROSOFT_TENANT_ID', 'common'));
-        $this->redirectUri = (string) config('services.microsoft.redirect_uri', url('/auth/microsoft/callback'));
+        
+        $redirectUri = (string) config('services.microsoft.redirect_uri', env('MICROSOFT_REDIRECT_URI', ''));
+        if (empty($redirectUri)) {
+            $redirectUri = url('/auth/microsoft/callback');
+        }
+
+        // หากทำงานบนเซิร์ฟเวอร์จริง (ha.appkumwell.com) หรือมีการเชื่อมต่อแบบ HTTPS
+        // บังคับให้เป็น https:// เสมอ เพื่อให้ตรงกับ Redirect URI ที่ตั้งไว้ใน Azure Portal (App Registration)
+        $host = request()->getHost();
+        $appUrl = config('app.url', '');
+        $isHttps = request()->isSecure()
+            || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || str_starts_with($appUrl, 'https://');
+
+        $isProductionDomain = str_contains($redirectUri, 'ha.appkumwell.com')
+            || str_contains($host, 'ha.appkumwell.com')
+            || str_contains($appUrl, 'ha.appkumwell.com');
+
+        // หากผู้ใช้เข้าใช้งานผ่านโดเมน ha.appkumwell.com ให้ยึดโดเมน ha.appkumwell.com เสมอ
+        if (str_contains($host, 'ha.appkumwell.com') && !str_contains($redirectUri, 'ha.appkumwell.com')) {
+            $redirectUri = 'https://ha.appkumwell.com/auth/microsoft/callback';
+        }
+
+        if ($isProductionDomain || $isHttps) {
+            $redirectUri = preg_replace('/^http:/i', 'https:', $redirectUri);
+        }
+
+        $this->redirectUri = $redirectUri;
+    }
+
+    /**
+     * Get configured redirect URI
+     */
+    public function getRedirectUri(): string
+    {
+        return $this->redirectUri;
     }
 
     /**
