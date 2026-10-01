@@ -752,15 +752,6 @@
                         </p>
                     </div>
                 @endif
-
-                @if($isAdmin && Route::has('backend.audit-logs.index'))
-                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-                        <a href="{{ route('backend.audit-logs.index', ['module' => 'microsoft_setting']) }}" class="w-full inline-flex items-center justify-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 py-1 transition">
-                            <span>ดูบันทึกกิจกรรมทั้งหมด (Audit Logs)</span>
-                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                        </a>
-                    </div>
-                @endif
             </div>
 
         </div>
