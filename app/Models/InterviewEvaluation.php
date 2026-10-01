@@ -13,6 +13,15 @@ class InterviewEvaluation extends Model
 {
     use SoftDeletes, Auditable, HasSequentialUuid;
 
+    public string $auditModule = 'interview';
+    public string $auditModuleName = 'แบบประเมินสัมภาษณ์';
+
+    public function getAuditTitle(): string
+    {
+        $job = $this->job_title ? " ({$this->job_title})" : '';
+        return "แบบประเมินสัมภาษณ์: " . ($this->applicant_name ?? '#' . $this->getKey()) . $job;
+    }
+
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
      */

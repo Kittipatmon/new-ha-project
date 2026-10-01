@@ -2,10 +2,21 @@
 
 namespace App\Models\datacenter;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class HeroBackground extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'hero_background';
+    public string $auditModuleName = 'ภาพพื้นหลัง Hero Banner';
+
+    public function getAuditTitle(): string
+    {
+        return "ภาพพื้นหลัง: " . ($this->title ?? '#' . $this->getKey());
+    }
+
     protected $table = 'hero_backgrounds';
 
     protected $fillable = [

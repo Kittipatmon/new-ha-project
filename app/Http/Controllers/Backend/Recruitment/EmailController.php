@@ -48,6 +48,27 @@ class EmailController extends Controller
                 Auth::user()
             );
 
+            if (class_exists(\App\Services\AuditLogService::class)) {
+                try {
+                    \App\Services\AuditLogService::log(
+                        action: 'email_sent',
+                        description: "ส่งอีเมลถึงผู้สมัคร: {$application->applicant->full_name} ({$application->applicant->email}) หัวข้อ: {$validated['subject']}",
+                        model: $application,
+                        oldValues: null,
+                        newValues: [
+                            'recipient' => $application->applicant->email,
+                            'recipient_name' => $application->applicant->full_name,
+                            'subject' => $validated['subject'],
+                            'application_no' => $application->application_no,
+                        ],
+                        module: 'recruitment',
+                        moduleName: 'ระบบสรรหาบุคลากร (อีเมล)'
+                    );
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('AuditLog recording failed for direct email: ' . $e->getMessage());
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'ส่งอีเมลเข้าคิวเรียบร้อยแล้ว ระบบกำลังดำเนินการส่งออก'

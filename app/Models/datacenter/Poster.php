@@ -2,10 +2,22 @@
 
 namespace App\Models\datacenter;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class Poster extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'poster';
+    public string $auditModuleName = 'สื่อประชาสัมพันธ์';
+
+    public function getAuditTitle(): string
+    {
+        $pos = $this->position ? " [{$this->position}]" : '';
+        return "สื่อประชาสัมพันธ์: " . ($this->title ?? '#' . $this->getKey()) . $pos;
+    }
+
     protected $table = 'posters';
     protected $primaryKey = 'id';
     public $timestamps = true;

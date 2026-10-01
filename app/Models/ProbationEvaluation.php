@@ -11,6 +11,15 @@ class ProbationEvaluation extends Model
 {
     use SoftDeletes, Auditable, HasSequentialUuid;
 
+    public string $auditModule = 'probation';
+    public string $auditModuleName = 'แบบประเมินทดลองงาน';
+
+    public function getAuditTitle(): string
+    {
+        $code = $this->emp_code ? "[{$this->emp_code}] " : '';
+        return "แบบประเมินทดลองงาน: {$code}" . ($this->employee_name ?? '#' . $this->getKey());
+    }
+
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
      */

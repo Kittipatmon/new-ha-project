@@ -2,10 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class Department extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'master_data';
+    public string $auditModuleName = 'โครงสร้างองค์กร (แผนก)';
+
+    public function getAuditTitle(): string
+    {
+        return "แผนก: " . ($this->department_name ?? '#' . $this->getKey());
+    }
+
     protected $connection = 'mysql';
     protected $table = 'department';
 

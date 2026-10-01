@@ -336,8 +336,29 @@ class MicrosoftSettingController extends Controller
 
         $tokenRecord = UserMicrosoftToken::with('user')->findOrFail($id);
         $userName = $tokenRecord->user->fullname ?? $tokenRecord->microsoft_email ?? 'ผู้ใช้งาน';
+        $userEmail = $tokenRecord->microsoft_email ?? ($tokenRecord->user->email ?? null);
 
         $tokenRecord->delete();
+
+        if (class_exists(\App\Services\AuditLogService::class)) {
+            try {
+                \App\Services\AuditLogService::log(
+                    action: 'revoked',
+                    description: "ยกเลิกการเชื่อมต่อบัญชี Microsoft 365 ของคุณ {$userName} ({$userEmail})",
+                    model: null,
+                    oldValues: [
+                        'user_id' => $tokenRecord->user_id,
+                        'microsoft_email' => $tokenRecord->microsoft_email,
+                        'tenant_id' => $tokenRecord->tenant_id,
+                    ],
+                    newValues: ['status' => 'disconnected'],
+                    module: 'microsoft_setting',
+                    moduleName: 'ตั้งค่า Microsoft 365'
+                );
+            } catch (\Exception $e) {
+                Log::warning('AuditLog recording failed for disconnectUser: ' . $e->getMessage());
+            }
+        }
 
         return back()->with('success', "ยกเลิกการเชื่อมต่อบัญชี Microsoft 365 ของคุณ {$userName} เรียบร้อยแล้ว");
     }

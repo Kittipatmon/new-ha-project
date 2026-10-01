@@ -52,27 +52,45 @@ class AuditLogService
             } elseif (str_contains($class, 'Training')) {
                 $module = 'training';
                 $moduleName = $moduleName ?: 'ระบบฝึกอบรม';
-            } elseif (str_contains($class, 'ManpowerRequest')) {
+            } elseif (str_contains($class, 'ManpowerRequest') || str_contains($class, 'Manpower')) {
                 $module = 'manpower';
                 $moduleName = $moduleName ?: 'ใบขออัตรากำลังคน';
-            } elseif (str_contains($class, 'HrRequests')) {
+            } elseif (str_contains($class, 'HrRequests') || str_contains($class, 'Request_') || str_contains($class, 'RequestCategories') || str_contains($class, 'RequestType')) {
                 $module = 'hr_request';
                 $moduleName = $moduleName ?: 'คำร้อง HR';
-            } elseif (str_contains($class, 'ProbationEvaluation')) {
+            } elseif (str_contains($class, 'ProbationEvaluation') || str_contains($class, 'Probation')) {
                 $module = 'probation';
                 $moduleName = $moduleName ?: 'แบบประเมินทดลองงาน';
-            } elseif (str_contains($class, 'InterviewEvaluation')) {
+            } elseif (str_contains($class, 'InterviewEvaluation') || str_contains($class, 'Interview')) {
                 $module = 'interview';
                 $moduleName = $moduleName ?: 'แบบประเมินสัมภาษณ์';
             } elseif (str_contains($class, 'Poster')) {
                 $module = 'poster';
                 $moduleName = $moduleName ?: 'สื่อประชาสัมพันธ์';
+            } elseif (str_contains($class, 'News')) {
+                $module = 'news';
+                $moduleName = $moduleName ?: 'ข่าวสารและกิจกรรม';
+            } elseif (str_contains($class, 'HeroBackground')) {
+                $module = 'hero_background';
+                $moduleName = $moduleName ?: 'ภาพพื้นหลัง Hero Banner';
+            } elseif (str_contains($class, 'Suggestion')) {
+                $module = 'suggestion';
+                $moduleName = $moduleName ?: 'ระบบรับเรื่องร้องเรียนและข้อเสนอแนะ';
+            } elseif (str_contains($class, 'FormShare')) {
+                $module = 'form_share';
+                $moduleName = $moduleName ?: 'การแชร์และกำหนดสิทธิ์เอกสาร';
+            } elseif (str_contains($class, 'LeaveReports')) {
+                $module = 'leave_reports';
+                $moduleName = $moduleName ?: 'รายงานการลาพนักงาน';
             } elseif (str_contains($class, 'DatabaseBackup')) {
                 $module = 'backup';
                 $moduleName = $moduleName ?: 'สำรองฐานข้อมูล';
-            } elseif (str_contains($class, 'User') || str_contains($class, 'Employee')) {
+            } elseif (str_contains($class, 'Department') || str_contains($class, 'Division') || str_contains($class, 'Section') || str_contains($class, 'UserType')) {
+                $module = 'master_data';
+                $moduleName = $moduleName ?: 'โครงสร้างองค์กรและระบบ';
+            } elseif (str_contains($class, 'User') || str_contains($class, 'Employee') || str_contains($class, 'HrUserRole')) {
                 $module = 'users';
-                $moduleName = $moduleName ?: 'จัดการผู้ใช้งานและพนักงาน';
+                $moduleName = $moduleName ?: 'จัดการผู้ใช้งานและสิทธิ์';
             } else {
                 $module = 'general';
                 $moduleName = $moduleName ?: 'ระบบทั่วไป';

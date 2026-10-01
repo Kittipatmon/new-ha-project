@@ -11,6 +11,15 @@ class ManpowerRequest extends Model
 {
     use SoftDeletes, Auditable, HasSequentialUuid;
 
+    public string $auditModule = 'manpower';
+    public string $auditModuleName = 'ใบขออัตรากำลังคน';
+
+    public function getAuditTitle(): string
+    {
+        $dept = $this->department ? " ({$this->department})" : '';
+        return "ใบขออัตรากำลังคน: " . ($this->job_title_th ?? $this->job_title_en ?? '#' . $this->getKey()) . $dept;
+    }
+
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
      */

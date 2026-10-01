@@ -13,6 +13,15 @@ class HrRequests extends Model
 {
     use SoftDeletes, Auditable, HasSequentialUuid;
 
+    public string $auditModule = 'hr_request';
+    public string $auditModuleName = 'คำร้อง HR';
+
+    public function getAuditTitle(): string
+    {
+        $code = $this->request_code ? "[{$this->request_code}] " : '';
+        return "คำร้อง HR: {$code}" . ($this->title ?? '#' . $this->getKey());
+    }
+
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
      */

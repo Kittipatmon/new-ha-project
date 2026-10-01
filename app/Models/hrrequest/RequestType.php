@@ -2,10 +2,21 @@
 
 namespace App\Models\hrrequest;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class RequestType extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'hr_request';
+    public string $auditModuleName = 'ประเภทคำร้อง HR';
+
+    public function getAuditTitle(): string
+    {
+        return "ประเภทคำร้อง: " . ($this->name_th ?? $this->code ?? '#' . $this->getKey());
+    }
+
     protected $table = 'request_type';
     protected $primaryKey = 'id';
 

@@ -2,10 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class FormShare extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'form_share';
+    public string $auditModuleName = 'การแชร์และกำหนดสิทธิ์เอกสาร';
+
+    public function getAuditTitle(): string
+    {
+        return "แชร์เอกสาร: {$this->form_type} #{$this->form_id}";
+    }
+
     protected $table = 'form_shares';
 
     protected $fillable = [

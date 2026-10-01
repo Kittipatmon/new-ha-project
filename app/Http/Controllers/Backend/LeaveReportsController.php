@@ -122,6 +122,27 @@ class LeaveReportsController extends Controller
 
             $report->save();
 
+            if (class_exists(\App\Services\AuditLogService::class)) {
+                try {
+                    \App\Services\AuditLogService::log(
+                        action: 'imported',
+                        description: "นำเข้าไฟล์รายงานการลาประจำเดือน: {$division_code} ({$report_month}) รวม {$total_employees} คน",
+                        model: $report,
+                        oldValues: null,
+                        newValues: [
+                            'division_code' => $division_code,
+                            'report_month' => $report_month,
+                            'total_employees' => $total_employees,
+                            'filename' => $file->getClientOriginalName(),
+                        ],
+                        module: 'leave_reports',
+                        moduleName: 'รายงานการลาพนักงาน'
+                    );
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('AuditLog recording failed for leave reports import: ' . $e->getMessage());
+                }
+            }
+
             return redirect()->route('leavereports.dashboard')
                 ->with('success', 'นำเข้าข้อมูลสำเร็จ: ' . $division_code . ' ' . $report_month);
         } catch (\Throwable $e) {

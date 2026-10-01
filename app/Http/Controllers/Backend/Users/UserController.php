@@ -314,6 +314,23 @@ public function update(UpdateUserRequest $request, $id)
         return back()->withInput()->with('error', 'เฉพาะผู้ดูแลระบบสังกัดฝ่าย 16 Information Communication Technology เท่านั้นที่สามารถเปลี่ยนสิทธิ์เป็น ADMIN ได้');
     }
 
+    $oldUserValues = [
+        'prefix' => $targetUser->prefix,
+        'firstname' => $targetUser->firstname,
+        'lastname' => $targetUser->lastname,
+        'position' => $targetUser->position,
+        'employee_type' => $targetUser->employee_type,
+        'workplace' => $targetUser->workplace,
+        'department_id' => $targetUser->department_id,
+        'division_id' => $targetUser->division_id,
+        'section_id' => $targetUser->section_id,
+        'level_user' => $targetUser->level_user,
+        'hr_status' => $targetUser->hr_status,
+        'status' => $targetUser->status,
+        'role' => $targetUser->hr_role,
+        'startwork_date' => $targetUser->startwork_date,
+    ];
+
     DB::transaction(function () use ($validated, $targetUser) {
         $user = $targetUser;
         $user->employee_code = $validated['employee_code'];
@@ -361,6 +378,38 @@ public function update(UpdateUserRequest $request, $id)
         $user->save();
     });
 
+    if (class_exists(\App\Services\AuditLogService::class)) {
+        try {
+            $newUserValues = [
+                'prefix' => $targetUser->prefix,
+                'firstname' => $targetUser->firstname,
+                'lastname' => $targetUser->lastname,
+                'position' => $targetUser->position,
+                'employee_type' => $targetUser->employee_type,
+                'workplace' => $targetUser->workplace,
+                'department_id' => $targetUser->department_id,
+                'division_id' => $targetUser->division_id,
+                'section_id' => $targetUser->section_id,
+                'level_user' => $targetUser->level_user,
+                'hr_status' => $targetUser->hr_status,
+                'status' => $targetUser->status,
+                'role' => $targetUser->hr_role,
+                'startwork_date' => $targetUser->startwork_date,
+            ];
+            \App\Services\AuditLogService::log(
+                action: 'updated',
+                description: "แก้ไขข้อมูลพนักงาน: {$targetUser->fullname} (รหัส: {$targetUser->employee_code})",
+                model: $targetUser,
+                oldValues: $oldUserValues,
+                newValues: $newUserValues,
+                module: 'users',
+                moduleName: 'จัดการผู้ใช้งานและสิทธิ์'
+            );
+        } catch (\Throwable $e) {
+            Log::warning('AuditLog recording failed for user update: ' . $e->getMessage());
+        }
+    }
+
     return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลพนักงานเรียบร้อยแล้ว');  
 }
 
@@ -388,6 +437,7 @@ public function updateRole(Request $request, $id)
     }
 
     $targetUser = User::findOrFail($id);
+    $oldRole = $targetUser->hr_role ?? 'viewer';
     $newRole = strtolower(trim($request->input('role')));
 
     // ตรวจสอบสิทธิ์การให้ ADMIN: ถ้าเปลี่ยนคนที่ไม่ใช่ admin ให้เป็น admin ต้องเป็นฝ่าย 16 ICT เท่านั้น
@@ -416,6 +466,22 @@ public function updateRole(Request $request, $id)
     });
 
     Cache::forget("user_hr_role_{$targetUser->employee_code}");
+
+    if (class_exists(\App\Services\AuditLogService::class)) {
+        try {
+            \App\Services\AuditLogService::log(
+                action: 'role_changed',
+                description: "ปรับเปลี่ยนสิทธิ์ผู้ใช้งานของ {$targetUser->fullname} (รหัส: {$targetUser->employee_code}) จาก " . strtoupper($oldRole) . " เป็น " . strtoupper($newRole),
+                model: $targetUser,
+                oldValues: ['role' => $oldRole],
+                newValues: ['role' => $newRole],
+                module: 'users',
+                moduleName: 'จัดการผู้ใช้งานและสิทธิ์'
+            );
+        } catch (\Throwable $e) {
+            Log::warning('AuditLog recording failed for updateRole: ' . $e->getMessage());
+        }
+    }
 
     $roleDisplay = match($newRole) {
         'admin' => '<span class="inline-flex items-center gap-1.5 font-medium text-purple-600 dark:text-purple-400"><i class="fa-solid fa-shield-halved text-purple-600"></i> Admin</span>',
@@ -453,6 +519,7 @@ public function destroy($id)
         }
 
         if ($request->hasFile('avatar')) {
+            $oldPhoto = $user->photo_user;
             $file = $request->file('avatar');
             $filename = time() . '_' . $user->employee_code . '.' . $file->getClientOriginalExtension();
             
@@ -470,6 +537,22 @@ public function destroy($id)
             $file->move($path, $filename);
             $user->photo_user = 'images/profiles/' . $filename;
             $user->save();
+
+            if (class_exists(\App\Services\AuditLogService::class)) {
+                try {
+                    \App\Services\AuditLogService::log(
+                        action: 'avatar_updated',
+                        description: "เปลี่ยนรูปโปรไฟล์พนักงาน: {$user->fullname} (รหัส: {$user->employee_code})",
+                        model: $user,
+                        oldValues: ['photo_user' => $oldPhoto],
+                        newValues: ['photo_user' => $user->photo_user],
+                        module: 'users',
+                        moduleName: 'จัดการผู้ใช้งานและสิทธิ์'
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('AuditLog recording failed for updateAvatar: ' . $e->getMessage());
+                }
+            }
 
             return response()->json([
                 'success' => true,

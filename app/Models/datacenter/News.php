@@ -2,10 +2,21 @@
 
 namespace App\Models\datacenter;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class News extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'news';
+    public string $auditModuleName = 'ข่าวสารและกิจกรรม';
+
+    public function getAuditTitle(): string
+    {
+        return "ข่าวสาร: " . ($this->title ?? '#' . $this->getKey());
+    }
+
     protected $table = 'news';
     protected $primaryKey = 'news_id';
     public $timestamps = true;
