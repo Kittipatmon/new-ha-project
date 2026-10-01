@@ -1014,7 +1014,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($logs as $log)
+                            @foreach($logs as $log)
                                 @php
                                     $displayLogCode = 'LOG-' . str_pad($log->id, 5, '0', STR_PAD_LEFT);
                                 @endphp
@@ -1149,14 +1149,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="py-12 text-center text-slate-400">
-                                        <i class="fa-regular fa-envelope-open text-3xl mb-2 text-slate-300 dark:text-slate-600 block"></i>
-                                        ไม่พบข้อมูลประวัติการส่งอีเมล
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -1360,6 +1353,11 @@
 
         // ── DataTables & Filtering Logic ──────────────────────────────
         $(document).ready(function() {
+            // ป้องกัน DataTables แสดง alert popup แจ้งเตือนข้อผิดพลาดต่อผู้ใช้
+            if (window.$ && window.$.fn && window.$.fn.dataTable) {
+                window.$.fn.dataTable.ext.errMode = 'none';
+            }
+
             let flatTable = null;
             const dtOptions = {
                 dom: '<"overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700/60 shadow-xs"t><"dataTables_bottom_bar"ip>',
@@ -1375,6 +1373,7 @@
                     infoEmpty: "แสดง 0 ถึง 0 จาก 0 รายการ",
                     infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
                     zeroRecords: "ไม่พบข้อมูลที่ตรงกับการค้นหา",
+                    emptyTable: "ไม่พบข้อมูลประวัติการส่งอีเมล",
                     paginate: {
                         first: "«",
                         previous: "‹",
