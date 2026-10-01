@@ -30,6 +30,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $intended = $request->session()->get('url.intended');
+        if ($intended && (str_contains($intended, '/data') || str_contains($intended, '/api/') || str_ends_with($intended, '.json'))) {
+            $request->session()->forget('url.intended');
+        }
+
         return redirect()->intended(route('welcome', absolute: false));
     }
 
