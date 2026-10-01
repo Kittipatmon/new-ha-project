@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use App\Traits\HasSequentialUuid;
 
 class ProbationEvaluation extends Model
 {
-    use SoftDeletes, Auditable;
+    use SoftDeletes, Auditable, HasSequentialUuid;
 
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
@@ -29,6 +30,7 @@ class ProbationEvaluation extends Model
     }
 
     protected $fillable = [
+        'uuid',
         'user_id', 'prefix', 'employee_name', 'position', 'emp_code', 'department', 
         'start_date', 'probation_due_date', 'status',
         // Round 1

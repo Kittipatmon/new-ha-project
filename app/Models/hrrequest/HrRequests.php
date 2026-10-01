@@ -5,12 +5,13 @@ namespace App\Models\hrrequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use App\Traits\HasSequentialUuid;
 
 use App\Models\User;
 
 class HrRequests extends Model
 {
-    use SoftDeletes, Auditable;
+    use SoftDeletes, Auditable, HasSequentialUuid;
 
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
@@ -35,6 +36,7 @@ class HrRequests extends Model
     protected $primaryKey = 'hr_request_id';
 
     protected $fillable = [
+        'uuid',
         'request_code',
         'employee_id',
         'approver_manager_id',

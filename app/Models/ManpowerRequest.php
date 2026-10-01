@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use App\Traits\HasSequentialUuid;
 
 class ManpowerRequest extends Model
 {
-    use SoftDeletes, Auditable;
+    use SoftDeletes, Auditable, HasSequentialUuid;
 
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
@@ -29,6 +30,7 @@ class ManpowerRequest extends Model
     }
 
     protected $fillable = [
+        'uuid',
         'user_id', 'date', 'department', 'section', 'job_title_th', 'job_title_en',
         'headcount', 'current_headcount', 'expected_start_date', 'job_level',
         'hire_type', 'hire_replacement_name', 'hire_transfer_name', 'hire_temp_start', 'hire_temp_end',

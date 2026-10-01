@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use App\Traits\HasSequentialUuid;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InterviewEvaluation extends Model
 {
-    use SoftDeletes, Auditable;
+    use SoftDeletes, Auditable, HasSequentialUuid;
 
     /**
      * Boot soft deletes conditionally only if the deleted_at column exists in database
@@ -33,6 +34,7 @@ class InterviewEvaluation extends Model
     protected $table = 'interview_evaluations';
 
     protected $fillable = [
+        'uuid',
         'user_id',
         'interview_id',
         'application_id',
