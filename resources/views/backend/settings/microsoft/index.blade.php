@@ -329,36 +329,64 @@
 
                     <!-- Client Secret Value -->
                     <div>
-                        <div class="flex items-center justify-between mb-1.5">
-                            <label for="client_secret" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                <span>Client Secret (Value)</span>
-                                <span class="text-rose-500">*</span>
-                            </label>
-                            <div class="flex items-center gap-3">
-                                <button type="button" @click="showSecret = !showSecret" class="text-[11px] text-slate-500 hover:text-indigo-600 font-medium">
+                        @if($isAdmin)
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label for="client_secret" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    <span>Client Secret (Value)</span>
+                                    <span class="text-rose-500">*</span>
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                        <i class="fa-solid fa-shield-halved text-[9px]"></i> สิทธิ์ Admin
+                                    </span>
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" @click="showSecret = !showSecret" class="text-[11px] text-slate-500 hover:text-indigo-600 font-medium transition flex items-center gap-1">
+                                        <i class="fa-solid" :class="showSecret ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                        <span x-text="showSecret ? 'ซ่อนรหัส' : 'แสดงรหัส'"></span>
+                                    </button>
+                                    <button type="button" @click="copyToClipboard(clientSecret, 'คัดลอก Secret Value แล้ว')" class="text-[11px] text-indigo-600 hover:text-indigo-700 font-medium transition flex items-center gap-1">
+                                        <i class="fa-regular fa-copy"></i> คัดลอก
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fa-solid fa-lock text-sm"></i>
+                                </div>
+                                <input :type="showSecret ? 'text' : 'password'" id="client_secret" name="client_secret" x-model="clientSecret" {{ $hasSecret ? '' : 'required' }}
+                                    placeholder="กรอก Client Secret Value (ไม่ใช่ Secret ID)"
+                                    class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
+                                <button type="button" @click="showSecret = !showSecret" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                                     <i class="fa-solid" :class="showSecret ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                    <span x-text="showSecret ? 'ซ่อนรหัส' : 'แสดงรหัส'"></span>
-                                </button>
-                                <button type="button" @click="copyToClipboard(clientSecret, 'คัดลอก Secret Value แล้ว')" class="text-[11px] text-indigo-600 hover:text-indigo-700 font-medium">
-                                    <i class="fa-regular fa-copy"></i> คัดลอก
                                 </button>
                             </div>
-                        </div>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                <i class="fa-solid fa-lock text-sm"></i>
+                            <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                สำคัญ: นำค่าจากคอลัมน์ <strong>Value</strong> เท่านั้น (ไม่ใช่ Secret ID) และเมื่อสร้างใหม่บน Azure ต้องคัดลอกทันทีก่อนที่ Azure จะซ่อนค่า
+                            </p>
+                        @else
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    <span>Client Secret (Value)</span>
+                                    <span class="text-rose-500">*</span>
+                                </label>
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                    <i class="fa-solid fa-lock text-[10px]"></i> เฉพาะสิทธิ์ Admin เท่านั้น
+                                </span>
                             </div>
-                            <input :type="showSecret ? 'text' : 'password'" id="client_secret" name="client_secret" x-model="clientSecret" required
-                                placeholder="กรอก Client Secret Value (ไม่ใช่ Secret ID)"
-                                class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
-                            <button type="button" @click="showSecret = !showSecret" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                                <i class="fa-solid" :class="showSecret ? 'fa-eye-slash' : 'fa-eye'"></i>
-                            </button>
-                        </div>
-                        <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            สำคัญ: นำค่าจากคอลัมน์ <strong>Value</strong> เท่านั้น (ไม่ใช่ Secret ID) และเมื่อสร้างใหม่บน Azure ต้องคัดลอกทันทีก่อนที่ Azure จะซ่อนค่า
-                        </p>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fa-solid fa-shield-halved text-sm"></i>
+                                </div>
+                                <input type="password" disabled readonly
+                                    value="{{ $hasSecret ? '••••••••••••••••••••••••••••••••' : '' }}"
+                                    placeholder="{{ $hasSecret ? '••••••••••••••••••••••••••••••••' : 'ยังไม่ได้กำหนดค่า' }}"
+                                    class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 text-xs sm:text-sm font-mono cursor-not-allowed select-none">
+                            </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-info text-amber-500"></i>
+                                ข้อมูล Client Secret ถูกปกป้องเพื่อความปลอดภัย จำกัดสิทธิ์การดู คัดลอก และแก้ไขเฉพาะผู้ดูแลระบบ (Admin) เท่านั้น
+                            </p>
+                        @endif
                     </div>
 
                     <!-- Directory (Tenant) ID -->
@@ -651,8 +679,9 @@
 <script>
     function microsoftSettings() {
         return {
+            isAdmin: {{ $isAdmin ? 'true' : 'false' }},
             clientId: '{{ addslashes($clientId) }}',
-            clientSecret: '{{ addslashes($clientSecret) }}',
+            clientSecret: '{{ $isAdmin ? addslashes($clientSecret) : "" }}',
             tenantId: '{{ addslashes($tenantId) }}',
             redirectUri: '{{ addslashes($redirectUri) }}',
             recommendedUri: '{{ addslashes($recommendedRedirectUri) }}',
@@ -678,7 +707,7 @@
                     },
                     body: JSON.stringify({
                         client_id: this.clientId,
-                        client_secret: this.clientSecret,
+                        client_secret: this.isAdmin ? this.clientSecret : '',
                         tenant_id: this.tenantId,
                         redirect_uri: this.redirectUri,
                         secret_expires_at: this.secretExpiresAt

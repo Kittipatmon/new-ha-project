@@ -79,12 +79,14 @@ class MicrosoftSettingController extends Controller
 
         $hasSecret = !empty($clientSecret);
         $maskedSecret = $hasSecret ? ('••••••••••••••••' . (strlen($clientSecret) > 4 ? substr($clientSecret, -4) : '')) : '';
+        $isAdmin = Auth::check() && Auth::user()->isAdmin();
+        $clientSecretForView = $isAdmin ? $clientSecret : '';
 
         return view('backend.settings.microsoft.index', compact(
             'clientId',
-            'clientSecret',
             'hasSecret',
             'maskedSecret',
+            'isAdmin',
             'tenantId',
             'redirectUri',
             'recommendedRedirectUri',
@@ -95,7 +97,7 @@ class MicrosoftSettingController extends Controller
             'isConfigured',
             'connectedUsersCount',
             'connectedUsers'
-        ));
+        ))->with('clientSecret', $clientSecretForView);
     }
 
     /**
@@ -107,12 +109,13 @@ class MicrosoftSettingController extends Controller
             abort(403, 'เฉพาะผู้ดูแลระบบหรือเจ้าหน้าที่ฝ่าย HR เท่านั้นที่สามารถเข้าถึงการตั้งค่านี้ได้');
         }
 
+        $isAdmin = Auth::check() && Auth::user()->isAdmin();
         $existingSecret = (string) config('services.microsoft.client_secret', env('MICROSOFT_CLIENT_SECRET', ''));
         $hasExistingSecret = !empty($existingSecret);
 
         $validated = $request->validate([
             'client_id' => 'required|string',
-            'client_secret' => $hasExistingSecret ? 'nullable|string' : 'required|string',
+            'client_secret' => ($hasExistingSecret || !$isAdmin) ? 'nullable|string' : 'required|string',
             'tenant_id' => 'required|string',
             'redirect_uri' => 'required|url',
             'secret_expires_at' => 'nullable|date',
@@ -126,7 +129,8 @@ class MicrosoftSettingController extends Controller
         ]);
 
         $clientId = trim($validated['client_id']);
-        $newSecret = !empty($validated['client_secret']) ? trim($validated['client_secret']) : null;
+        // Only Admin can modify client_secret
+        $newSecret = ($isAdmin && !empty($validated['client_secret'])) ? trim($validated['client_secret']) : null;
         $clientSecret = $newSecret ?: $existingSecret;
         $tenantId = trim($validated['tenant_id']);
         $redirectUri = trim($validated['redirect_uri']);
