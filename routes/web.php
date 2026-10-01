@@ -419,4 +419,6 @@ Route::get('/system/migrate', function (\Illuminate\Http\Request $request) {
 })->name('system.migrate');
 
 // 
-require __DIR__ . '/auth.php';
+if (file_exists(__DIR__ . '/auth.php')) {
+    require __DIR__ . '/auth.php';
+}
