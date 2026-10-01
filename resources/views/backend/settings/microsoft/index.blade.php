@@ -477,6 +477,39 @@
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1">
                             ระบุวันหมดอายุตามที่สร้างไว้บน Azure Portal ระบบจะช่วยนับถอยหลังและแจ้งเตือนล่วงหน้า 30 วันก่อนที่ระบบจะหยุดทำงาน
+                    </div>
+
+                    <!-- Change Reason -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="change_reason" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-clipboard-question text-indigo-600"></i>
+                                <span>สาเหตุการบันทึก / ต่ออายุ (Reason for Changes)</span>
+                                <span class="text-[11px] font-normal text-slate-400">(จะถูกบันทึกลงในประวัติกิจกรรม)</span>
+                            </label>
+                            <div class="hidden sm:flex items-center gap-1.5 text-[11px]">
+                                <span class="text-slate-400 text-[10px]">เลือกด่วน:</span>
+                                <button type="button" @click="changeReason = 'ต่ออายุ Client Secret ประจำปี'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 transition text-[10px]">
+                                    ต่ออายุประจำปี
+                                </button>
+                                <button type="button" @click="changeReason = 'เปลี่ยน Client Secret ใหม่เนื่องจากรหัสเดิมหมดอายุ'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 transition text-[10px]">
+                                    รหัสเดิมหมดอายุ
+                                </button>
+                                <button type="button" @click="changeReason = 'อัปเดตการตั้งค่าการเชื่อมต่อ Azure'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-400 transition text-[10px]">
+                                    อัปเดตการตั้งค่า
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-pen-nib text-sm"></i>
+                            </div>
+                            <input type="text" id="change_reason" name="change_reason" x-model="changeReason"
+                                placeholder="เช่น ต่ออายุ Client Secret ชุดใหม่ 24 เดือน, อัปเดต Redirect URI ตามโดเมนใหม่ ฯลฯ"
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            ระบุสาเหตุเพื่อให้ผู้ดูแลระบบท่านอื่นทราบประวัติและวัตถุประสงค์ในการแก้ไขหรือต่ออายุครั้งนี้
                         </p>
                     </div>
 
@@ -719,9 +752,23 @@
                                     </div>
 
                                     <!-- Description -->
+                                    @php
+                                        $reason = $log->new_values['reason'] ?? null;
+                                        $displayDesc = $log->description;
+                                        if (!$reason && preg_match('/\[สาเหตุ:\s*(.*?)\]/', $log->description, $m)) {
+                                            $reason = $m[1];
+                                            $displayDesc = trim(str_replace($m[0], '', $log->description));
+                                        }
+                                    @endphp
                                     <p class="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                                        {{ $log->description }}
+                                        {{ $displayDesc }}
                                     </p>
+                                    @if(!empty($reason) && $reason !== 'ไม่ได้ระบุ')
+                                        <div class="mt-1.5 px-2.5 py-1 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-[11px] text-indigo-900 dark:text-indigo-300 flex items-start gap-1.5">
+                                            <i class="fa-solid fa-clipboard-question text-indigo-500 mt-0.5 shrink-0 text-[10px]"></i>
+                                            <span><strong class="font-semibold text-indigo-700 dark:text-indigo-400">สาเหตุ:</strong> {{ $reason }}</span>
+                                        </div>
+                                    @endif
 
                                     <!-- Meta Footer: Date time & IP -->
                                     <div class="mt-2 pt-2 border-t border-slate-200/40 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
@@ -773,6 +820,7 @@
             redirectUri: '{{ addslashes($redirectUri) }}',
             recommendedUri: '{{ addslashes($recommendedRedirectUri) }}',
             secretExpiresAt: '{{ $secretExpiresAt }}',
+            changeReason: '',
             showSecret: false,
             testing: false,
             testResult: null,
@@ -797,7 +845,8 @@
                         client_secret: this.isAdmin ? this.clientSecret : '',
                         tenant_id: this.tenantId,
                         redirect_uri: this.redirectUri,
-                        secret_expires_at: this.secretExpiresAt
+                        secret_expires_at: this.secretExpiresAt,
+                        change_reason: this.changeReason
                     })
                 })
                 .then(async (res) => {

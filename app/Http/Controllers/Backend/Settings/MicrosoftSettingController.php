@@ -128,6 +128,7 @@ class MicrosoftSettingController extends Controller
             'tenant_id' => 'required|string',
             'redirect_uri' => 'required|url',
             'secret_expires_at' => 'nullable|date',
+            'change_reason' => 'nullable|string|max:500',
         ], [
             'client_id.required' => 'กรุณาระบุ Microsoft Application (Client) ID',
             'client_secret.required' => 'กรุณาระบุ Client Secret Value',
@@ -144,6 +145,7 @@ class MicrosoftSettingController extends Controller
         $tenantId = trim($validated['tenant_id']);
         $redirectUri = trim($validated['redirect_uri']);
         $secretExpiresAt = !empty($validated['secret_expires_at']) ? trim($validated['secret_expires_at']) : '';
+        $changeReason = !empty($validated['change_reason']) ? trim($validated['change_reason']) : '';
 
         // Capture previous values for audit trail
         $oldClientId = (string) config('services.microsoft.client_id', env('MICROSOFT_CLIENT_ID', ''));
@@ -219,6 +221,10 @@ class MicrosoftSettingController extends Controller
                     ? implode(', ', $changedParts)
                     : 'บันทึกยืนยันข้อมูลการตั้งค่า Microsoft 365';
 
+                if (!empty($changeReason)) {
+                    $description .= ' [สาเหตุ: ' . $changeReason . ']';
+                }
+
                 try {
                     \App\Services\AuditLogService::log(
                         action: $action,
@@ -237,6 +243,7 @@ class MicrosoftSettingController extends Controller
                             'redirect_uri' => $redirectUri,
                             'secret_expires_at' => $secretExpiresAt,
                             'secret_status' => $isSecretRenewed ? 'ต่ออายุรหัสชุดใหม่เรียบร้อย' : 'ใช้รหัสเดิม',
+                            'reason' => $changeReason ?: 'ไม่ได้ระบุ',
                         ],
                         module: 'microsoft_setting',
                         moduleName: 'ตั้งค่า Microsoft 365'
