@@ -39,10 +39,14 @@ class DatabaseBackupCommand extends Command
 
         // 1. Create Backup
         try {
-            $this->info("\n[1/2] กำลังรวบรวมข้อมูลและสร้างไฟล์สำรองฐานข้อมูล...");
+            $isMidnight = (now()->format('H:i') === '00:00' || now()->format('H:i') === '00:01');
+            $noteText = $isMidnight 
+                ? 'สำรองฐานข้อมูลอัตโนมัติประจำวัน (รอบเที่ยงคืน 00:00 น.)' 
+                : 'สำรองฐานข้อมูลผ่านคำสั่งระบบ (Artisan Command Line)';
+
             $backup = DatabaseBackupService::createBackup(
                 actor: null,
-                notes: 'สำรองฐานข้อมูลอัตโนมัติประจำวัน (เที่ยงคืน)'
+                notes: $noteText
             );
 
             $this->info(" -> สำรองข้อมูลสำเร็จเรียบร้อย!");

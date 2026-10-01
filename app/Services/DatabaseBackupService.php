@@ -149,8 +149,8 @@ class DatabaseBackupService
                 'md_file_path' => $txtRelativePath,
                 'dumper_engine' => $dumperEngine,
                 'created_by' => $actor?->id,
-                'created_by_name' => $actor?->fullname ?? ($actor ? 'ผู้ดูแลระบบ' : 'ระบบอัตโนมัติ (Daily Midnight Cron)'),
-                'notes' => $notes ?: ($actor ? 'สั่งสำรองข้อมูลด้วยตนเอง' : 'สำรองฐานข้อมูลอัตโนมัติประจำวัน (เที่ยงคืน)'),
+                'created_by_name' => $actor?->fullname ?? ($actor ? 'ผู้ดูแลระบบ' : 'ระบบอัตโนมัติ (System)'),
+                'notes' => $notes ?: ($actor ? 'สั่งสำรองข้อมูลด้วยตนเอง (Manual)' : (now()->format('H:i') === '00:00' ? 'สำรองฐานข้อมูลอัตโนมัติประจำวัน (รอบเที่ยงคืน)' : 'สำรองฐานข้อมูลระบบ (System)')),
             ]);
 
             // 8. Send password & backup report to ICT Email

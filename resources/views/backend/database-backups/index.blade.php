@@ -126,7 +126,7 @@
                 <span>ระบบสำรองฐานข้อมูลอัตโนมัติ (Database Backups)</span>
             </h1>
             <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                รันอัตโนมัติทุกวันตอนเที่ยงคืน (00:00 น.) เข้ารหัส ZIP ด้วย AES-256 สุ่มรหัสผ่านส่งเข้าอีเมล ICT พร้อมสร้างคู่มือ .md
+                สำรองฐานข้อมูลเข้ารหัส ZIP ด้วย AES-256 สุ่มรหัสผ่านส่งเข้าอีเมล ICT พร้อมสร้างคู่มือการกู้คืน (.txt) และรองรับการตั้งรอบอัตโนมัติ (Schedule)
             </p>
         </div>
 
@@ -178,34 +178,35 @@
             </div>
         </div>
 
-        <!-- 3. Automated Midnight Schedule -->
+        <!-- 3. Automated Schedule Info -->
         <div class="bg-white dark:bg-[#1E2129] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-clock text-xl"></i>
             </div>
             <div>
-                <span class="text-xs font-semibold text-slate-400 block">กำหนดการทำงานอัตโนมัติ</span>
+                <span class="text-xs font-semibold text-slate-400 block">กำหนดการรอบอัตโนมัติ</span>
                 <div class="flex items-center gap-1.5 mt-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
                     <span class="text-sm font-bold text-slate-800 dark:text-white">ทุกวัน 00:00 น. (เที่ยงคืน)</span>
                 </div>
-                <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">ระบบ Schedule เปิดใช้งานแล้ว</span>
+                <span class="text-[11px] text-slate-400 block mt-0.5">คำสั่ง: php artisan db:backup</span>
             </div>
         </div>
 
-        <!-- 4. Latest Backup -->
+        <!-- 4. Latest Backup Email Status -->
         <div class="bg-white dark:bg-[#1E2129] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
-                <i class="fa-solid fa-envelope-circle-check text-xl"></i>
+            <div class="w-12 h-12 rounded-xl {{ $latestBackup && $latestBackup->email_sent_to ? 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400' }} flex items-center justify-center shrink-0">
+                <i class="fa-solid {{ $latestBackup && $latestBackup->email_sent_to ? 'fa-envelope-circle-check' : 'fa-envelope' }} text-xl"></i>
             </div>
             <div class="min-w-0">
                 <span class="text-xs font-semibold text-slate-400 block">การส่งรหัสผ่านเข้า ICT</span>
-                <span class="text-sm font-black text-slate-800 dark:text-white truncate block">
-                    {{ $latestBackup && $latestBackup->email_sent_to ? 'ส่งอีเมลสำเร็จ' : 'พร้อมส่งอีเมล' }}
-                </span>
-                <span class="text-[11px] text-slate-400 truncate block mt-0.5" title="{{ $latestBackup?->email_sent_to }}">
-                    {{ $latestBackup?->email_sent_to ?: 'ICT Team / Admin' }}
-                </span>
+                @if($latestBackup && $latestBackup->email_sent_to)
+                    <span class="text-sm font-black text-emerald-600 dark:text-emerald-400 truncate block">ส่งอีเมลสำเร็จ</span>
+                    <span class="text-[11px] text-slate-400 truncate block mt-0.5" title="{{ $latestBackup->email_sent_to }}">{{ $latestBackup->email_sent_to }}</span>
+                @else
+                    <span class="text-sm font-bold text-slate-700 dark:text-slate-300 truncate block">ขอรับรหัสผ่านในระบบ</span>
+                    <span class="text-[11px] text-slate-400 truncate block mt-0.5">ยืนยันตัวตน Microsoft 365</span>
+                @endif
             </div>
         </div>
     </div>
@@ -328,12 +329,19 @@
                                             <i class="fa-solid fa-lock mr-0.5"></i> {{ $b->encryption_algorithm ?: 'AES-256' }}
                                         </span>
                                     </div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                        <i class="fa-solid fa-envelope-circle-check text-indigo-500"></i>
-                                        <span class="truncate max-w-[150px]" title="{{ $b->email_sent_to }}">
-                                            {{ $b->email_sent_to ? 'ส่งรหัสให้อีเมล ICT แล้ว' : 'ไม่มีบันทึกการส่ง' }}
-                                        </span>
-                                    </div>
+                                    @if($b->email_sent_to)
+                                        <div class="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                            <i class="fa-solid fa-envelope-circle-check"></i>
+                                            <span class="truncate max-w-[150px]" title="{{ $b->email_sent_to }}">
+                                                ส่งไปยัง: {{ $b->email_sent_to }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="text-[10px] text-slate-400 flex items-center gap-1">
+                                            <i class="fa-solid fa-key text-amber-500 text-[9px]"></i>
+                                            <span>ขอรับรหัสผ่านในระบบ</span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
 
