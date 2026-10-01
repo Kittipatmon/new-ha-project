@@ -485,6 +485,7 @@
                             <label for="change_reason" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                                 <i class="fa-solid fa-clipboard-question text-indigo-600"></i>
                                 <span>สาเหตุการบันทึก / ต่ออายุ (Reason for Changes)</span>
+                                <span class="text-rose-500">*</span>
                                 <span class="text-[11px] font-normal text-slate-400">(จะถูกบันทึกลงในประวัติกิจกรรม)</span>
                             </label>
                             <div class="hidden sm:flex items-center gap-1.5 text-[11px]">
@@ -504,12 +505,12 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-pen-nib text-sm"></i>
                             </div>
-                            <input type="text" id="change_reason" name="change_reason" x-model="changeReason"
-                                placeholder="เช่น ต่ออายุ Client Secret ชุดใหม่ 24 เดือน, อัปเดต Redirect URI ตามโดเมนใหม่ ฯลฯ"
+                            <input type="text" id="change_reason" name="change_reason" x-model="changeReason" required
+                                placeholder="กรุณาระบุสาเหตุ เช่น ต่ออายุ Client Secret ชุดใหม่ 24 เดือน, ย้าย Redirect URI ฯลฯ"
                                 class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1">
-                            ระบุสาเหตุเพื่อให้ผู้ดูแลระบบท่านอื่นทราบประวัติและวัตถุประสงค์ในการแก้ไขหรือต่ออายุครั้งนี้
+                            จำเป็นต้องระบุสาเหตุ เพื่อให้ระบบบันทึกประวัติและให้ผู้ดูแลระบบท่านอื่นทราบวัตถุประสงค์ในการบันทึกหรือต่ออายุ
                         </p>
                     </div>
 
@@ -829,6 +830,16 @@
             saveError: null,
 
             saveSettings() {
+                if (!this.changeReason || !this.changeReason.trim()) {
+                    this.saveError = 'กรุณาระบุสาเหตุการบันทึกหรือต่ออายุการตั้งค่าก่อนกดบันทึก';
+                    const el = document.getElementById('change_reason');
+                    if (el) {
+                        el.focus();
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+
                 this.saving = true;
                 this.saveMessage = null;
                 this.saveError = null;

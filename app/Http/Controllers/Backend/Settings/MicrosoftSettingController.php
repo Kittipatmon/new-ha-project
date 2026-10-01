@@ -128,7 +128,7 @@ class MicrosoftSettingController extends Controller
             'tenant_id' => 'required|string',
             'redirect_uri' => 'required|url',
             'secret_expires_at' => 'nullable|date',
-            'change_reason' => 'nullable|string|max:500',
+            'change_reason' => 'required|string|max:500',
         ], [
             'client_id.required' => 'กรุณาระบุ Microsoft Application (Client) ID',
             'client_secret.required' => 'กรุณาระบุ Client Secret Value',
@@ -136,6 +136,7 @@ class MicrosoftSettingController extends Controller
             'redirect_uri.required' => 'กรุณาระบุ Redirect URI',
             'redirect_uri.url' => 'รูปแบบ Redirect URI ต้องเป็น URL ที่ถูกต้อง (เช่น https://example.com/auth/microsoft/callback)',
             'secret_expires_at.date' => 'รูปแบบวันที่หมดอายุไม่ถูกต้อง',
+            'change_reason.required' => 'กรุณาระบุสาเหตุการบันทึกหรือต่ออายุการตั้งค่าก่อนกดบันทึก',
         ]);
 
         $clientId = trim($validated['client_id']);
