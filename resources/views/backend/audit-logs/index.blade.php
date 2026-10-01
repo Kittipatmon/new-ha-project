@@ -2162,7 +2162,7 @@ function auditLogApp() {
             if (this.isSendingTestLog) return;
             this.isSendingTestLog = true;
             try {
-                const res = await fetch('{{ route("backend.audit-logs.test-log") }}', {
+                const res = await fetch('{{ url("backend/audit-logs/test-log") }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
