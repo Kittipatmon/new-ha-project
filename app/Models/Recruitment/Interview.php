@@ -38,10 +38,16 @@ class Interview extends Model
         return $this->belongsTo(User::class, 'interviewer_id');
     }
 
-    public function interviewers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function interviewers(): \App\Models\Recruitment\Relations\CrossConnectionBelongsToMany
     {
-        $database = config('database.connections.mysql.database');
-        return $this->belongsToMany(User::class, "{$database}.recruitment_interview_interviewer", 'interview_id', 'user_id')->withTimestamps();
+        return new \App\Models\Recruitment\Relations\CrossConnectionBelongsToMany(
+            User::query(),
+            $this,
+            'recruitment_interview_interviewer',
+            'interview_id',
+            'user_id',
+            $this->getConnectionName() ?: 'mysql'
+        );
     }
 
     public function scores(): HasMany

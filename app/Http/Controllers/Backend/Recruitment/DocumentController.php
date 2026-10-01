@@ -119,8 +119,11 @@ class DocumentController extends Controller
         // 3. Assigned Interviewer for this application
         $isAssignedInterviewer = $application->interviews()->where(function ($q) use ($user) {
             $q->where('interviewer_id', $user->id)
-              ->orWhereHas('interviewers', function ($sub) use ($user) {
-                  $sub->where('recruitment_interview_interviewer.user_id', $user->id);
+              ->orWhereExists(function ($sub) use ($user) {
+                  $sub->select(\Illuminate\Support\Facades\DB::raw(1))
+                      ->from('recruitment_interview_interviewer')
+                      ->whereColumn('recruitment_interview_interviewer.interview_id', 'recruitment_interviews.id')
+                      ->where('recruitment_interview_interviewer.user_id', $user->id);
               });
         })->exists();
 
