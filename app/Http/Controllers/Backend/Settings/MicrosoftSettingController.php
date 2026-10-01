@@ -70,6 +70,9 @@ class MicrosoftSettingController extends Controller
         }
 
         $isConfigured = !empty($clientId) && !empty($clientSecret);
+        $hasSecret = !empty($clientSecret);
+        $maskedSecret = $hasSecret ? ('••••••••••••••••' . (strlen($clientSecret) > 4 ? substr($clientSecret, -4) : '')) : '';
+
         $connectedUsersCount = UserMicrosoftToken::whereNotNull('access_token')->count();
         $connectedUsers = UserMicrosoftToken::with('user')
             ->whereNotNull('access_token')
@@ -79,7 +82,8 @@ class MicrosoftSettingController extends Controller
 
         return view('backend.settings.microsoft.index', compact(
             'clientId',
-            'clientSecret',
+            'hasSecret',
+            'maskedSecret',
             'tenantId',
             'redirectUri',
             'recommendedRedirectUri',
@@ -102,9 +106,12 @@ class MicrosoftSettingController extends Controller
             abort(403, 'เฉพาะผู้ดูแลระบบหรือเจ้าหน้าที่ฝ่าย HR เท่านั้นที่สามารถเข้าถึงการตั้งค่านี้ได้');
         }
 
+        $existingSecret = (string) config('services.microsoft.client_secret', env('MICROSOFT_CLIENT_SECRET', ''));
+        $hasExistingSecret = !empty($existingSecret);
+
         $validated = $request->validate([
             'client_id' => 'required|string',
-            'client_secret' => 'required|string',
+            'client_secret' => $hasExistingSecret ? 'nullable|string' : 'required|string',
             'tenant_id' => 'required|string',
             'redirect_uri' => 'required|url',
             'secret_expires_at' => 'nullable|date',
@@ -118,7 +125,8 @@ class MicrosoftSettingController extends Controller
         ]);
 
         $clientId = trim($validated['client_id']);
-        $clientSecret = trim($validated['client_secret']);
+        $newSecret = !empty($validated['client_secret']) ? trim($validated['client_secret']) : null;
+        $clientSecret = $newSecret ?: $existingSecret;
         $tenantId = trim($validated['tenant_id']);
         $redirectUri = trim($validated['redirect_uri']);
         $secretExpiresAt = !empty($validated['secret_expires_at']) ? trim($validated['secret_expires_at']) : '';
@@ -131,11 +139,14 @@ class MicrosoftSettingController extends Controller
 
             $updates = [
                 'MICROSOFT_CLIENT_ID' => $clientId,
-                'MICROSOFT_CLIENT_SECRET' => $clientSecret,
                 'MICROSOFT_TENANT_ID' => $tenantId,
                 'MICROSOFT_REDIRECT_URI' => $redirectUri,
                 'MICROSOFT_SECRET_EXPIRES_AT' => $secretExpiresAt,
             ];
+
+            if ($newSecret !== null) {
+                $updates['MICROSOFT_CLIENT_SECRET'] = $newSecret;
+            }
 
             $this->updateEnvFile($envPath, $updates);
 
