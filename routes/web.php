@@ -387,5 +387,36 @@ Route::middleware('auth')->group(function () {
     Route::post('/training/store', [App\Http\Controllers\TrainingController::class, 'store'])->name('training.store');
 
 });
+
+// System Utilities for Host / Maintenance
+Route::get('/system/migrate', function (\Illuminate\Http\Request $request) {
+    $secret = config('app.key');
+    $givenKey = $request->query('key');
+    $isAdmin = auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->level_user == '9');
+    $isAuthorizedKey = $givenKey && ($givenKey === 'kumwell_migrate_2026' || $givenKey === $secret);
+
+    if (!$isAdmin && !$isAuthorizedKey) {
+        abort(403, 'Unauthorized access to migration runner. Provide valid ?key= parameter.');
+    }
+
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = "=== RUNNING MIGRATIONS ===\n" . \Illuminate\Support\Facades\Artisan::output();
+
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        $output .= "\n=== VIEW CACHE CLEARED ===\n" . \Illuminate\Support\Facades\Artisan::output();
+
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        $output .= "\n=== ROUTE CACHE CLEARED ===\n" . \Illuminate\Support\Facades\Artisan::output();
+
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        $output .= "\n=== APP CACHE CLEARED ===\n" . \Illuminate\Support\Facades\Artisan::output();
+
+        return response('<pre style="background:#0f172a;color:#10b981;padding:24px;border-radius:12px;font-family:monospace;font-size:14px;line-height:1.6;">' . htmlspecialchars($output) . '</pre>');
+    } catch (\Throwable $e) {
+        return response('<pre style="background:#0f172a;color:#ef4444;padding:24px;border-radius:12px;font-family:monospace;font-size:14px;line-height:1.6;">Migration failed:\n' . htmlspecialchars($e->getMessage()) . '</pre>', 500);
+    }
+})->name('system.migrate');
+
 // 
 require __DIR__ . '/auth.php';

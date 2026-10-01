@@ -10,6 +10,25 @@ use App\Models\User;
 class HrRequests extends Model
 {
     use SoftDeletes;
+
+    /**
+     * Boot soft deletes conditionally only if the deleted_at column exists in database
+     */
+    public static function bootSoftDeletes()
+    {
+        static $hasDeletedAt = null;
+        if ($hasDeletedAt === null) {
+            try {
+                $hasDeletedAt = \Illuminate\Support\Facades\Schema::hasColumn('hr_requests', 'deleted_at');
+            } catch (\Throwable $e) {
+                $hasDeletedAt = false;
+            }
+        }
+        if ($hasDeletedAt) {
+            static::addGlobalScope(new \Illuminate\Database\Eloquent\SoftDeletingScope);
+        }
+    }
+
     protected $table = 'hr_requests';
 
     protected $primaryKey = 'hr_request_id';

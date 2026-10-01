@@ -5,235 +5,249 @@
     $notifItems = collect();
 
     if ($authUser) {
-        $userName = trim(($authUser->firstname ?? '') . ' ' . ($authUser->lastname ?? ''));
-        $userFullName = trim($authUser->fullname ?? $userName);
+        try {
+            $userName = trim(($authUser->firstname ?? '') . ' ' . ($authUser->lastname ?? ''));
+            $userFullName = trim($authUser->fullname ?? $userName);
 
-        $userDeptId = $authUser->dept_id;
-        $userId = $authUser->id;
-        $isCentralHr = ($userDeptId == 15);
-        $isAdminOrEditor = ($authUser->role === 'admin' || (method_exists($authUser, 'isEditor') && $authUser->isEditor()) || (method_exists($authUser, 'isAdmin') && $authUser->isAdmin()));
-        $canManageRecruitment = ($isCentralHr || $isAdminOrEditor || (method_exists($authUser, 'isHrOrAdmin') && $authUser->isHrOrAdmin()));
-        $userDeptName = $authUser->department->department_name ?? ($authUser->department->department_fullname ?? '');
+            $userDeptId = $authUser->dept_id;
+            $userId = $authUser->id;
+            $isCentralHr = ($userDeptId == 15);
+            $isAdminOrEditor = ($authUser->role === 'admin' || (method_exists($authUser, 'isEditor') && $authUser->isEditor()) || (method_exists($authUser, 'isAdmin') && $authUser->isAdmin()));
+            $canManageRecruitment = ($isCentralHr || $isAdminOrEditor || (method_exists($authUser, 'isHrOrAdmin') && $authUser->isHrOrAdmin()));
+            $userDeptName = $authUser->department->department_name ?? ($authUser->department->department_fullname ?? '');
 
-        // 1. Manpower Requests
-        if (\Illuminate\Support\Facades\Schema::hasTable('manpower_requests')) {
-            $mpQuery = \App\Models\ManpowerRequest::whereNotIn('status', ['approved', 'rejected', 'draft']);
-            if (!$isCentralHr) {
-                $mpQuery->where(function($q) use ($authUser, $userName, $userFullName, $userDeptName) {
-                    $q->where('user_id', $authUser->id)
-                      ->orWhere(function($sub) use ($userName, $userFullName) {
-                          $sub->where('status', 'pending_manager')
-                              ->where(function($m) use ($userName, $userFullName) {
-                                  $m->where('manager_name', 'like', "%{$userName}%")
-                                    ->orWhere('manager_name', 'like', "%{$userFullName}%");
+            // 1. Manpower Requests
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('manpower_requests')) {
+                    $mpQuery = \App\Models\ManpowerRequest::whereNotIn('status', ['approved', 'rejected', 'draft']);
+                    if (!$isCentralHr) {
+                        $mpQuery->where(function($q) use ($authUser, $userName, $userFullName, $userDeptName) {
+                            $q->where('user_id', $authUser->id)
+                              ->orWhere(function($sub) use ($userName, $userFullName) {
+                                  $sub->where('status', 'pending_manager')
+                                      ->where(function($m) use ($userName, $userFullName) {
+                                          $m->where('manager_name', 'like', "%{$userName}%")
+                                            ->orWhere('manager_name', 'like', "%{$userFullName}%");
+                                      });
+                              })
+                              ->orWhere(function($sub) use ($userName, $userFullName) {
+                                  $sub->where('status', 'pending_vp')
+                                      ->where(function($v) use ($userName, $userFullName) {
+                                          $v->where('vp_name', 'like', "%{$userName}%")
+                                            ->orWhere('vp_name', 'like', "%{$userFullName}%");
+                                      });
                               });
-                      })
-                      ->orWhere(function($sub) use ($userName, $userFullName) {
-                          $sub->where('status', 'pending_vp')
-                              ->where(function($v) use ($userName, $userFullName) {
-                                  $v->where('vp_name', 'like', "%{$userName}%")
-                                    ->orWhere('vp_name', 'like', "%{$userFullName}%");
-                              });
-                      });
 
-                    if (!empty($userDeptName)) {
-                        $q->orWhere('department', 'like', "%{$userDeptName}%");
-                    }
+                            if (!empty($userDeptName)) {
+                                $q->orWhere('department', 'like', "%{$userDeptName}%");
+                            }
 
-                    if ($authUser->level_user == '9') {
-                        $q->orWhere('status', 'pending_ceo');
-                    }
-                });
-            }
-            $mpRequests = $mpQuery->latest('updated_at')->take(5)->get();
-            foreach ($mpRequests as $mp) {
-                $notifItems->push([
-                    'title' => 'ใบขออนุมัติกำลังคน (' . ($mp->request_code ?? 'QF-HR-13') . ')',
-                    'subtitle' => 'ตำแหน่ง: ' . ($mp->position_title ?? 'ไม่ระบุ') . ' • สถานะ: ' . ($mp->status_label ?? $mp->status),
-                    'url' => route('manpower-request.index'),
-                    'icon' => 'fa-users-gear',
-                    'color' => 'text-amber-500',
-                    'bg' => 'bg-amber-50 dark:bg-amber-950/40',
-                    'time' => $mp->updated_at ? $mp->updated_at->diffForHumans() : '',
-                ]);
-            }
-
-            // Approved Manpower Requests needing Job Post / คำขอเปิดรับสมัครพนักงาน (แจ้งเตือน Admin, Editor และ HA)
-            if ($canManageRecruitment) {
-                $approvedWithoutPost = \App\Models\ManpowerRequest::where('status', 'approved')->get()->filter(function($m) {
-                    return !$m->hasJobPost();
-                })->take(5);
-
-                foreach ($approvedWithoutPost as $mreq) {
-                    $notifItems->push([
-                        'title' => 'คำขอเปิดรับสมัคร: ' . ($mreq->job_title_th ?: 'ตำแหน่งงาน'),
-                        'subtitle' => 'อนุมัติแล้ว (' . ($mreq->department ?? '-') . ') • รอสร้าง Job Post',
-                        'url' => route('backend.recruitment.requests.index'),
-                        'icon' => 'fa-bullhorn',
-                        'color' => 'text-amber-500',
-                        'bg' => 'bg-amber-50 dark:bg-amber-950/40',
-                        'time' => $mreq->updated_at ? $mreq->updated_at->diffForHumans() : '',
-                    ]);
-                }
-            }
-        }
-
-        // 2. HR Requests (HrRequests)
-        if (\Illuminate\Support\Facades\Schema::hasTable('hr_requests')) {
-            if ($isCentralHr) {
-                $hrReqs = \App\Models\hrrequest\HrRequests::whereIn('status', ['pending', 'approved_hr', 'approved_manager'])->latest('updated_at')->take(5)->get();
-            } else {
-                $hrReqs = \App\Models\hrrequest\HrRequests::where(function($q) use ($authUser) {
-                    // ผู้จัดการที่ต้องเป็นผู้อนุมัติคำร้อง
-                    $q->where('approver_manager_id', $authUser->id)
-                      ->where('status', 'pending');
-                })->orWhere(function($q) use ($authUser) {
-                    // หรือ เป็นคำร้องของตนเองเท่านั้น
-                    $q->where('employee_id', $authUser->id)
-                      ->whereIn('status', ['pending', 'returned', 'approved_manager', 'approved_hr']);
-                })->latest('updated_at')->take(5)->get();
-            }
-
-            foreach ($hrReqs as $hrReq) {
-                $notifItems->push([
-                    'title' => 'คำร้อง HR (' . ($hrReq->request_code ?? 'HR-REQ') . ')',
-                    'subtitle' => ($hrReq->title ?? 'รายละเอียดคำร้อง') . ' • ' . ($hrReq->status_label ?? $hrReq->status),
-                    'url' => route('request.hr'),
-                    'icon' => 'fa-file-signature',
-                    'color' => 'text-red-500',
-                    'bg' => 'bg-red-50 dark:bg-red-950/40',
-                    'time' => $hrReq->updated_at ? $hrReq->updated_at->diffForHumans() : '',
-                ]);
-            }
-        }
-
-        // 3. Recruitment Applications (ผู้สมัครงานส่งใบสมัครเข้ามาใหม่ & ส่งแผนกพิจารณา)
-        if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_applications')) {
-            // A. ใบสมัครเข้ามาใหม่: แจ้งเตือนเฉพาะ HA / Admin เท่านั้น
-            if ($canManageRecruitment) {
-                $newApplications = \App\Models\Recruitment\Application::with(['applicant', 'jobPost'])
-                    ->whereIn('status', ['new', 'submitted'])
-                    ->latest('applied_at')
-                    ->take(5)
-                    ->get();
-
-                foreach ($newApplications as $app) {
-                    $applicantName = $app->applicant 
-                        ? trim(($app->applicant->prefix ?? '') . ' ' . $app->applicant->first_name . ' ' . $app->applicant->last_name)
-                        : 'ผู้สมัคร';
-                    $jobTitle = $app->jobPost->title ?? ($app->jobPost->position_name ?? 'ตำแหน่งงาน');
-
-                    $notifItems->push([
-                        'title' => 'ใบสมัครงานใหม่: ' . $applicantName,
-                        'subtitle' => 'ตำแหน่ง: ' . $jobTitle . ' • ' . ($app->status_label ?? 'รอคัดกรองเบื้องต้น'),
-                        'url' => route('backend.recruitment.applications.show', ['application' => $app->id]),
-                        'icon' => 'fa-user-plus',
-                        'color' => 'text-emerald-500',
-                        'bg' => 'bg-emerald-50 dark:bg-emerald-950/40',
-                        'time' => $app->applied_at ? $app->applied_at->diffForHumans() : ($app->created_at ? $app->created_at->diffForHumans() : ''),
-                    ]);
-                }
-            }
-
-            // B. ผู้สมัครที่ผ่านคุณสมบัติแล้ว ซึ่ง HA ส่งต่อให้แผนกพิจารณา (Dept Review)
-            // หัวหน้าแต่ละแผนกจะเห็นเฉพาะคนที่ HA คัดกรองและส่งมาให้แผนกตนเองเท่านั้น (อ้างอิง manager_id จากตาราง departments)
-            // คนทั่วไปในแผนกจะไม่ได้รับการแจ้งเตือนนี้
-            $deptReviewQuery = \App\Models\Recruitment\Application::with(['applicant', 'jobPost'])
-                ->where('status', 'dept_review');
-
-            if (!$isCentralHr) {
-                if ($authUser->isDepartmentManager()) {
-                    $managedDeptIds = $authUser->getManagedDepartmentIds();
-                    $deptReviewQuery->whereHas('jobPost', function($jq) use ($managedDeptIds) {
-                        $jq->whereIn('department_id', $managedDeptIds);
-                    });
-                } else {
-                    $deptReviewQuery->whereRaw('1 = 0');
-                }
-            }
-
-            $deptReviewApps = $deptReviewQuery->latest('dept_reviewed_at')->take(5)->get();
-
-            foreach ($deptReviewApps as $app) {
-                $applicantName = $app->applicant 
-                    ? trim(($app->applicant->prefix ?? '') . ' ' . $app->applicant->first_name . ' ' . $app->applicant->last_name)
-                    : 'ผู้สมัคร';
-                $jobTitle = $app->jobPost->title ?? ($app->jobPost->position_name ?? 'ตำแหน่งงาน');
-
-                $notifItems->push([
-                    'title' => 'HA ส่งผู้สมัครให้แผนกพิจารณา: ' . $applicantName,
-                    'subtitle' => 'ตำแหน่ง: ' . $jobTitle . ' • ผ่านเกณฑ์คุณสมบัติจาก HA แล้ว',
-                    'url' => route('recruitment.reports'),
-                    'icon' => 'fa-user-check',
-                    'color' => 'text-blue-500',
-                    'bg' => 'bg-blue-50 dark:bg-blue-950/40',
-                    'time' => $app->dept_reviewed_at ? $app->dept_reviewed_at->diffForHumans() : ($app->updated_at ? $app->updated_at->diffForHumans() : ''),
-                ]);
-            }
-
-            // C. ผู้สมัครที่มีการนัดหมายสัมภาษณ์ (Interview Scheduled)
-            if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_interviews')) {
-                $scheduledInterviewsQuery = \App\Models\Recruitment\Interview::with([
-                    'application.applicant',
-                    'application.jobPost.department',
-                    'application.jobPost.recruitmentRequest'
-                ])
-                ->where('status', 'scheduled')
-                ->where('interview_date', '>=', now()->subDays(1)->startOfDay());
-
-                if (!$isCentralHr) {
-                    $managedDeptIds = $authUser->isDepartmentManager() ? $authUser->getManagedDepartmentIds() : [];
-                    $scheduledInterviewsQuery->where(function($q) use ($authUser, $managedDeptIds) {
-                        $q->where(function($sub) use ($authUser) {
-                            $sub->whereIn('id', function($iq) use ($authUser) {
-                                $iq->select('interview_id')
-                                   ->from('recruitment_interview_interviewer')
-                                   ->where('user_id', $authUser->id);
-                            })
-                            ->orWhere('interviewer_id', $authUser->id);
-                        })
-                        ->orWhereHas('application.jobPost.recruitmentRequest', function($rq) use ($authUser) {
-                            $rq->where('requested_by', $authUser->id);
-                        })
-                        ->orWhereHas('application', function($aq) use ($authUser) {
-                            $aq->where('dept_reviewed_by', $authUser->id);
+                            if ($authUser->level_user == '9') {
+                                $q->orWhere('status', 'pending_ceo');
+                            }
                         });
+                    }
+                    $mpRequests = $mpQuery->latest('updated_at')->take(5)->get();
+                    foreach ($mpRequests as $mp) {
+                        $notifItems->push([
+                            'title' => 'ใบขออนุมัติกำลังคน (' . ($mp->request_code ?? 'QF-HR-13') . ')',
+                            'subtitle' => 'ตำแหน่ง: ' . ($mp->position_title ?? 'ไม่ระบุ') . ' • สถานะ: ' . ($mp->status_label ?? $mp->status),
+                            'url' => route('manpower-request.index'),
+                            'icon' => 'fa-users-gear',
+                            'color' => 'text-amber-500',
+                            'bg' => 'bg-amber-50 dark:bg-amber-950/40',
+                            'time' => $mp->updated_at ? $mp->updated_at->diffForHumans() : '',
+                        ]);
+                    }
 
-                        if (!empty($managedDeptIds)) {
-                            $q->orWhereHas('application.jobPost', function($jq) use ($managedDeptIds) {
+                    // Approved Manpower Requests needing Job Post / คำขอเปิดรับสมัครพนักงาน (แจ้งเตือน Admin, Editor และ HA)
+                    if ($canManageRecruitment) {
+                        $approvedWithoutPost = \App\Models\ManpowerRequest::where('status', 'approved')->get()->filter(function($m) {
+                            return !$m->hasJobPost();
+                        })->take(5);
+
+                        foreach ($approvedWithoutPost as $mreq) {
+                            $notifItems->push([
+                                'title' => 'คำขอเปิดรับสมัคร: ' . ($mreq->job_title_th ?: 'ตำแหน่งงาน'),
+                                'subtitle' => 'อนุมัติแล้ว (' . ($mreq->department ?? '-') . ') • รอสร้าง Job Post',
+                                'url' => route('backend.recruitment.requests.index'),
+                                'icon' => 'fa-bullhorn',
+                                'color' => 'text-amber-500',
+                                'bg' => 'bg-amber-50 dark:bg-amber-950/40',
+                                'time' => $mreq->updated_at ? $mreq->updated_at->diffForHumans() : '',
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Notification bell manpower error: ' . $e->getMessage());
+            }
+
+            // 2. HR Requests (HrRequests)
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('hr_requests')) {
+                    if ($isCentralHr) {
+                        $hrReqs = \App\Models\hrrequest\HrRequests::whereIn('status', ['pending', 'approved_hr', 'approved_manager'])->latest('updated_at')->take(5)->get();
+                    } else {
+                        $hrReqs = \App\Models\hrrequest\HrRequests::where(function($q) use ($authUser) {
+                            // ผู้จัดการที่ต้องเป็นผู้อนุมัติคำร้อง
+                            $q->where('approver_manager_id', $authUser->id)
+                              ->where('status', 'pending');
+                        })->orWhere(function($q) use ($authUser) {
+                            // หรือ เป็นคำร้องของตนเองเท่านั้น
+                            $q->where('employee_id', $authUser->id)
+                              ->whereIn('status', ['pending', 'returned', 'approved_manager', 'approved_hr']);
+                        })->latest('updated_at')->take(5)->get();
+                    }
+
+                    foreach ($hrReqs as $hrReq) {
+                        $notifItems->push([
+                            'title' => 'คำร้อง HR (' . ($hrReq->request_code ?? 'HR-REQ') . ')',
+                            'subtitle' => ($hrReq->title ?? 'รายละเอียดคำร้อง') . ' • ' . ($hrReq->status_label ?? $hrReq->status),
+                            'url' => route('request.hr'),
+                            'icon' => 'fa-file-signature',
+                            'color' => 'text-red-500',
+                            'bg' => 'bg-red-50 dark:bg-red-950/40',
+                            'time' => $hrReq->updated_at ? $hrReq->updated_at->diffForHumans() : '',
+                        ]);
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Notification bell hr_requests error: ' . $e->getMessage());
+            }
+
+            // 3. Recruitment Applications (ผู้สมัครงานส่งใบสมัครเข้ามาใหม่ & ส่งแผนกพิจารณา)
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_applications')) {
+                    // A. ใบสมัครเข้ามาใหม่: แจ้งเตือนเฉพาะ HA / Admin เท่านั้น
+                    if ($canManageRecruitment) {
+                        $newApplications = \App\Models\Recruitment\Application::with(['applicant', 'jobPost'])
+                            ->whereIn('status', ['new', 'submitted'])
+                            ->latest('applied_at')
+                            ->take(5)
+                            ->get();
+
+                        foreach ($newApplications as $app) {
+                            $applicantName = $app->applicant 
+                                ? trim(($app->applicant->prefix ?? '') . ' ' . $app->applicant->first_name . ' ' . $app->applicant->last_name)
+                                : 'ผู้สมัคร';
+                            $jobTitle = $app->jobPost->title ?? ($app->jobPost->position_name ?? 'ตำแหน่งงาน');
+
+                            $notifItems->push([
+                                'title' => 'ใบสมัครงานใหม่: ' . $applicantName,
+                                'subtitle' => 'ตำแหน่ง: ' . $jobTitle . ' • ' . ($app->status_label ?? 'รอคัดกรองเบื้องต้น'),
+                                'url' => route('backend.recruitment.applications.show', ['application' => $app->id]),
+                                'icon' => 'fa-user-plus',
+                                'color' => 'text-emerald-500',
+                                'bg' => 'bg-emerald-50 dark:bg-emerald-950/40',
+                                'time' => $app->applied_at ? $app->applied_at->diffForHumans() : ($app->created_at ? $app->created_at->diffForHumans() : ''),
+                            ]);
+                        }
+                    }
+
+                    // B. ผู้สมัครที่ผ่านคุณสมบัติแล้ว ซึ่ง HA ส่งต่อให้แผนกพิจารณา (Dept Review)
+                    $deptReviewQuery = \App\Models\Recruitment\Application::with(['applicant', 'jobPost'])
+                        ->where('status', 'dept_review');
+
+                    if (!$isCentralHr) {
+                        if ($authUser->isDepartmentManager()) {
+                            $managedDeptIds = $authUser->getManagedDepartmentIds();
+                            $deptReviewQuery->whereHas('jobPost', function($jq) use ($managedDeptIds) {
                                 $jq->whereIn('department_id', $managedDeptIds);
                             });
+                        } else {
+                            $deptReviewQuery->whereRaw('1 = 0');
                         }
-                    });
+                    }
+
+                    $deptReviewApps = $deptReviewQuery->latest('dept_reviewed_at')->take(5)->get();
+
+                    foreach ($deptReviewApps as $app) {
+                        $applicantName = $app->applicant 
+                            ? trim(($app->applicant->prefix ?? '') . ' ' . $app->applicant->first_name . ' ' . $app->applicant->last_name)
+                            : 'ผู้สมัคร';
+                        $jobTitle = $app->jobPost->title ?? ($app->jobPost->position_name ?? 'ตำแหน่งงาน');
+
+                        $notifItems->push([
+                            'title' => 'HA ส่งผู้สมัครให้แผนกพิจารณา: ' . $applicantName,
+                            'subtitle' => 'ตำแหน่ง: ' . $jobTitle . ' • ผ่านเกณฑ์คุณสมบัติจาก HA แล้ว',
+                            'url' => route('recruitment.reports'),
+                            'icon' => 'fa-user-check',
+                            'color' => 'text-blue-500',
+                            'bg' => 'bg-blue-50 dark:bg-blue-950/40',
+                            'time' => $app->dept_reviewed_at ? $app->dept_reviewed_at->diffForHumans() : ($app->updated_at ? $app->updated_at->diffForHumans() : ''),
+                        ]);
+                    }
+
+                    // C. ผู้สมัครที่มีการนัดหมายสัมภาษณ์ (Interview Scheduled)
+                    if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_interviews')) {
+                        $scheduledInterviewsQuery = \App\Models\Recruitment\Interview::with([
+                            'application.applicant',
+                            'application.jobPost.department',
+                            'application.jobPost.recruitmentRequest'
+                        ])
+                        ->where('status', 'scheduled')
+                        ->where('interview_date', '>=', now()->subDays(1)->startOfDay());
+
+                        if (!$isCentralHr) {
+                            $managedDeptIds = $authUser->isDepartmentManager() ? $authUser->getManagedDepartmentIds() : [];
+                            $scheduledInterviewsQuery->where(function($q) use ($authUser, $managedDeptIds) {
+                                $q->where(function($sub) use ($authUser) {
+                                    $sub->whereIn('id', function($iq) use ($authUser) {
+                                        $iq->select('interview_id')
+                                           ->from('recruitment_interview_interviewer')
+                                           ->where('user_id', $authUser->id);
+                                    })
+                                    ->orWhere('interviewer_id', $authUser->id);
+                                })
+                                ->orWhereHas('application.jobPost.recruitmentRequest', function($rq) use ($authUser) {
+                                    $rq->where('requested_by', $authUser->id);
+                                })
+                                ->orWhereHas('application', function($aq) use ($authUser) {
+                                    $aq->where('dept_reviewed_by', $authUser->id);
+                                });
+
+                                if (!empty($managedDeptIds)) {
+                                    $q->orWhereHas('application.jobPost', function($jq) use ($managedDeptIds) {
+                                        $jq->whereIn('department_id', $managedDeptIds);
+                                    });
+                                }
+                            });
+                        }
+
+                        $scheduledInterviews = $scheduledInterviewsQuery->orderBy('interview_date', 'asc')->take(5)->get();
+
+                        foreach ($scheduledInterviews as $iv) {
+                            $applicant = $iv->application?->applicant;
+                            $applicantName = $applicant ? trim(($applicant->prefix ?? '') . ' ' . $applicant->first_name . ' ' . $applicant->last_name) : 'ผู้สมัคร';
+                            $jobTitle = $iv->application?->jobPost?->title ?? ($iv->application?->jobPost?->position_name ?? 'ตำแหน่งงาน');
+                            $dateFormatted = \Carbon\Carbon::parse($iv->interview_date)->locale('th')->isoFormat('D MMM YYYY');
+                            $timeFormatted = \Carbon\Carbon::parse($iv->interview_time)->format('H:i') . ' น.';
+                            $itemUrl = $canManageRecruitment 
+                                ? route('backend.recruitment.applications.show', ['application' => $iv->application_id])
+                                : route('recruitment.reports');
+                            $isRescheduled = ($iv->updated_at && $iv->created_at && $iv->updated_at->diffInSeconds($iv->created_at) > 60);
+
+                            $notifItems->push([
+                                'title' => ($isRescheduled ? '🔄 ปรับเวลานัดสัมภาษณ์: ' : 'นัดสัมภาษณ์: ') . $applicantName,
+                                'subtitle' => "รอบที่ {$iv->interview_round} วันที่ {$dateFormatted} เวลา {$timeFormatted}" . ($iv->meeting_link ? ' (Online)' : '') . ($isRescheduled ? ' (เวลาใหม่)' : ''),
+                                'url' => $itemUrl,
+                                'icon' => $isRescheduled ? 'fa-clock-rotate-left' : 'fa-calendar-check',
+                                'color' => $isRescheduled ? 'text-amber-500' : 'text-purple-500',
+                                'bg' => $isRescheduled ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-purple-50 dark:bg-purple-950/40',
+                                'time' => ($iv->updated_at ?? $iv->created_at) ? ($iv->updated_at ?? $iv->created_at)->diffForHumans() : '',
+                            ]);
+                        }
+                    }
                 }
-
-                $scheduledInterviews = $scheduledInterviewsQuery->orderBy('interview_date', 'asc')->take(5)->get();
-
-                foreach ($scheduledInterviews as $iv) {
-                    $applicant = $iv->application?->applicant;
-                    $applicantName = $applicant ? trim(($applicant->prefix ?? '') . ' ' . $applicant->first_name . ' ' . $applicant->last_name) : 'ผู้สมัคร';
-                    $jobTitle = $iv->application?->jobPost?->title ?? ($iv->application?->jobPost?->position_name ?? 'ตำแหน่งงาน');
-                    $dateFormatted = \Carbon\Carbon::parse($iv->interview_date)->locale('th')->isoFormat('D MMM YYYY');
-                    $timeFormatted = \Carbon\Carbon::parse($iv->interview_time)->format('H:i') . ' น.';
-                    $itemUrl = $canManageRecruitment 
-                        ? route('backend.recruitment.applications.show', ['application' => $iv->application_id])
-                        : route('recruitment.reports');
-                    $isRescheduled = ($iv->updated_at && $iv->created_at && $iv->updated_at->diffInSeconds($iv->created_at) > 60);
-
-                    $notifItems->push([
-                        'title' => ($isRescheduled ? '🔄 ปรับเวลานัดสัมภาษณ์: ' : 'นัดสัมภาษณ์: ') . $applicantName,
-                        'subtitle' => "รอบที่ {$iv->interview_round} วันที่ {$dateFormatted} เวลา {$timeFormatted}" . ($iv->meeting_link ? ' (Online)' : '') . ($isRescheduled ? ' (เวลาใหม่)' : ''),
-                        'url' => $itemUrl,
-                        'icon' => $isRescheduled ? 'fa-clock-rotate-left' : 'fa-calendar-check',
-                        'color' => $isRescheduled ? 'text-amber-500' : 'text-purple-500',
-                        'bg' => $isRescheduled ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-purple-50 dark:bg-purple-950/40',
-                        'time' => ($iv->updated_at ?? $iv->created_at) ? ($iv->updated_at ?? $iv->created_at)->diffForHumans() : '',
-                    ]);
-                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Notification bell recruitment error: ' . $e->getMessage());
             }
-        }
 
-        $notifPendingCount = $notifItems->count();
+            $notifPendingCount = $notifItems->count();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Notification bell overall error: ' . $e->getMessage());
+        }
     }
 @endphp
 

@@ -9,6 +9,24 @@ class ManpowerRequest extends Model
 {
     use SoftDeletes;
 
+    /**
+     * Boot soft deletes conditionally only if the deleted_at column exists in database
+     */
+    public static function bootSoftDeletes()
+    {
+        static $hasDeletedAt = null;
+        if ($hasDeletedAt === null) {
+            try {
+                $hasDeletedAt = \Illuminate\Support\Facades\Schema::hasColumn('manpower_requests', 'deleted_at');
+            } catch (\Throwable $e) {
+                $hasDeletedAt = false;
+            }
+        }
+        if ($hasDeletedAt) {
+            static::addGlobalScope(new \Illuminate\Database\Eloquent\SoftDeletingScope);
+        }
+    }
+
     protected $fillable = [
         'user_id', 'date', 'department', 'section', 'job_title_th', 'job_title_en',
         'headcount', 'current_headcount', 'expected_start_date', 'job_level',
