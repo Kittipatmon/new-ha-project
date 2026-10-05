@@ -160,7 +160,8 @@
                         }
                     }
 
-                    $deptReviewApps = $deptReviewQuery->latest('dept_reviewed_at')->take(5)->get();
+                    $orderCol = \Illuminate\Support\Facades\Schema::hasColumn('recruitment_applications', 'dept_reviewed_at') ? 'dept_reviewed_at' : 'updated_at';
+                    $deptReviewApps = $deptReviewQuery->latest($orderCol)->take(5)->get();
 
                     foreach ($deptReviewApps as $app) {
                         $applicantName = $app->applicant 

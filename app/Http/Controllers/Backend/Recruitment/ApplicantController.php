@@ -212,7 +212,14 @@ class ApplicantController extends Controller
             $updateData['onboarding_date'] = $validated['onboarding_date'];
         }
 
-        $application->update($updateData);
+        $filteredUpdateData = [];
+        $appTable = $application->getTable();
+        foreach ($updateData as $col => $val) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn($appTable, $col)) {
+                $filteredUpdateData[$col] = $val;
+            }
+        }
+        $application->update($filteredUpdateData);
 
         // Meaningful default remark if note not provided
         $remark = $validated['note'] ?? $request->get('remark') ?? null;

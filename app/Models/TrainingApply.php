@@ -2,12 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class TrainingApply extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
+
+    public string $auditModule = 'training';
+    public string $auditModuleName = 'ระบบฝึกอบรม';
+
+    public function getAuditTitle(): string
+    {
+        return "สมัครฝึกอบรม: รหัสพนักงาน {$this->employee_code} (หลักสูตร #{$this->training_id})";
+    }
 
     protected $connection = 'mysql';
 

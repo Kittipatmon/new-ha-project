@@ -333,19 +333,42 @@ public function update(UpdateUserRequest $request, $id)
 
     DB::transaction(function () use ($validated, $targetUser) {
         $user = $targetUser;
+        $schema = Schema::connection($user->getConnectionName());
+        $table = $user->getTable();
+
         $user->employee_code = $validated['employee_code'];
-        $user->sex           = $validated['sex'];
-        $user->prefix        = $validated['prefix'];    
+        if ($schema->hasColumn($table, 'sex')) {
+            $user->sex = $validated['sex'];
+        }
+        if ($schema->hasColumn($table, 'prefix')) {
+            $user->prefix = $validated['prefix'];
+        }
         $user->firstname    = $validated['first_name'];
         $user->lastname     = $validated['last_name'];
-        $user->position      = $validated['position'] ?? null;
-        $user->employee_type = $validated['employee_type'] ?? null;
-        $user->workplace     = $validated['workplace'] ?? null;
-        $user->department_id = $validated['department_id'] ?? null;
-        $user->division_id   = $validated['division_id'] ?? null;
-        $user->section_id    = $validated['section_id'] ?? null;
-        $user->level_user    = $validated['level_user'];
-        $user->hr_status     = $validated['hr_status'];
+        if ($schema->hasColumn($table, 'position')) {
+            $user->position = $validated['position'] ?? null;
+        }
+        if ($schema->hasColumn($table, 'employee_type')) {
+            $user->employee_type = $validated['employee_type'] ?? null;
+        }
+        if ($schema->hasColumn($table, 'workplace')) {
+            $user->workplace = $validated['workplace'] ?? null;
+        }
+        if ($schema->hasColumn($table, 'department_id')) {
+            $user->department_id = $validated['department_id'] ?? null;
+        }
+        if ($schema->hasColumn($table, 'division_id')) {
+            $user->division_id = $validated['division_id'] ?? null;
+        }
+        if ($schema->hasColumn($table, 'section_id')) {
+            $user->section_id = $validated['section_id'] ?? null;
+        }
+        if ($schema->hasColumn($table, 'level_user')) {
+            $user->level_user = $validated['level_user'];
+        }
+        if ($schema->hasColumn($table, 'hr_status')) {
+            $user->hr_status = $validated['hr_status'];
+        }
 
         // Central database role: keep 'admin' if role is admin, otherwise 'staff'
         if (!empty($validated['role']) && auth()->user()->isAdmin()) {

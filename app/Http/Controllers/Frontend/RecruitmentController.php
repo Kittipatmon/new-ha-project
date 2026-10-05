@@ -170,17 +170,25 @@ class RecruitmentController extends Controller
         // Increment view count strictly when clicking on a job card (request('from_card'))
         // Excludes page reloads / direct refreshes entirely
         if (request()->has('from_card')) {
-            $post->increment('views');
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'views')) {
+                    $post->increment('views');
+                }
 
-            // Log view event for analytics
-            JobPostView::create([
-                'job_post_id' => $post->id,
-                'event_type' => 'view',
-                'user_id' => auth()->id(),
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'view_date' => now()->toDateString(),
-            ]);
+                // Log view event for analytics
+                if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_job_post_views')) {
+                    JobPostView::create([
+                        'job_post_id' => $post->id,
+                        'event_type' => 'view',
+                        'user_id' => auth()->id(),
+                        'ip_address' => request()->ip(),
+                        'user_agent' => request()->userAgent(),
+                        'view_date' => now()->toDateString(),
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Job post view tracking failed: ' . $e->getMessage());
+            }
         }
 
         $applicationCount = $post->applications()->count();
@@ -198,16 +206,24 @@ class RecruitmentController extends Controller
                 ->with('closed_alert', 'ขออภัย ตำแหน่งงานนี้ถูกยกเลิกหรือปิดรับสมัครแล้ว ไม่สามารถส่งใบสมัครได้');
         }
 
-        // Track click event (applying = intent to apply = click)
-        $post->increment('clicks');
-        JobPostView::create([
-            'job_post_id' => $post->id,
-            'event_type' => 'click',
-            'user_id' => auth()->id(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'view_date' => now()->toDateString(),
-        ]);
+        // Track click event (applying = intent to apply = click) safely
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'clicks')) {
+                $post->increment('clicks');
+            }
+            if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_job_post_views')) {
+                JobPostView::create([
+                    'job_post_id' => $post->id,
+                    'event_type' => 'click',
+                    'user_id' => auth()->id(),
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'view_date' => now()->toDateString(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Job post click tracking failed: ' . $e->getMessage());
+        }
 
         return view('frontend.recruitment.apply', compact('post'));
     }

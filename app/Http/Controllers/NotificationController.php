@@ -89,7 +89,8 @@ class NotificationController extends Controller
                 }
             }
 
-            $deptReviewApps = $deptReviewQuery->orderBy('dept_reviewed_at', 'desc')->get();
+            $orderCol = \Illuminate\Support\Facades\Schema::hasColumn('recruitment_applications', 'dept_reviewed_at') ? 'dept_reviewed_at' : 'updated_at';
+            $deptReviewApps = $deptReviewQuery->orderBy($orderCol, 'desc')->get();
 
             foreach ($deptReviewApps as $app) {
                 $applicantName = $app->applicant 

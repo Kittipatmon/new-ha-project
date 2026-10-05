@@ -2,10 +2,21 @@
 
 namespace App\Models\backend;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class LeaveReports extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'leave_reports';
+    public string $auditModuleName = 'รายงานสถิติการลาพนักงาน';
+
+    public function getAuditTitle(): string
+    {
+        return "รายงานการลา: สายงาน {$this->division_code} ประจำเดือน {$this->report_month}";
+    }
+
     protected $table = 'leave_reports';
 
     protected $primaryKey = 'id';

@@ -57,16 +57,13 @@
 <body class="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F1117] text-slate-800 dark:text-slate-100 antialiased transition-colors">
 
     <!-- Top Dedicated Navbar for Notifications Center -->
-    <header class="sticky top-0 z-50 bg-white/90 dark:bg-[#1E2129]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 shadow-sm transition-all">
+    <header class="sticky top-0 z-50 bg-white/95 dark:bg-[#1E2129]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-2xs transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             
             {{-- Brand & Breadcrumb --}}
             <div class="flex items-center gap-3.5">
-                <a href="{{ route('welcome') }}" class="flex items-center gap-2 group">
-                    <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
-                        H
-                    </div>
-                    <span class="text-red-600 dark:text-white font-bold text-2xl tracking-tight group-hover:text-red-700 transition-colors">Kumwell</span>
+                <a href="{{ route('welcome') }}">
+                    <span class="text-red-600 font-bold text-lg sm:text-xl xl:text-3xl">Kumwell</span>
                 </a>
 
                 <div class="hidden sm:flex items-center gap-2 text-slate-400 dark:text-slate-500 text-sm">
@@ -78,10 +75,10 @@
                 </div>
             </div>
 
-            {{-- Right Controls: Only Back Button --}}
+            {{-- Right Controls: Framed Back Button --}}
             <div class="flex items-center">
                 <a href="javascript:history.back();" 
-                   class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 rounded-xl transition-all shadow-sm active:scale-95">
+                   class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700 hover:border-slate-300 rounded-xl transition-all shadow-2xs active:scale-95">
                     <i class="fa-solid fa-arrow-left text-xs"></i>
                     <span>ย้อนกลับ</span>
                 </a>

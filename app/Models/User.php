@@ -2,14 +2,22 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-
-
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, Auditable;
+
+    public string $auditModule = 'users';
+    public string $auditModuleName = 'จัดการผู้ใช้งานและสิทธิ์';
+
+    public function getAuditTitle(): string
+    {
+        $code = $this->emp_code ? "[{$this->emp_code}] " : '';
+        return "พนักงาน: {$code}" . ($this->fullname ?: ($this->firstname ? trim($this->firstname . ' ' . ($this->lastname ?? '')) : null) ?: $this->name ?: '#' . $this->getKey());
+    }
 
     protected $connection = 'userkml2025';
     protected $table = 'employees';
@@ -206,7 +214,22 @@ class User extends Authenticatable
 
     public function setSexAttribute($value)
     {
-        $this->attributes['sex'] = $value;
+        try {
+            $schema = \Illuminate\Support\Facades\Schema::connection($this->getConnectionName());
+            if ($schema->hasColumn($this->getTable(), 'sex')) {
+                $this->attributes['sex'] = $value;
+                return;
+            }
+        } catch (\Throwable $e) {}
+
+        // 'sex' column does not exist in 'employees' table; save to userskml if possible
+        try {
+            if ($this->emp_code) {
+                \Illuminate\Support\Facades\DB::table('userkmlsystem.userskml')
+                    ->where('employee_code', $this->emp_code)
+                    ->update(['sex' => $value]);
+            }
+        } catch (\Throwable $e) {}
     }
 
     public function getWorkplaceAttribute()

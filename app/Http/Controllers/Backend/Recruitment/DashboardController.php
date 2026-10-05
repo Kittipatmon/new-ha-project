@@ -21,8 +21,8 @@ class DashboardController extends Controller
         // 1. MONITOR METRICS (Real-time Operations from Database)
         // -------------------------------------------------------------
         $totalApplications = Application::count();
-        $totalViews = (int) JobPost::sum('views');
-        $totalClicks = (int) JobPost::sum('clicks');
+        $totalViews = \Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'views') ? (int) JobPost::sum('views') : 0;
+        $totalClicks = \Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'clicks') ? (int) JobPost::sum('clicks') : 0;
 
         $pendingRequests = RecruitmentRequest::whereIn('status', ['pending', 'pending_manager', 'pending_executive'])->count();
         $approvedRequests = RecruitmentRequest::where('status', 'approved')->count();
@@ -722,32 +722,47 @@ class DashboardController extends Controller
         $jobPostId = $request->query('job_post_id');
         $days = (int) $request->query('days', 7);
 
-        $query = JobPostView::query();
-        if ($jobPostId) {
-            $query->where('job_post_id', $jobPostId);
+        $logs = collect();
+        $hourlyLogs = collect();
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('recruitment_job_post_views')) {
+            $query = JobPostView::query();
+            if ($jobPostId) {
+                $query->where('job_post_id', $jobPostId);
+            }
+
+            $startDate = now()->subDays($days - 1)->toDateString();
+            $logs = (clone $query)->where('view_date', '>=', $startDate)
+                ->selectRaw('view_date, event_type, count(*) as count')
+                ->groupBy('view_date', 'event_type')
+                ->orderBy('view_date', 'asc')
+                ->get();
+
+            // Hourly statistics for peak hours
+            $hourlyLogs = (clone $query)->where('view_date', '>=', $startDate)
+                ->selectRaw('HOUR(created_at) as hour, event_type, count(*) as count')
+                ->groupBy('hour', 'event_type')
+                ->orderBy('hour', 'asc')
+                ->get();
         }
 
-        $startDate = now()->subDays($days - 1)->toDateString();
-        $logs = (clone $query)->where('view_date', '>=', $startDate)
-            ->selectRaw('view_date, event_type, count(*) as count')
-            ->groupBy('view_date', 'event_type')
-            ->orderBy('view_date', 'asc')
-            ->get();
+        $cols = ['id', 'title', 'publish_status'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'views')) {
+            $cols[] = 'views';
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'clicks')) {
+            $cols[] = 'clicks';
+        }
+        $jobPostsList = JobPost::select($cols)->get();
 
-        // Hourly statistics for peak hours
-        $hourlyLogs = (clone $query)->where('view_date', '>=', $startDate)
-            ->selectRaw('HOUR(created_at) as hour, event_type, count(*) as count')
-            ->groupBy('hour', 'event_type')
-            ->orderBy('hour', 'asc')
-            ->get();
-
-        $jobPostsList = JobPost::select('id', 'title', 'views', 'clicks', 'publish_status')->get();
+        $totalViews = \Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'views') ? (int) JobPost::sum('views') : 0;
+        $totalClicks = \Illuminate\Support\Facades\Schema::hasColumn('recruitment_job_posts', 'clicks') ? (int) JobPost::sum('clicks') : 0;
 
         return response()->json([
             'logs' => $logs,
             'hourly_logs' => $hourlyLogs,
-            'total_views' => JobPost::sum('views'),
-            'total_clicks' => JobPost::sum('clicks'),
+            'total_views' => $totalViews,
+            'total_clicks' => $totalClicks,
             'job_posts' => $jobPostsList,
         ]);
     }

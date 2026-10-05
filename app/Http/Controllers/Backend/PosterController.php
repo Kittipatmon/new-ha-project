@@ -199,18 +199,26 @@ class PosterController extends Controller
         foreach ($ids as $id) {
             $poster = Poster::find($id);
             if ($poster) {
-                // Increment total views
-                $poster->increment('views');
+                try {
+                    // Increment total views
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('posters', 'views')) {
+                        $poster->increment('views');
+                    }
 
-                // Record detailed log
-                \App\Models\datacenter\PosterView::create([
-                    'poster_id' => $poster->id,
-                    'event_type' => 'view',
-                    'user_id' => $userId,
-                    'ip_address' => $ip,
-                    'user_agent' => $userAgent,
-                    'view_date' => $today,
-                ]);
+                    // Record detailed log
+                    if (\Illuminate\Support\Facades\Schema::hasTable('poster_views')) {
+                        \App\Models\datacenter\PosterView::create([
+                            'poster_id' => $poster->id,
+                            'event_type' => 'view',
+                            'user_id' => $userId,
+                            'ip_address' => $ip,
+                            'user_agent' => $userAgent,
+                            'view_date' => $today,
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Poster view tracking failed: ' . $e->getMessage());
+                }
             }
         }
 
@@ -222,21 +230,41 @@ class PosterController extends Controller
      */
     public function handleClick(Request $request, Poster $poster)
     {
-        // Increment total clicks
-        $poster->increment('clicks');
+        // Safely record clicks and logs without failing redirection
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('posters', 'clicks')) {
+                $poster->increment('clicks');
+            }
 
-        // Record detailed log
-        \App\Models\datacenter\PosterView::create([
-            'poster_id' => $poster->id,
-            'event_type' => 'click',
-            'user_id' => auth()->id(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-            'view_date' => now()->toDateString(),
-        ]);
+            // Record detailed log
+            if (\Illuminate\Support\Facades\Schema::hasTable('poster_views')) {
+                \App\Models\datacenter\PosterView::create([
+                    'poster_id' => $poster->id,
+                    'event_type' => 'click',
+                    'user_id' => auth()->id(),
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->header('User-Agent'),
+                    'view_date' => now()->toDateString(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Poster click tracking failed: ' . $e->getMessage());
+        }
 
-        $actionUrl = $poster->action_url;
-        if ($actionUrl) {
+        $actionUrl = trim((string)$poster->action_url);
+        if ($actionUrl !== '') {
+            // If action_url was mistakenly saved as localhost / 127.0.0.1, convert to relative URL
+            // so production users don't get redirected to a dead local development server
+            $parsed = parse_url($actionUrl);
+            if (!empty($parsed['host']) && in_array(strtolower($parsed['host']), ['localhost', '127.0.0.1'])) {
+                $path = ($parsed['path'] ?? '/') . (isset($parsed['query']) ? '?' . $parsed['query'] : '') . (isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '');
+                return redirect($path);
+            }
+
+            if (str_starts_with($actionUrl, '/')) {
+                return redirect($actionUrl);
+            }
+
             return redirect()->away($actionUrl);
         }
 
@@ -251,32 +279,47 @@ class PosterController extends Controller
         $posterId = $request->query('poster_id');
         $days = (int) $request->query('days', 7);
 
-        $query = \App\Models\datacenter\PosterView::query();
-        if ($posterId) {
-            $query->where('poster_id', $posterId);
+        $logs = collect();
+        $hourlyLogs = collect();
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('poster_views')) {
+            $query = \App\Models\datacenter\PosterView::query();
+            if ($posterId) {
+                $query->where('poster_id', $posterId);
+            }
+
+            $startDate = now()->subDays($days - 1)->toDateString();
+            $logs = (clone $query)->where('view_date', '>=', $startDate)
+                ->selectRaw('view_date, event_type, count(*) as count')
+                ->groupBy('view_date', 'event_type')
+                ->orderBy('view_date', 'asc')
+                ->get();
+
+            // Hourly statistics for peak hours
+            $hourlyLogs = (clone $query)->where('view_date', '>=', $startDate)
+                ->selectRaw('HOUR(created_at) as hour, event_type, count(*) as count')
+                ->groupBy('hour', 'event_type')
+                ->orderBy('hour', 'asc')
+                ->get();
         }
 
-        $startDate = now()->subDays($days - 1)->toDateString();
-        $logs = (clone $query)->where('view_date', '>=', $startDate)
-            ->selectRaw('view_date, event_type, count(*) as count')
-            ->groupBy('view_date', 'event_type')
-            ->orderBy('view_date', 'asc')
-            ->get();
+        $cols = ['id', 'is_active', 'start_at', 'end_at'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('posters', 'views')) {
+            $cols[] = 'views';
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('posters', 'clicks')) {
+            $cols[] = 'clicks';
+        }
+        $postersList = Poster::select($cols)->get();
 
-        // Hourly statistics for peak hours
-        $hourlyLogs = (clone $query)->where('view_date', '>=', $startDate)
-            ->selectRaw('HOUR(created_at) as hour, event_type, count(*) as count')
-            ->groupBy('hour', 'event_type')
-            ->orderBy('hour', 'asc')
-            ->get();
-
-        $postersList = Poster::select('id', 'views', 'clicks', 'is_active', 'start_at', 'end_at')->get();
+        $totalViews = \Illuminate\Support\Facades\Schema::hasColumn('posters', 'views') ? (int) Poster::sum('views') : 0;
+        $totalClicks = \Illuminate\Support\Facades\Schema::hasColumn('posters', 'clicks') ? (int) Poster::sum('clicks') : 0;
 
         return response()->json([
             'logs' => $logs,
             'hourly_logs' => $hourlyLogs,
-            'total_views' => Poster::sum('views'),
-            'total_clicks' => Poster::sum('clicks'),
+            'total_views' => $totalViews,
+            'total_clicks' => $totalClicks,
             'posters' => $postersList,
         ]);
     }

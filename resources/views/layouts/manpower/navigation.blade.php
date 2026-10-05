@@ -85,14 +85,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center h-full">
-                <div class="shrink-0 flex items-center gap-3">
-                    <a href="{{ route('welcome') }}" class="flex items-center gap-2 group">
-                        <div
-                            class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
-                            H
-                        </div>
-                        <span
-                            class="text-red-500 dark:text-white font-bold text-2xl tracking-tight group-hover:text-red-600 transition-colors duration-300">Kumwell</span>
+                <div class="shrink-0 flex items-center">
+                    <a href="{{ route('welcome') }}">
+                        <span class="text-red-600 font-bold text-lg sm:text-xl xl:text-3xl ml-2">Kumwell</span>
                     </a>
                 </div>
             </div>
@@ -110,19 +105,21 @@
                         <!-- <li>
                             <a class="navbar-link px-6 py-2 text-base text-black rounded-xl shadow transition" href="{{ route('manpower.index') }}">จัดการข้อมูล</a>
                         </li> -->
-                        @if(Auth::check() && Auth::user()->isHrOrAdmin())
                         <li>
-                            <a class="navbar-link shadow transition"
-                                href="{{ route('manpower.dashboard') }}">Dashboard</a>
+                            <a class="navbar-link shadow transition {{ request()->routeIs('manpower-request.create') || request()->routeIs('probation-evaluation.create') || request()->routeIs('interview-evaluation.create') ? 'ring-2 ring-white/60 bg-red-800' : '' }}"
+                                href="{{ route('manpower-request.create') }}">แบบฟอร์ม</a>
                         </li>
-                        @endif
+                        <li>
+                            <a class="navbar-link shadow transition {{ request()->routeIs('manpower-request.index') ? 'ring-2 ring-white/60 bg-red-800' : '' }}"
+                                href="{{ route('manpower-request.index') }}">ติดตามสถานะแบบฟอร์ม</a>
+                        </li>
                     </ul>
                 </div>
 
                 <div class="relative flex items-center gap-2 ms-3 sm:ms-4">
                     @guest
                         <button type="button" id="login-open-btn"
-                            class="navbar-link px-4 py-2 text-base text-black rounded-xl shadow transition">
+                            class="login-open-btn navbar-link px-4 py-2 text-base text-black rounded-xl shadow transition">
                             <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Login
                         </button>
                     @endguest
@@ -131,9 +128,9 @@
                             $navUserPhoto = Auth::user()->photo_user;
                             $hasRealPhoto = $navUserPhoto && !str_contains($navUserPhoto, 'pngegg') && file_exists(public_path($navUserPhoto));
                         @endphp
-                        <!-- Profile Trigger Button: Circular Avatar (Instagram Style - Image 2) -->
+                        <!-- Profile Trigger Button: Circular Avatar (Standard) -->
                         <button type="button" id="profile-btn"
-                            class="relative rounded-full border border-gray-300 dark:border-slate-600 p-0.5 hover:border-gray-400 dark:hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                            class="relative rounded-full border border-gray-300 dark:border-slate-600 p-0.5 hover:border-gray-400 dark:hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all cursor-pointer">
                             <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
                                 @if($hasRealPhoto)
                                     <img src="{{ asset($navUserPhoto) }}" alt="Avatar" class="w-full h-full object-cover">
@@ -145,60 +142,48 @@
                             </div>
                         </button>
 
-                        <!-- Clean Profile Dropdown (Exact Match to Image 2) -->
+                        <!-- Profile Dropdown (Standard) -->
                         <div id="profile-menu"
-                            class="hidden-custom absolute right-0 top-full mt-3 z-50 w-52 origin-top-right rounded-xl bg-white dark:bg-[#1E2129] py-1.5 shadow-xl border border-slate-100 dark:border-slate-700/80 focus:outline-none transition-all duration-200 ease-out">
+                            class="hidden-custom absolute right-0 top-full mt-3 z-50 w-56 origin-top-right rounded-2xl bg-white dark:bg-[#1E2129] py-1.5 shadow-xl border border-slate-100 dark:border-slate-700/80 focus:outline-none transition-all duration-200">
                             
-                            <!-- Top Pointer Arrow (Instagram Style) -->
                             <div class="absolute -top-1.5 right-4 w-3 h-3 bg-white dark:bg-[#1E2129] border-t border-l border-slate-100 dark:border-slate-700/80 transform rotate-45"></div>
 
                             <div class="relative z-10 py-1">
+                                <!-- Profile Info Header -->
+                                <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                                    <div class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ Auth::user()->department->department_name ?? 'Kumwell Staff' }}</div>
+                                </div>
+
                                 <!-- 1. Profile -->
                                 <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
-                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
-                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
+                                    class="flex items-center gap-3 px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors font-medium">
+                                    <i class="fa-solid fa-user-gear text-slate-500 w-4 text-center"></i>
                                     <span>Profile</span>
                                 </a>
 
-                                <!-- 2. Saved -->
+                                <!-- 2. Saved (Manpower Requests) -->
                                 <a href="{{ route('manpower-request.index') }}"
-                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
-                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-                                    </svg>
+                                    class="flex items-center gap-3 px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors font-medium">
+                                    <i class="fa-solid fa-bookmark text-slate-500 w-4 text-center"></i>
                                     <span>Saved</span>
                                 </a>
 
-                                <!-- 3. Settings -->
-                                <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
-                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
-                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>Settings</span>
-                                </a>
-
-                                <!-- 4. Switch Accounts -->
+                                <!-- Switch Accounts -->
                                 <a href="{{ route('welcome') }}"
-                                    class="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium">
-                                    <svg class="w-4 h-4 text-slate-700 dark:text-slate-300 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                    </svg>
+                                    class="flex items-center gap-3 px-4 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors font-medium">
+                                    <i class="fa-solid fa-repeat text-slate-500 w-4 text-center"></i>
                                     <span>Switch Accounts</span>
                                 </a>
 
-                                <!-- Divider -->
                                 <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
 
-                                <!-- 5. Log Out -->
+                                <!-- Log Out -->
                                 <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
                                     @csrf
                                     <button type="submit"
-                                        class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium cursor-pointer">
-                                        Log Out
+                                        class="w-full text-left px-4 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors font-medium cursor-pointer">
+                                        <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Log Out
                                     </button>
                                 </form>
                             </div>
@@ -271,9 +256,9 @@
 </nav>
 
     <!-- Mobile Menu Backdrop -->
-    <div id="mobile-menu-backdrop" class="fixed inset-0 bg-black/70 z-[9998] hidden opacity-0 transition-opacity duration-300"></div>
+    <div id="mobile-menu-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9998] hidden opacity-0 transition-opacity duration-300"></div>
 
-    <!-- Mobile Menu Drawer — Dark Premium Style -->
+    <!-- Mobile Menu Drawer — Standard Image Format -->
     <div id="mobile-menu"
         class="fixed top-0 right-0 h-full w-[300px] bg-white dark:bg-[#0f1117] z-[9999] transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col hidden shadow-2xl">
 
@@ -291,31 +276,34 @@
         <!-- Nav Links -->
         <nav class="flex-1 flex flex-col">
             <a href="{{ route('welcome') }}"
-                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('welcome') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
                 หน้าหลัก
             </a>
-            @if(Auth::check() && Auth::user()->isHrOrAdmin())
-            <a href="{{ route('dashboard') }}"
-                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 transition-all duration-200">
-                Dashboard
+
+            <a href="{{ route('manpower-request.create') }}"
+                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('manpower-request.create') || request()->routeIs('probation-evaluation.create') || request()->routeIs('interview-evaluation.create') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                แบบฟอร์ม
             </a>
-            @endif
+            <a href="{{ route('manpower-request.index') }}"
+                class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('manpower-request.index') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                ติดตามสถานะแบบฟอร์ม
+            </a>
         </nav>
 
         <!-- Footer: Auth/Guest Actions -->
         <div class="px-6 pb-8 pt-4 mt-auto space-y-3">
             @auth
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center overflow-hidden text-white">
-                        @if(Auth::user()->photo_user)
+                    <div class="w-11 h-11 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 border border-gray-200 dark:border-white/10">
+                        @if(Auth::user()->photo_user && !str_contains(Auth::user()->photo_user, 'pngegg') && file_exists(public_path(Auth::user()->photo_user)))
                             <img src="{{ asset(Auth::user()->photo_user) }}" alt="Avatar" class="w-full h-full object-cover">
                         @else
-                            <i class="fa-solid fa-user text-base"></i>
+                            <i class="fa-solid fa-user text-slate-500 dark:text-slate-400 text-base"></i>
                         @endif
                     </div>
                     <div class="min-w-0">
                         <div class="text-gray-900 dark:text-white font-bold text-sm truncate">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</div>
-                        <div class="text-red-500 dark:text-red-400 text-[10px] uppercase tracking-wider font-bold">Authorized User</div>
+                        <div class="text-red-600 dark:text-red-400 text-[10px] uppercase tracking-wider font-bold">Authorized User</div>
                     </div>
                 </div>
                 <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
@@ -332,8 +320,7 @@
                 </form>
             @endauth
             @guest
-                <button type="button" id="login-open-btn"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-red-600 text-white text-sm font-bold tracking-widest uppercase hover:bg-red-700 transition-all shadow-lg shadow-red-900/30">
+                <button type="button" class="login-open-btn w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-red-600 text-white text-sm font-bold tracking-widest uppercase hover:bg-red-700 transition-all shadow-lg shadow-red-900/30">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> LOG IN
                 </button>
             @endguest
@@ -582,22 +569,23 @@
         });
 
         // --- Login Modal Logic (Guest only) ---
-        const loginOpenBtn = document.getElementById('login-open-btn');
+        const loginOpenBtns = document.querySelectorAll('.login-open-btn, #login-open-btn');
         const loginModal = document.getElementById('login-modal');
         const loginCloseBtn = document.getElementById('login-close-btn');
-        if (loginOpenBtn && loginModal && loginCloseBtn) {
+        if (loginModal) {
             function openLoginModal() {
+                if (typeof closeMobileMenu === 'function') closeMobileMenu();
                 loginModal.classList.remove('hidden-custom');
             }
             function closeLoginModal() {
                 loginModal.classList.add('hidden-custom');
             }
-            loginOpenBtn.addEventListener('click', openLoginModal);
-            loginCloseBtn.addEventListener('click', closeLoginModal);
+            loginOpenBtns.forEach(btn => btn.addEventListener('click', openLoginModal));
+            if (loginCloseBtn) loginCloseBtn.addEventListener('click', closeLoginModal);
             loginModal.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLoginModal(); });
             // Auto-open if validation errors exist
-            const hasErrors = {{ ($errors->has('employee_code') || $errors->has('password')) ? 'true' : 'false' }};
+            const hasErrors = {{ (isset($errors) && ($errors->has('employee_code') || $errors->has('password'))) ? 'true' : 'false' }};
             if (hasErrors) openLoginModal();
         }
     });

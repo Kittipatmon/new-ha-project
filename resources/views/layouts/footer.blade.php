@@ -1,13 +1,8 @@
+@once('app_site_footer')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.tailwindcss.com"></script>
-
-<!-- <style>
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Prompt', sans-serif; }
-</style> -->
 
 <!-- ==================== TOPBAR (FOOTER ALIGNED) ==================== -->
-<div class="relative z-10 bg-slate-900 text-slate-400 text-xs py-2 border-t border-slate-800">
+<div class="relative z-10 bg-slate-900 text-slate-400 text-xs py-2 border-t border-slate-800 w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex flex-wrap justify-center md:justify-start gap-4 md:gap-6">
             <span><i class="fas fa-phone mr-1.5 opacity-70"></i> +66 2 954 3455</span>
@@ -25,7 +20,7 @@
     </div>
 </div>
 
-<footer class="relative z-10 text-[#333333] border-t border-gray-100/20 bg-white dark:bg-gray-900">
+<footer class="relative z-10 text-[#333333] border-t border-gray-100/20 bg-white dark:bg-gray-900 w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -117,3 +112,4 @@
         </div>
     </div>
 </footer>
+@endonce

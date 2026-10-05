@@ -184,18 +184,29 @@ class NewsController extends Controller
     public function detail(Request $request, $id)
     {
         $news = News::findOrFail($id);
-        $news->increment('views');
-        $news->increment('clicks'); // count opening detail as click
 
-        // Record log into news_views
-        \App\Models\datacenter\NewsView::create([
-            'news_id' => $news->news_id,
-            'event_type' => 'view',
-            'user_id' => auth()->id(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->header('User-Agent'),
-            'view_date' => now()->toDateString(),
-        ]);
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('news', 'views')) {
+                $news->increment('views');
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('news', 'clicks')) {
+                $news->increment('clicks'); // count opening detail as click
+            }
+
+            // Record log into news_views
+            if (\Illuminate\Support\Facades\Schema::hasTable('news_views')) {
+                \App\Models\datacenter\NewsView::create([
+                    'news_id' => $news->news_id,
+                    'event_type' => 'view',
+                    'user_id' => auth()->id(),
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->header('User-Agent'),
+                    'view_date' => now()->toDateString(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('News detail view/click tracking failed: ' . $e->getMessage());
+        }
 
         return view('backend.news.detail', compact('news'));
     }
@@ -227,13 +238,23 @@ class NewsController extends Controller
             ->orderBy('hour', 'asc')
             ->get();
 
-        $newsList = News::select('news_id', 'views', 'clicks', 'is_active', 'title')->get();
+        $cols = ['news_id', 'is_active', 'title'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('news', 'views')) {
+            $cols[] = 'views';
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('news', 'clicks')) {
+            $cols[] = 'clicks';
+        }
+        $newsList = News::select($cols)->get();
+
+        $totalViews = \Illuminate\Support\Facades\Schema::hasColumn('news', 'views') ? (int) News::sum('views') : 0;
+        $totalClicks = \Illuminate\Support\Facades\Schema::hasColumn('news', 'clicks') ? (int) News::sum('clicks') : 0;
 
         return response()->json([
             'logs' => $logs,
             'hourly_logs' => $hourlyLogs,
-            'total_views' => News::sum('views'),
-            'total_clicks' => News::sum('clicks'),
+            'total_views' => $totalViews,
+            'total_clicks' => $totalClicks,
             'news_items' => $newsList,
         ]);
     }

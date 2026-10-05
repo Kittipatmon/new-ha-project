@@ -118,6 +118,24 @@ class ManpowerRequest extends Model
     }
 
     /**
+     * Human-readable status label (Thai)
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        $map = [
+            'draft'           => 'แบบร่าง',
+            'pending_manager' => 'รอ ผจก.แผนก',
+            'pending_vp'      => 'รอ ปธ.สายงาน',
+            'pending_hr'      => 'รอ ผจก.HR',
+            'pending_ceo'     => 'รอ CEO',
+            'approved'        => 'อนุมัติแล้ว',
+            'rejected'        => 'ไม่อนุมัติ',
+        ];
+
+        return $map[$this->status] ?? $this->status;
+    }
+
+    /**
      * Check if a Job Post has already been created for this Manpower Request
      */
     public function hasJobPost(): bool

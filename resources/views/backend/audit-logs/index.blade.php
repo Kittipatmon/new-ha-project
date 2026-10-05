@@ -2098,7 +2098,7 @@ function auditLogApp() {
 
         async openDiffModal(logId) {
             try {
-                const res = await fetch(`{{ url('backend/audit-logs') }}/${logId}`);
+                const res = await fetch(`{{ route('backend.audit-logs.index') }}/${logId}`);
                 const data = await res.json();
                 if (data.success) {
                     this.currentLog = {
@@ -2117,7 +2117,7 @@ function auditLogApp() {
 
         async inspectZipArchive(archiveId) {
             try {
-                const res = await fetch(`{{ url('backend/audit-logs/archives') }}/${archiveId}/inspect`);
+                const res = await fetch(`{{ route('backend.audit-logs.index') }}/archives/${archiveId}/inspect`);
                 const data = await res.json();
                 if (data.success) {
                     this.inspectedArchive = data.archive;
@@ -2162,7 +2162,7 @@ function auditLogApp() {
             if (this.isSendingTestLog) return;
             this.isSendingTestLog = true;
             try {
-                const res = await fetch('{{ url("backend/audit-logs/test-log") }}', {
+                const res = await fetch('{{ route("backend.audit-logs.test-log") }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',

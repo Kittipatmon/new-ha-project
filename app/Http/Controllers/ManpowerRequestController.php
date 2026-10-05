@@ -233,7 +233,7 @@ class ManpowerRequestController extends Controller
                 'status' => $req->status,
                 'status_label' => $this->manpowerStatusLabel($req->status),
                 'show_url' => route('manpower-request.show', $req->id),
-                'delete_url' => route('manpower-request.destroy', $req->id),
+                'delete_url' => \Illuminate\Support\Facades\Route::has('manpower-request.destroy') ? route('manpower-request.destroy', $req->id) : null,
                 'is_shared' => $shareInfo['is_shared'],
                 'is_revoked' => $shareInfo['is_revoked'],
                 'shared_by_name' => $shareInfo['shared_by_name'],
@@ -258,7 +258,7 @@ class ManpowerRequestController extends Controller
                 'status' => $prob->status,
                 'status_label' => $this->probationStatusLabel($prob->status),
                 'show_url' => route('probation-evaluation.show', $prob->id),
-                'delete_url' => route('probation-evaluation.destroy', $prob->id),
+                'delete_url' => \Illuminate\Support\Facades\Route::has('probation-evaluation.destroy') ? route('probation-evaluation.destroy', $prob->id) : null,
                 'is_shared' => $shareInfo['is_shared'],
                 'is_revoked' => $shareInfo['is_revoked'],
                 'shared_by_name' => $shareInfo['shared_by_name'],
@@ -288,7 +288,7 @@ class ManpowerRequestController extends Controller
                         ? '<span class="badge badge-green">ลงนามครบถ้วน</span>'
                         : '<span class="badge badge-purple">รอลงนาม</span>',
                     'show_url' => route('interview-evaluation.show', $int->id),
-                    'delete_url' => route('interview-evaluation.destroy', $int->id),
+                    'delete_url' => \Illuminate\Support\Facades\Route::has('interview-evaluation.destroy') ? route('interview-evaluation.destroy', $int->id) : null,
                     'is_shared' => $shareInfo['is_shared'],
                     'is_revoked' => $shareInfo['is_revoked'],
                     'shared_by_name' => $shareInfo['shared_by_name'],
@@ -461,7 +461,7 @@ class ManpowerRequestController extends Controller
                     'status' => $req->status,
                     'status_label' => $this->manpowerStatusLabel($req->status),
                     'show_url' => route('manpower-request.show', $req->id),
-                    'delete_url' => route('manpower-request.destroy', $req->id),
+                    'delete_url' => \Illuminate\Support\Facades\Route::has('manpower-request.destroy') ? route('manpower-request.destroy', $req->id) : null,
                 ];
             });
         } catch (\Throwable $e) {
@@ -489,7 +489,7 @@ class ManpowerRequestController extends Controller
                     'status' => $prob->status,
                     'status_label' => $this->probationStatusLabel($prob->status),
                     'show_url' => route('probation-evaluation.show', $prob->id),
-                    'delete_url' => route('probation-evaluation.destroy', $prob->id),
+                    'delete_url' => \Illuminate\Support\Facades\Route::has('probation-evaluation.destroy') ? route('probation-evaluation.destroy', $prob->id) : null,
                 ];
             });
         } catch (\Throwable $e) {
@@ -524,7 +524,7 @@ class ManpowerRequestController extends Controller
                         ? '<span class="badge badge-green">ลงนามครบถ้วน</span>' 
                         : '<span class="badge badge-purple">รอลงนาม</span>',
                     'show_url' => route('interview-evaluation.show', $int->id),
-                    'delete_url' => route('interview-evaluation.destroy', $int->id),
+                    'delete_url' => \Illuminate\Support\Facades\Route::has('interview-evaluation.destroy') ? route('interview-evaluation.destroy', $int->id) : null,
                 ];
             });
         } catch (\Throwable $e) {

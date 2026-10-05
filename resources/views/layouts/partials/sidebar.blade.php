@@ -60,6 +60,15 @@
                         HR & Requests
                     </div>
 
+                    <x-sidebar.dropdown id="organization" title="โครงสร้างองค์กร" icon="sitemap" :active="request()->routeIs('divisions.*') || request()->routeIs('departments.*') || request()->routeIs('sections.*') || request()->routeIs('usertypes.*')">
+                        <x-sidebar.item href="{{ route('divisions.index') }}" :active="request()->routeIs('divisions.*')">จัดการฝ่าย (Divisions)</x-sidebar.item>
+                        <x-sidebar.item href="{{ route('departments.index') }}" :active="request()->routeIs('departments.*')">จัดการแผนก (Departments)</x-sidebar.item>
+                        <x-sidebar.item href="{{ route('sections.index') }}" :active="request()->routeIs('sections.*')">จัดการส่วนงาน (Sections)</x-sidebar.item>
+                        @if(Auth::user()->canManageUsers())
+                            <x-sidebar.item href="{{ route('usertypes.index') }}" :active="request()->routeIs('usertypes.*')">ประเภทผู้ใช้งาน (Roles)</x-sidebar.item>
+                        @endif
+                    </x-sidebar.dropdown>
+
                     <x-sidebar.dropdown id="request" title="Request Settings" icon="file-signature" :active="request()->routeIs('request-categories.*') || request()->routeIs('request-types.*') || request()->routeIs('request-subtypes.*')">
                         <x-sidebar.item href="{{ route('request-categories.index') }}" :active="request()->routeIs('request-categories.index')">ประเภทคำร้อง</x-sidebar.item>
                         <x-sidebar.item href="{{ route('request-types.index') }}" :active="request()->routeIs('request-types.index')">ตัวเลือกการร้องขอ</x-sidebar.item>
@@ -70,7 +79,14 @@
                     <x-sidebar.link title="จัดการพนักงาน" icon="users-gear" href="{{ route('users.index') }}" :active="request()->routeIs('users.*')" />
                     @endif
 
-                    <x-sidebar.link title="พิจารณาคำขอ HR" icon="clipboard-check" href="{{ route('manpower-request.index') }}" :active="request()->routeIs('manpower-request.*') || request()->routeIs('probation-evaluation.*') || request()->routeIs('interview-evaluation.*') || request()->routeIs('admin.manpower-requests.*') || request()->routeIs('admin.probation-evaluations.*') || request()->routeIs('admin.interview-evaluations.*')" />
+                    <x-sidebar.dropdown id="hr-forms" title="แบบฟอร์ม HR" icon="file-lines" :active="request()->routeIs('manpower-request.*') || request()->routeIs('probation-evaluation.*') || request()->routeIs('interview-evaluation.*') || request()->routeIs('admin.manpower-requests.*') || request()->routeIs('admin.probation-evaluations.*') || request()->routeIs('admin.interview-evaluations.*')">
+                        <x-sidebar.item href="{{ route('manpower-request.create') }}" :active="request()->routeIs('manpower-request.create') || request()->routeIs('probation-evaluation.create') || request()->routeIs('interview-evaluation.create')">
+                            แบบฟอร์ม
+                        </x-sidebar.item>
+                        <x-sidebar.item href="{{ route('manpower-request.index') }}" :active="request()->routeIs('manpower-request.index') || request()->routeIs('admin.manpower-requests.*')">
+                            ติดตามสถานะแบบฟอร์ม
+                        </x-sidebar.item>
+                    </x-sidebar.dropdown>
 
                     <!-- Section Divider: Training -->
                     <div class="sidebar-text px-3 pt-5 pb-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">

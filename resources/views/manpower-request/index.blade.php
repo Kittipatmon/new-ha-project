@@ -299,8 +299,8 @@
         .dark .section-card { background: #1f2937; color: #f1f5f9; border-color: #374151; }
     </style>
 
-    <div class="py-6 sm:py-8 bg-gray-100 dark:bg-gray-900 min-h-screen">
-        <div class="max-w-[1700px] w-full mx-auto px-3 sm:px-6 lg:px-8 xl:px-10">
+    <div class="max-w-[1700px] w-full mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-6">
+        <div>
             <div class="flex flex-col lg:flex-row gap-6 items-start">
                 
                 <!-- Left: Form Categories Sidebar -->

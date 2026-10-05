@@ -27,6 +27,10 @@
     </script>
 
     <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap');
 
         body, button, input, select, textarea, .font-sans, h1, h2, h3, h4, h5, h6, label, span, div {
@@ -185,22 +189,26 @@
             {{ $slot ?? '' }}
         </div>
     @elseif(request()->routeIs('manpower-request.*') || request()->routeIs('probation-evaluation.*') || request()->routeIs('interview-evaluation.*'))
-        {{-- HR Forms layout: top navigation bar (no sidebar) using layouts.m_p --}}
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.m_p.navigation')
+        {{-- HR Forms layout: ใช้ layouts.manpower --}}
+        <div class="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+            @include('layouts.manpower.navigation')
 
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-[1700px] mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-10">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+            <div class="pt-16 sm:pt-20 flex-1 flex flex-col">
+                @isset($header)
+                    <header class="bg-white dark:bg-gray-800 shadow">
+                        <div class="max-w-[1700px] mx-auto py-5 px-4 sm:px-6 lg:px-8 xl:px-10">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
 
-            <main>
-                @yield('content')
-                {{ $slot ?? '' }}
-            </main>
+                <main class="flex-1 mb-8 px-3 sm:px-6">
+                    @yield('content')
+                    {{ $slot ?? '' }}
+                </main>
+            </div>
+
+            @include('layouts.footer')
         </div>
     @else
         <div class="flex h-screen overflow-hidden">

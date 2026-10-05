@@ -77,10 +77,11 @@
         @endif
 
         <!-- Page Content -->
-        <main class="mb-4 px-3 sm:px-6 flex-1 pt-20 sm:pt-24">
+        <main class="{{ request()->routeIs('welcome') ? 'flex-1 p-0 m-0' : 'mb-4 px-3 sm:px-6 flex-1 pt-20 sm:pt-24' }}">
             <!-- <div class="px-2">
                 <div class="container max-w-8xl mx-auto sm:px-6 lg:px-4 card bg-base-100 shadow mt-4 border"> -->
             @yield('content')
+            {{ $slot ?? '' }}
             <!-- </div>
             </div> -->
         </main>

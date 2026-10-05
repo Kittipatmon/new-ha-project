@@ -2,10 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
 class HrUserRole extends Model
 {
+    use Auditable;
+
+    public string $auditModule = 'users';
+    public string $auditModuleName = 'กำหนดสิทธิ์ระบบ HR';
+
+    public function getAuditTitle(): string
+    {
+        return "สิทธิ์ HR: รหัสพนักงาน {$this->employee_code} [บทบาท: " . strtoupper($this->role ?? '') . "]";
+    }
+
     protected $connection = 'mysql';
 
     protected $table = 'hr_user_roles';

@@ -344,8 +344,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}', [App\Http\Controllers\Backend\AuditLogController::class, 'show'])->name('show');
         });
 
-        // Database Automated Backups (Admin only)
-        Route::prefix('backend/database-backups')->name('backend.database-backups.')->middleware('role:admin')->group(function () {
+        // Database Automated Backups (Admin & ICT only)
+        Route::prefix('backend/database-backups')->name('backend.database-backups.')->middleware(['role:admin', 'ict.admin'])->group(function () {
             Route::get('/', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'index'])->name('index');
             Route::post('/create', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'create'])->name('create');
             Route::get('/{id}/download', [App\Http\Controllers\Backend\DatabaseBackupController::class, 'download'])->name('download');

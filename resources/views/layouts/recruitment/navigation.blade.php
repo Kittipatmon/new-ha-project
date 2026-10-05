@@ -108,11 +108,8 @@
             
             <!-- Brand Logo (ทุกขนาดหน้าจอ) -->
             <div class="flex items-center h-full shrink-0">
-                <a href="{{ route('welcome') }}" class="flex items-center gap-2 sm:gap-2.5 group">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-md group-hover:scale-105 transition-transform duration-300">
-                        H
-                    </div>
-                    <span class="text-red-600 dark:text-white font-extrabold text-xl sm:text-2xl tracking-tight group-hover:text-red-700 transition-colors duration-300">Kumwell</span>
+                <a href="{{ route('welcome') }}">
+                    <span class="text-red-600 font-bold text-lg sm:text-xl xl:text-3xl ml-2">Kumwell</span>
                 </a>
             </div>
 
@@ -330,33 +327,20 @@
                 </div>
             </div>
 
-            <!-- Mobile, Tablet & Laptop Bar (หน้าจอที่เมนูขึ้นไม่ครบ < 1280px จะแสดงแบบมือถือทันที) -->
-            <div class="flex items-center xl:hidden gap-1.5 sm:gap-2 shrink-0">
+            <!-- Mobile, Tablet & Laptop Bar -->
+            <div class="-me-2 flex items-center xl:hidden gap-2">
                 <!-- Notification Bell -->
                 @include('layouts.partials.notification-bell')
 
-                @auth
-                    <!-- Mobile Avatar Button -->
-                    <button type="button" id="mobile-profile-avatar-btn"
-                        class="relative rounded-full border border-gray-300 dark:border-slate-600 p-0.5 hover:border-gray-400 dark:hover:border-slate-400 focus:outline-none transition-all cursor-pointer">
-                        <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                            @if(isset($hasRealPhoto) && $hasRealPhoto)
-                                <img src="{{ asset($navUserPhoto) }}" alt="Avatar" class="w-full h-full object-cover">
-                            @else
-                                <svg class="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7 0 3.75 3.75 0 017 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-                                </svg>
-                            @endif
-                        </div>
-                    </button>
-                @endauth
-
                 <!-- Hamburger Button -->
                 <button id="mobile-menu-btn"
-                    class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-slate-100/90 dark:bg-slate-800/90 rounded-xl text-slate-700 dark:text-slate-200 transition-all active:scale-95 shadow-sm hover:bg-red-50 hover:text-red-600 dark:hover:bg-slate-700"
+                    class="flex items-center justify-center w-10 h-10 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm hover:bg-slate-200 dark:hover:bg-slate-700"
                     aria-label="เมนู">
-                    <svg id="icon-hamburger" class="h-5 w-5 sm:h-6 sm:w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16" />
+                    <svg id="icon-hamburger" class="h-6 w-6 block" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg id="icon-close-menu" class="h-6 w-6 hidden-custom" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -368,202 +352,127 @@
 <!-- Mobile Menu Backdrop -->
 <div id="mobile-menu-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9998] hidden opacity-0 transition-opacity duration-300"></div>
 
-<!-- Mobile & iPad Menu Drawer (รองรับทั้ง มือถือ, iPad, Tablet) -->
+<!-- Mobile & iPad Menu Drawer (Image 1 Standard) -->
 <div id="mobile-menu"
-    class="fixed top-0 right-0 h-full w-[85vw] max-w-[340px] sm:max-w-[380px] bg-white dark:bg-[#151821] z-[9999] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col hidden shadow-2xl border-l border-slate-200/80 dark:border-slate-800">
+    class="fixed top-0 right-0 h-full w-[300px] bg-white dark:bg-[#0f1117] z-[9999] transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col hidden shadow-2xl">
 
-    <!-- Drawer Header -->
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
-        <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center text-white font-bold text-base shadow">
-                H
-            </div>
-            <div>
-                <span class="text-gray-900 dark:text-white font-black text-lg tracking-tight">Kumwell</span>
-                <p class="text-gray-400 dark:text-gray-500 text-[10px] tracking-wider leading-none">Safety to Society</p>
-            </div>
+    <!-- Drawer Header: Logo + Close -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-white/10">
+        <div>
+            <span class="text-gray-900 dark:text-white font-bold text-xl tracking-tight">Kumwell</span>
+            <p class="text-gray-500 dark:text-white/40 text-[11px] tracking-widest mt-0.5">"Safety to Society"</p>
         </div>
-        <button id="mobile-menu-close-btn" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-all cursor-pointer">
+        <button id="mobile-menu-close-btn" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-white/60 dark:hover:text-white dark:hover:bg-white/10 transition-all">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
     </div>
 
-    <!-- Drawer Content (Scrollable) -->
-    <div class="flex-1 overflow-y-auto px-4 py-3 space-y-4 no-scrollbar">
-
-        @auth
-            <!-- User Profile Summary Card -->
-            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 space-y-2.5 shadow-sm">
-                <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center overflow-hidden text-white shrink-0 shadow">
-                        @if(Auth::user()->photo_user)
-                            <img src="{{ asset(Auth::user()->photo_user) }}" alt="Avatar" class="w-full h-full object-cover">
-                        @else
-                            <i class="fa-solid fa-user text-lg"></i>
-                        @endif
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <div class="text-gray-900 dark:text-white font-bold text-sm truncate">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ Auth::user()->department->department_name ?? 'Kumwell Staff' }}</div>
-                        <div class="mt-0.5 inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
-                            {{ Auth::user()->isHrOrAdmin() ? 'ฝ่ายทรัพยากรบุคคล (HA)' : 'ผู้ใช้งานระบบ' }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Microsoft 365 status for HA/Admin on Mobile/iPad -->
-                @if(Auth::check() && (Auth::user()->isHrOrAdmin() || Auth::user()->dept_id == 15))
-                    <div class="pt-2 border-t border-slate-200 dark:border-slate-700/60">
-                        @if(Auth::user()->hasMicrosoftConnected())
-                            <div class="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
-                                <span class="flex items-center gap-2 truncate">
-                                    <i class="fa-brands fa-microsoft text-emerald-600 text-sm"></i>
-                                    <span class="truncate max-w-[160px]" title="{{ Auth::user()->microsoftToken?->microsoft_email }}">
-                                        {{ Auth::user()->microsoftToken?->microsoft_email }}
-                                    </span>
-                                </span>
-                                <form action="{{ route('auth.microsoft.disconnect') }}" method="POST" class="inline m-0" onsubmit="return confirmDisconnectMicrosoft(this, event)">
-                                    @csrf
-                                    <button type="submit" class="text-rose-600 hover:underline text-[11px] font-bold ml-1 cursor-pointer">ยกเลิก</button>
-                                </form>
-                            </div>
-                        @else
-                            <a href="{{ route('auth.microsoft.redirect') }}"
-                                class="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-xs font-semibold transition-colors">
-                                <i class="fa-brands fa-microsoft text-sm"></i>
-                                <span>เชื่อมต่อ Microsoft 365</span>
-                            </a>
-                        @endif
-                    </div>
-                @endif
-            </div>
-        @endauth
-
-        <!-- Section: เมนูหลัก -->
-        <div>
-            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 mb-1.5">เมนูหลัก</div>
-            <div class="space-y-1">
-                <a href="{{ route('welcome') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('welcome') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                    <i class="fa-solid fa-house w-4 text-center"></i>
-                    <span>หน้าหลัก</span>
-                </a>
-                <a href="{{ route('recruitment.index') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ (request()->routeIs('recruitment.index') || request()->routeIs('recruitment.jobs.*')) ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                    <i class="fa-solid fa-briefcase w-4 text-center"></i>
-                    <span>สมัครงาน (Careers)</span>
-                </a>
-                <a href="{{ route('recruitment.track') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('recruitment.track*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                    <i class="fa-solid fa-magnifying-glass w-4 text-center"></i>
-                    <span>เช็คสถานะการสมัคร</span>
-                </a>
-            </div>
-        </div>
+    <!-- Nav Links (Standard Image 1 Format) -->
+    <nav class="flex-1 flex flex-col">
+        <a href="{{ route('welcome') }}"
+            class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('welcome') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+            หน้าหลัก
+        </a>
+        <a href="{{ route('recruitment.index') }}"
+            class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ (request()->routeIs('recruitment.index') || request()->routeIs('recruitment.jobs.*')) ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+            สมัครงาน
+        </a>
+        <a href="{{ route('recruitment.track') }}"
+            class="flex items-center px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('recruitment.track*') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+            เช็คสถานะการสมัคร
+        </a>
 
         @if(Auth::check() && Auth::user()->isHrOrAdmin())
-            <!-- Section: จัดการรับสมัครงาน (HA) -->
-            <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-red-500 dark:text-red-400 px-2 mb-1.5 flex items-center justify-between">
-                    <span>จัดการระบบรับสมัคร (HA)</span>
-                </div>
-                <div class="space-y-1">
-                    <a href="{{ route('backend.recruitment.dashboard') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.dashboard') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                        <i class="fa-solid fa-chart-pie w-4 text-center text-red-500"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="{{ route('backend.recruitment.applications.index') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.applications.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-users w-4 text-center text-blue-500"></i>
-                            <span>รายชื่อผู้สมัคร</span>
-                        </div>
-                        @if($navNewApplicationsCount > 0)
-                            <span class="px-2 py-0.5 text-[10px] font-extrabold {{ request()->routeIs('backend.recruitment.applications.*') ? 'text-red-600 bg-white' : 'text-white bg-red-600' }} rounded-full shadow-sm">
-                                {{ $navNewApplicationsCount }}
-                            </span>
-                        @endif
-                    </a>
-                    <a href="{{ route('backend.recruitment.posts.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.posts.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                        <i class="fa-solid fa-bullhorn w-4 text-center text-amber-500"></i>
-                        <span>ประกาศรับสมัครงาน</span>
-                    </a>
-                    <a href="{{ route('backend.recruitment.requests.index') }}"
-                        class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.requests.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid fa-file-signature w-4 text-center text-emerald-500"></i>
-                            <span>คำขอเปิดรับสมัคร</span>
-                        </div>
-                        @if($navPendingJobPostCount > 0)
-                            <span class="px-2 py-0.5 text-[10px] font-extrabold text-amber-900 bg-amber-300 rounded-full">
-                                {{ $navPendingJobPostCount }}
-                            </span>
-                        @endif
-                    </a>
-                    <a href="{{ route('backend.recruitment.mail-logs.index') }}"
-                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('backend.recruitment.mail-logs.*') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                        <i class="fa-solid fa-envelope-circle-check w-4 text-center text-purple-500"></i>
-                        <span>ประวัติส่งอีเมล</span>
-                    </a>
-                </div>
-            </div>
+            <!-- 3. Dashboard -->
+            <a href="{{ route('backend.recruitment.dashboard') }}"
+                class="flex items-center justify-between px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('backend.recruitment.dashboard') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                <span>Dashboard</span>
+            </a>
+
+            <!-- 4. รายชื่อผู้สมัคร -->
+            <a href="{{ route('backend.recruitment.applications.index') }}"
+                class="flex items-center justify-between px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('backend.recruitment.applications.*') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                <span>รายชื่อผู้สมัคร</span>
+                @if($navNewApplicationsCount > 0)
+                    <span class="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full shadow-sm animate-pulse">
+                        {{ $navNewApplicationsCount }}
+                    </span>
+                @endif
+            </a>
+
+            <!-- 5. ประกาศ -->
+            <a href="{{ route('backend.recruitment.posts.index') }}"
+                class="flex items-center justify-between px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('backend.recruitment.posts.*') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                <span>ประกาศ</span>
+            </a>
+
+            <!-- 6. คำขอเปิดรับสมัคร -->
+            <a href="{{ route('backend.recruitment.requests.index') }}"
+                class="flex items-center justify-between px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('backend.recruitment.requests.*') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                <span>คำขอเปิดรับสมัคร</span>
+                @if($navPendingJobPostCount > 0)
+                    <span class="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-xs font-bold leading-none text-amber-900 bg-amber-300 rounded-full shadow-sm animate-pulse">
+                        {{ $navPendingJobPostCount }}
+                    </span>
+                @endif
+            </a>
+
+            <!-- 7. ประวัติส่งอีเมล -->
+            <a href="{{ route('backend.recruitment.mail-logs.index') }}"
+                class="flex items-center justify-between px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('backend.recruitment.mail-logs.*') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                <span>ประวัติส่งอีเมล</span>
+            </a>
         @endif
 
         @auth
             @if($canViewDeptCandidates)
-                <!-- Section: สำหรับหัวหน้าแผนก / ผู้บริหาร -->
-                <div>
-                    <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 px-2 mb-1.5">สำหรับหัวหน้าแผนก</div>
-                    <div class="space-y-1">
-                        <a href="{{ route('recruitment.reports') }}"
-                            class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold {{ request()->routeIs('recruitment.reports') ? 'bg-red-600 text-white shadow-md' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' }} transition-all">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-user-check w-4 text-center text-emerald-600"></i>
-                                <span>ผู้สมัครที่ HA ส่งมา</span>
-                            </div>
-                            @if($pendingDeptReviewCount > 0)
-                                <span class="px-2 py-0.5 text-[10px] font-extrabold text-white bg-red-600 rounded-full">
-                                    {{ $pendingDeptReviewCount }}
-                                </span>
-                            @endif
-                        </a>
-                    </div>
-                </div>
+                <a href="{{ route('recruitment.reports') }}"
+                    class="flex items-center justify-between px-6 py-5 text-sm font-semibold tracking-widest uppercase {{ request()->routeIs('recruitment.reports') ? 'text-red-600 font-bold bg-red-50/50 dark:bg-white/5' : 'text-gray-700 hover:text-red-600 hover:bg-red-50 dark:text-white/70 dark:hover:text-white dark:hover:bg-white/5' }} border-b border-gray-100 dark:border-white/10 transition-all duration-200">
+                    <span>ผู้สมัครที่ HA ส่งมา</span>
+                    @if($pendingDeptReviewCount > 0)
+                        <span class="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full shadow-sm">
+                            {{ $pendingDeptReviewCount }}
+                        </span>
+                    @endif
+                </a>
             @endif
+        @endauth
+    </nav>
 
-            <!-- Section: จัดการบัญชี -->
-            <div>
-                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 mb-1.5">บัญชีและการตั้งค่า</div>
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
-                        class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all">
-                        <i class="fa-solid fa-user-gear"></i> โปรไฟล์
-                    </a>
-                    <a href="{{ route('manpower-request.index') }}"
-                        class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all">
-                        <i class="fa-solid fa-bookmark"></i> ที่บันทึกไว้
-                    </a>
+    <!-- Footer: Auth/Guest Actions (Standard Image 1 Format) -->
+    <div class="px-6 pb-8 pt-4 mt-auto space-y-3">
+        @auth
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-11 h-11 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 border border-gray-200 dark:border-white/10">
+                    @if(Auth::user()->photo_user && !str_contains(Auth::user()->photo_user, 'pngegg') && file_exists(public_path(Auth::user()->photo_user)))
+                        <img src="{{ asset(Auth::user()->photo_user) }}" alt="Avatar" class="w-full h-full object-cover">
+                    @else
+                        <i class="fa-solid fa-user text-slate-500 dark:text-slate-400 text-base"></i>
+                    @endif
+                </div>
+                <div class="min-w-0">
+                    <div class="text-gray-900 dark:text-white font-bold text-sm truncate">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</div>
+                    <div class="text-red-600 dark:text-red-400 text-[10px] uppercase tracking-wider font-bold">Authorized User</div>
                 </div>
             </div>
-        @endauth
-    </div>
 
-    <!-- Drawer Footer -->
-    <div class="p-4 border-t border-gray-100 dark:border-gray-800 shrink-0 space-y-2.5 bg-slate-50/50 dark:bg-slate-900/50">
-        @auth
-            <form method="POST" action="{{ route('logout') }}" class="m-0">
+            <a href="{{ route('users.profile', ['id' => auth()->id()]) }}"
+                class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gray-100 text-gray-700 text-sm font-semibold hover:bg-gray-200 hover:text-gray-900 dark:bg-white/10 dark:text-white/80 dark:hover:bg-white/15 dark:hover:text-white transition-all">
+                <i class="fa-solid fa-user-gear"></i> Profile Settings
+            </a>
+
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 text-xs font-bold transition-all cursor-pointer">
-                    <i class="fa-solid fa-power-off"></i> ออกจากระบบ (Log Out)
-                </button>
+                <a href="{{ route('logout') }}"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 dark:bg-red-600/20 dark:text-red-400 dark:hover:bg-red-600/30 dark:hover:text-red-300 transition-all"
+                    onclick="event.preventDefault(); this.closest('form').submit();">
+                    <i class="fa-solid fa-power-off"></i> Log Out
+                </a>
             </form>
         @endauth
         @guest
-            <button type="button" class="login-open-btn w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white text-xs font-bold tracking-wider uppercase hover:bg-red-700 transition-all shadow-md cursor-pointer">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i> เข้าสู่ระบบ (Log In)
+            <button type="button" class="login-open-btn w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-red-600 text-white text-sm font-bold tracking-widest uppercase hover:bg-red-700 transition-all shadow-lg shadow-red-900/30">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> LOG IN
             </button>
         @endguest
     </div>
@@ -628,7 +537,6 @@
     document.addEventListener('DOMContentLoaded', function () {
         // --- Mobile Menu Drawer Logic ---
         const mobileBtn = document.getElementById('mobile-menu-btn');
-        const mobileProfileAvatarBtn = document.getElementById('mobile-profile-avatar-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
         const mobileMenuCloseBtn = document.getElementById('mobile-menu-close-btn');
@@ -660,7 +568,6 @@
         }
 
         if (mobileBtn) mobileBtn.addEventListener('click', openMobileMenu);
-        if (mobileProfileAvatarBtn) mobileProfileAvatarBtn.addEventListener('click', openMobileMenu);
         if (mobileMenuCloseBtn) mobileMenuCloseBtn.addEventListener('click', closeMobileMenu);
         if (mobileMenuBackdrop) mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
 

@@ -55,30 +55,20 @@
         @include('layouts.manpower.navigation')
 
         <!-- Page Heading -->
-        @if(isset($breadcrumbs) && is_array($breadcrumbs))
-        <!-- <div class="max-w-8xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
-            <div class="breadcrumbs text-sm">
-                <ul>
-                    @foreach($breadcrumbs as $breadcrumb)
-                    <li>
-                        @if(isset($breadcrumb['url']) && $breadcrumb['url'])
-                        <a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['label'] }}</a>
-                        @else
-                        {{ $breadcrumb['label'] }}
-                        @endif
-                    </li>
-                    @endforeach
-                </ul>
-
-            </div>
-        </div> -->
-        @endif
+        @isset($header)
+            <header class="bg-white dark:bg-gray-800 shadow mt-16 sm:mt-20">
+                <div class="max-w-[1700px] mx-auto py-5 px-4 sm:px-6 lg:px-8 xl:px-10">
+                    {{ $header }}
+                </div>
+            </header>
+        @endisset
 
         <!-- Page Content -->
-        <main class="mb-4 px-3 sm:px-6 flex-1 pt-20 sm:pt-24">
+        <main class="mb-4 px-3 sm:px-6 flex-1 {{ isset($header) ? 'pt-4' : 'pt-20 sm:pt-24' }}">
             <!-- <div class="px-2">
                 <div class="container max-w-8xl mx-auto sm:px-6 lg:px-4 card bg-base-100 shadow mt-4 border"> -->
                     @yield('content')
+                    {{ $slot ?? '' }}
                 <!-- </div>
             </div> -->
         </main>

@@ -1,6 +1,136 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    [x-cloak] {
+        display: none !important;
+    }
+</style>
+
+<!-- Alpine.js Component Initialization -->
+<script>
+    function microsoftSettings() {
+        return {
+            isAdmin: {{ $isAdmin ? 'true' : 'false' }},
+            clientId: @json($clientId ?? ''),
+            clientSecret: @json($isAdmin ? ($clientSecret ?? '') : ''),
+            tenantId: @json($tenantId ?? ''),
+            redirectUri: @json($redirectUri ?? ''),
+            recommendedUri: @json($recommendedRedirectUri ?? ''),
+            secretExpiresAt: @json($secretExpiresAt ?? ''),
+            customRedirectUri: false,
+            changeReason: '',
+            showSecret: false,
+            testing: false,
+            testResult: null,
+            saving: false,
+            saveMessage: null,
+            saveError: null,
+
+            saveSettings() {
+                if (!this.changeReason || !this.changeReason.trim()) {
+                    this.saveError = 'กรุณาระบุสาเหตุการบันทึกหรือต่ออายุการตั้งค่าก่อนกดบันทึก';
+                    const el = document.getElementById('change_reason');
+                    if (el) {
+                        el.focus();
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+
+                this.saving = true;
+                this.saveMessage = null;
+                this.saveError = null;
+
+                fetch('{{ route("backend.settings.microsoft.update") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        client_id: this.clientId,
+                        client_secret: this.isAdmin ? this.clientSecret : '',
+                        tenant_id: this.tenantId,
+                        redirect_uri: this.redirectUri,
+                        secret_expires_at: this.secretExpiresAt,
+                        change_reason: this.changeReason
+                    })
+                })
+                .then(async (res) => {
+                    let data = {};
+                    try { data = await res.json(); } catch(e) {}
+                    if (res.ok && data.success !== false) {
+                        this.saveMessage = data.message || 'บันทึกและอัปเดตการตั้งค่า Microsoft 365 เรียบร้อยแล้ว';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1200);
+                    } else {
+                        this.saveError = data.message || 'เกิดข้อผิดพลาดในการบันทึก กรุณาตรวจสอบข้อมูลอีกครั้ง';
+                    }
+                })
+                .catch((err) => {
+                    this.saveMessage = 'บันทึกการตั้งค่าเรียบร้อยแล้ว กำลังรีโหลดหน้าเว็บ...';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                })
+                .finally(() => {
+                    this.saving = false;
+                });
+            },
+
+            testConnection() {
+                this.testing = true;
+                this.testResult = null;
+
+                fetch('{{ route("backend.settings.microsoft.test") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tenant_id: this.tenantId,
+                        client_id: this.clientId
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    this.testResult = data;
+                })
+                .catch(err => {
+                    this.testResult = {
+                        success: false,
+                        message: 'การเชื่อมต่อขัดข้อง: ' + err.message
+                    };
+                })
+                .finally(() => {
+                    this.testing = false;
+                });
+            },
+
+            copyToClipboard(text, successMsg) {
+                if (!text) return;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert(successMsg || 'คัดลอกลงคลิปบอร์ดแล้ว');
+                }).catch(() => {
+                    const el = document.createElement('textarea');
+                    el.value = text;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    alert(successMsg || 'คัดลอกลงคลิปบอร์ดแล้ว');
+                });
+            }
+        }
+    }
+</script>
+
 <div class="w-full" x-data="microsoftSettings()">
 
     {{-- Main Framed Container Card --}}
@@ -261,13 +391,13 @@
                     <button type="button" @click="testConnection()" :disabled="testing"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/50 dark:text-sky-300 dark:hover:bg-sky-900/60 border border-sky-200 dark:border-sky-800 transition disabled:opacity-50">
                         <i class="fa-solid fa-bolt" x-show="!testing"></i>
-                        <i class="fa-solid fa-spinner fa-spin" x-show="testing"></i>
-                        <span x-text="testing ? 'กำลังตรวจสอบ...' : 'ทดสอบการเชื่อมต่อ Azure'"></span>
+                        <i class="fa-solid fa-spinner fa-spin" x-show="testing" x-cloak style="display: none;"></i>
+                        <span x-text="testing ? 'กำลังตรวจสอบ...' : 'ทดสอบการเชื่อมต่อ Azure'">ทดสอบการเชื่อมต่อ Azure</span>
                     </button>
                 </div>
 
                 <!-- Test Connection Alert Result -->
-                <div x-show="testResult" x-cloak class="p-4 mx-5 mt-4 rounded-xl border text-xs leading-relaxed transition-all"
+                <div x-show="testResult" x-cloak style="display: none;" class="p-4 mx-5 mt-4 rounded-xl border text-xs leading-relaxed transition-all"
                     :class="testResult && testResult.success 
                         ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200' 
                         : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200'">
@@ -291,11 +421,11 @@
                 </div>
 
                 <!-- Save Status Alerts -->
-                <div x-show="saveMessage" x-cloak class="p-4 mx-5 mt-4 rounded-xl border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center gap-2 text-xs font-bold shadow-sm">
+                <div x-show="saveMessage" x-cloak style="display: none;" class="p-4 mx-5 mt-4 rounded-xl border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center gap-2 text-xs font-bold shadow-sm">
                     <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
                     <span x-text="saveMessage"></span>
                 </div>
-                <div x-show="saveError" x-cloak class="p-4 mx-5 mt-4 rounded-xl border bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-center gap-2 text-xs font-bold shadow-sm">
+                <div x-show="saveError" x-cloak style="display: none;" class="p-4 mx-5 mt-4 rounded-xl border bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-center gap-2 text-xs font-bold shadow-sm">
                     <i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400 text-sm"></i>
                     <span x-text="saveError"></span>
                 </div>
@@ -318,7 +448,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-id-badge text-sm"></i>
                             </div>
-                            <input type="text" id="client_id" name="client_id" x-model="clientId" required
+                            <input type="text" id="client_id" name="client_id" x-model="clientId" value="{{ $clientId }}" required
                                 placeholder="เช่น 9715f2f3-b558-4c7a-9fc3-34c699766f3b"
                                 class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
                         </div>
@@ -341,7 +471,7 @@
                                 <div class="flex items-center gap-3">
                                     <button type="button" @click="showSecret = !showSecret" class="text-[11px] text-slate-500 hover:text-indigo-600 font-medium transition flex items-center gap-1">
                                         <i class="fa-solid" :class="showSecret ? 'fa-eye-slash' : 'fa-eye'"></i>
-                                        <span x-text="showSecret ? 'ซ่อนรหัส' : 'แสดงรหัส'"></span>
+                                        <span x-text="showSecret ? 'ซ่อนรหัส' : 'แสดงรหัส'">แสดงรหัส</span>
                                     </button>
                                     <button type="button" @click="copyToClipboard(clientSecret, 'คัดลอก Secret Value แล้ว')" class="text-[11px] text-indigo-600 hover:text-indigo-700 font-medium transition flex items-center gap-1">
                                         <i class="fa-regular fa-copy"></i> คัดลอก
@@ -352,7 +482,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                     <i class="fa-solid fa-lock text-sm"></i>
                                 </div>
-                                <input :type="showSecret ? 'text' : 'password'" id="client_secret" name="client_secret" x-model="clientSecret" {{ $hasSecret ? '' : 'required' }}
+                                <input :type="showSecret ? 'text' : 'password'" type="password" id="client_secret" name="client_secret" x-model="clientSecret" value="{{ $isAdmin ? $clientSecret : '' }}" {{ $hasSecret ? '' : 'required' }}
                                     placeholder="กรอก Client Secret Value (ไม่ใช่ Secret ID)"
                                     class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
                                 <button type="button" @click="showSecret = !showSecret" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
@@ -410,7 +540,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-building text-sm"></i>
                             </div>
-                            <input type="text" id="tenant_id" name="tenant_id" x-model="tenantId" required
+                            <input type="text" id="tenant_id" name="tenant_id" x-model="tenantId" value="{{ $tenantId }}" required
                                 placeholder="เช่น aed6dd7a-baec-4ce4-b204-a6bbc71b2748 หรือ common"
                                 class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
                         </div>
@@ -429,14 +559,13 @@
                                 </label>
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold"
                                     :class="!customRedirectUri ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800'"
-                                    x-text="!customRedirectUri ? 'Auto ตามระบบ' : 'กำหนดเอง (Custom)'">
-                                </span>
+                                    x-text="!customRedirectUri ? 'Auto ตามระบบ' : 'กำหนดเอง (Custom)'">Auto ตามระบบ</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button type="button" @click="customRedirectUri = !customRedirectUri; if(!customRedirectUri) redirectUri = recommendedUri;"
                                     class="text-[11px] font-medium text-slate-500 hover:text-indigo-600 transition">
                                     <i class="fa-solid" :class="customRedirectUri ? 'fa-lock mr-1' : 'fa-pen mr-1'"></i>
-                                    <span x-text="customRedirectUri ? 'กลับไปใช้ Auto' : 'แก้ไขเอง'"></span>
+                                    <span x-text="customRedirectUri ? 'กลับไปใช้ Auto' : 'แก้ไขเอง'">แก้ไขเอง</span>
                                 </button>
                                 <span class="text-slate-300 dark:text-slate-700">|</span>
                                 <button type="button" @click="copyToClipboard(redirectUri, 'คัดลอก Redirect URI แล้ว')" class="text-[11px] text-indigo-600 hover:text-indigo-700 font-bold">
@@ -448,11 +577,11 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-link text-sm"></i>
                             </div>
-                            <input type="url" id="redirect_uri" name="redirect_uri" x-model="redirectUri" required
-                                :readonly="!customRedirectUri"
+                            <input type="url" id="redirect_uri" name="redirect_uri" x-model="redirectUri" value="{{ $redirectUri }}" required
+                                :readonly="!customRedirectUri" readonly
                                 placeholder="https://your-domain.com/auth/microsoft/callback"
                                 :class="!customRedirectUri ? 'bg-slate-50 dark:bg-[#13151A] text-slate-600 dark:text-slate-300 cursor-not-allowed' : 'bg-white dark:bg-[#16181D] text-slate-900 dark:text-white'"
-                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
+                                class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition bg-slate-50 dark:bg-[#13151A] text-slate-600 dark:text-slate-300 cursor-not-allowed">
                         </div>
                         <div class="mt-1 flex items-start gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                             <i class="fa-solid fa-circle-info text-indigo-500 mt-0.5 shrink-0"></i>
@@ -472,7 +601,7 @@
                             </label>
                         </div>
                         <div class="relative max-w-sm">
-                            <input type="date" id="secret_expires_at" name="secret_expires_at" x-model="secretExpiresAt"
+                            <input type="date" id="secret_expires_at" name="secret_expires_at" x-model="secretExpiresAt" value="{{ $secretExpiresAt }}"
                                 class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#16181D] text-slate-900 dark:text-white text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition">
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1">
@@ -523,9 +652,9 @@
                         <div class="flex items-center gap-2.5">
                             <button type="submit" :disabled="saving"
                                 class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-md shadow-indigo-600/25 transition disabled:opacity-50 cursor-pointer">
-                                <i class="fa-solid fa-spinner fa-spin" x-show="saving"></i>
+                                <i class="fa-solid fa-spinner fa-spin" x-show="saving" x-cloak style="display: none;"></i>
                                 <i class="fa-solid fa-floppy-disk" x-show="!saving"></i>
-                                <span x-text="saving ? 'กำลังบันทึกข้อมูล...' : 'บันทึกการตั้งค่า'"></span>
+                                <span x-text="saving ? 'กำลังบันทึกข้อมูล...' : 'บันทึกการตั้งค่า'">บันทึกการตั้งค่า</span>
                             </button>
                         </div>
                     </div>
@@ -810,126 +939,4 @@
 
 </div>
 
-<!-- Alpine.js Component -->
-<script>
-    function microsoftSettings() {
-        return {
-            isAdmin: {{ $isAdmin ? 'true' : 'false' }},
-            clientId: '{{ addslashes($clientId) }}',
-            clientSecret: '{{ $isAdmin ? addslashes($clientSecret) : "" }}',
-            tenantId: '{{ addslashes($tenantId) }}',
-            redirectUri: '{{ addslashes($redirectUri) }}',
-            recommendedUri: '{{ addslashes($recommendedRedirectUri) }}',
-            secretExpiresAt: '{{ $secretExpiresAt }}',
-            changeReason: '',
-            showSecret: false,
-            testing: false,
-            testResult: null,
-            saving: false,
-            saveMessage: null,
-            saveError: null,
-
-            saveSettings() {
-                if (!this.changeReason || !this.changeReason.trim()) {
-                    this.saveError = 'กรุณาระบุสาเหตุการบันทึกหรือต่ออายุการตั้งค่าก่อนกดบันทึก';
-                    const el = document.getElementById('change_reason');
-                    if (el) {
-                        el.focus();
-                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    return;
-                }
-
-                this.saving = true;
-                this.saveMessage = null;
-                this.saveError = null;
-
-                fetch('{{ route("backend.settings.microsoft.update") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        client_id: this.clientId,
-                        client_secret: this.isAdmin ? this.clientSecret : '',
-                        tenant_id: this.tenantId,
-                        redirect_uri: this.redirectUri,
-                        secret_expires_at: this.secretExpiresAt,
-                        change_reason: this.changeReason
-                    })
-                })
-                .then(async (res) => {
-                    let data = {};
-                    try { data = await res.json(); } catch(e) {}
-                    if (res.ok && data.success !== false) {
-                        this.saveMessage = data.message || 'บันทึกและอัปเดตการตั้งค่า Microsoft 365 เรียบร้อยแล้ว';
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1200);
-                    } else {
-                        this.saveError = data.message || 'เกิดข้อผิดพลาดในการบันทึก กรุณาตรวจสอบข้อมูลอีกครั้ง';
-                    }
-                })
-                .catch((err) => {
-                    this.saveMessage = 'บันทึกการตั้งค่าเรียบร้อยแล้ว กำลังรีโหลดหน้าเว็บ...';
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                })
-                .finally(() => {
-                    this.saving = false;
-                });
-            },
-
-            testConnection() {
-                this.testing = true;
-                this.testResult = null;
-
-                fetch('{{ route("backend.settings.microsoft.test") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        tenant_id: this.tenantId,
-                        client_id: this.clientId
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    this.testResult = data;
-                })
-                .catch(err => {
-                    this.testResult = {
-                        success: false,
-                        message: 'การเชื่อมต่อขัดข้อง: ' + err.message
-                    };
-                })
-                .finally(() => {
-                    this.testing = false;
-                });
-            },
-
-            copyToClipboard(text, successMsg) {
-                if (!text) return;
-                navigator.clipboard.writeText(text).then(() => {
-                    alert(successMsg || 'คัดลอกลงคลิปบอร์ดแล้ว');
-                }).catch(() => {
-                    const el = document.createElement('textarea');
-                    el.value = text;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    alert(successMsg || 'คัดลอกลงคลิปบอร์ดแล้ว');
-                });
-            }
-        }
-    }
-</script>
 @endsection

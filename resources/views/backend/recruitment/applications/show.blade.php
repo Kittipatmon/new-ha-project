@@ -2312,12 +2312,41 @@
                                 </div>
 
                                 @php
-                                    $cardEvaluation = $interview->evaluation 
-                                        ?? \App\Models\InterviewEvaluation::where('interview_id', $interview->id)
-                                            ->orWhere(function($q) use ($application, $interview) {
-                                                $q->where('application_id', $application->id)
-                                                  ->where('interview_times', $interview->interview_round);
-                                            })->latest()->first();
+                                    $cardEvaluation = null;
+                                    try {
+                                        static $hasInterviewIdCol = null;
+                                        if ($hasInterviewIdCol === null) {
+                                            $hasInterviewIdCol = \Illuminate\Support\Facades\Schema::hasColumn('interview_evaluations', 'interview_id');
+                                        }
+
+                                        if ($hasInterviewIdCol) {
+                                            $cardEvaluation = $interview->evaluation 
+                                                ?? \App\Models\InterviewEvaluation::where('interview_id', $interview->id)->latest()->first();
+                                        }
+
+                                        if (!$cardEvaluation) {
+                                            static $hasAppIdCol = null;
+                                            if ($hasAppIdCol === null) {
+                                                $hasAppIdCol = \Illuminate\Support\Facades\Schema::hasColumn('interview_evaluations', 'application_id');
+                                            }
+                                            if ($hasAppIdCol) {
+                                                $cardEvaluation = \App\Models\InterviewEvaluation::where('application_id', $application->id)
+                                                    ->where('interview_times', $interview->interview_round)
+                                                    ->latest()->first();
+                                            }
+                                        }
+
+                                        if (!$cardEvaluation) {
+                                            $candName = $application->applicant_name ?? ($application->applicant->fullname ?? null);
+                                            if ($candName) {
+                                                $cardEvaluation = \App\Models\InterviewEvaluation::where('candidate_name', 'LIKE', '%' . trim($candName) . '%')
+                                                    ->where('interview_times', $interview->interview_round)
+                                                    ->latest()->first();
+                                            }
+                                        }
+                                    } catch (\Throwable $e) {
+                                        $cardEvaluation = null;
+                                    }
                                 @endphp
 
                                 @if($interview->status == 'scheduled' && !$cardEvaluation)

@@ -88,6 +88,20 @@
     </script>
 
     <style>
+        /* ลบกรอบเขียว (Padding/Margin ของ main ใน DevTools) เพื่อให้คอนเทนต์เต็มหน้าจอ */
+        body main,
+        main,
+        main.mb-4,
+        main.px-3,
+        main.flex-1 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+            margin-top: 0 !important;
+        }
+
         /* Keep minimal base settings if needed, otherwise rely on Tailwind */
         html { scroll-behavior: smooth; }
         body { font-family: 'Prompt', sans-serif; }
@@ -112,8 +126,8 @@
     @endif
 
     <!-- ==================== HERO ==================== -->
-    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-22 md:pt-24 pb-0 md:pb-2">
-        <div class="relative w-full {{ $hasCustomHero ? 'aspect-[16/6] sm:aspect-[21/8] md:aspect-[24/8] min-h-[135px] max-h-[440px]' : 'h-[280px] sm:h-[350px] md:h-[450px]' }} rounded-xl sm:rounded-2xl overflow-hidden shadow-sm group">
+    <div class="w-full px-0 pt-20 sm:pt-24 pb-0">
+        <div class="relative w-full {{ $hasCustomHero ? 'aspect-[1269/362]' : 'h-[260px] sm:h-[320px] md:h-[420px]' }} rounded-none overflow-hidden group bg-slate-100 dark:bg-slate-900" style="{{ $hasCustomHero ? 'aspect-ratio: 1269 / 362;' : '' }}">
 
             @if ($hasCustomHero)
                 <!-- Dynamic Hero Slides from Backend (Posters) -->
@@ -121,13 +135,13 @@
                     @php
                         $heroLink = $heroSlide->action_url ? route('posters.click', $heroSlide->id) : null;
                     @endphp
-                    <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out {{ $idx === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }} overflow-hidden flex items-center justify-center" data-poster-id="{{ $heroSlide->id }}">
+                    <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out {{ $idx === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }} overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-900 rounded-none" data-poster-id="{{ $heroSlide->id }}">
                         @if ($heroLink)
-                            <a href="{{ $heroLink }}" class="block w-full h-full relative overflow-hidden flex items-center justify-center">
+                            <a href="{{ $heroLink }}" class="block w-full h-full relative overflow-hidden flex items-center justify-center rounded-none">
                         @else
-                            <div class="w-full h-full relative overflow-hidden flex items-center justify-center">
+                            <div class="w-full h-full relative overflow-hidden flex items-center justify-center rounded-none">
                         @endif
-                            <img src="{{ asset($heroSlide->image_path) }}" alt="{{ $heroSlide->title }}" class="relative z-10 w-full h-full object-cover">
+                            <img src="{{ asset($heroSlide->image_path) }}" alt="{{ $heroSlide->title }}" class="relative z-10 w-full h-full object-cover object-center">
                         @if ($heroLink)
                             </a>
                         @else
@@ -137,13 +151,13 @@
                 @endforeach
             @else
                 <!-- Default Image Slides (Fallback) -->
-                <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-100 z-10">
+                <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-100 z-10 rounded-none">
                     <img src="{{ asset('images/welcome/hero_industrial.png') }}" alt="Kumwell Plant" class="w-full h-full object-cover">
                 </div>
-                <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 z-0">
+                <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 z-0 rounded-none">
                     <img src="{{ asset('images/welcome/ro1.jpg') }}" alt="Plant Night" class="w-full h-full object-cover">
                 </div>
-                <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 z-0">
+                <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 z-0 rounded-none">
                     <img src="https://image.makewebeasy.net/makeweb/m_1920x0/0etpaXZ92/Corporate/Banner_ab_1_.webp?v=202405291424" alt="Team" class="w-full h-full object-cover">
                 </div>
             @endif
@@ -171,7 +185,7 @@
             @endif
 
             <!-- Slider Dots -->
-            <div class="absolute bottom-4 sm:bottom-6 left-0 right-0 z-30 flex justify-center gap-2">
+            <div class="absolute bottom-3 sm:bottom-4 left-0 right-0 z-30 flex justify-center gap-2">
                 @if ($hasCustomHero)
                     @foreach ($heroBannerPosters as $idx => $heroSlide)
                         <button class="hero-dot w-2.5 h-2.5 rounded-full transition-all duration-300 {{ $idx === 0 ? 'bg-red-600 w-6' : 'bg-white/70 hover:bg-white' }} shadow-sm focus:outline-none" aria-label="Go to Slide {{ $idx + 1 }}"></button>
@@ -186,23 +200,23 @@
     </div>
 
     <!-- ==================== ANNOUNCEMENT & POSTER SHOWCASE ==================== -->
-    <div class="py-6 sm:py-10 lg:py-12 bg-slate-100/100 dark:bg-[#0c1017] border-b border-slate-200 dark:border-slate-800/80 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5 sm:space-y-7">
+    <div class="py-4 sm:py-6 lg:py-8 bg-slate-100/100 dark:bg-[#0c1017] border-b border-slate-200 dark:border-slate-800/80 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
             
-            <!-- Hero Top Posters (Full-Width Grand Poster / โปสเตอร์ใหญ่หัวข้อใหญ่) -->
+            <!-- Hero Top Posters (โปสเตอร์หัวข้อหลัก แสดงรูปภาพจริงเต็มขนาด ไม่ตัดขอบ) -->
             @if (isset($heroTopPosters) && $heroTopPosters->count() > 0)
-                <div class="space-y-4 reveal opacity-0 translate-y-8 transition-all duration-700">
+                <div class="space-y-4">
                     @foreach ($heroTopPosters as $heroPoster)
                         @php
                             $heroUrl = $heroPoster->action_url ? route('posters.click', $heroPoster->id) : null;
                         @endphp
-                        <div class="w-full relative rounded-none overflow-hidden group" data-poster-id="{{ $heroPoster->id }}">
+                        <div class="w-full relative rounded-none overflow-hidden shadow-sm group bg-transparent" data-poster-id="{{ $heroPoster->id }}">
                             @if ($heroUrl)
-                                <a href="{{ $heroUrl }}" class="block w-full h-auto">
+                                <a href="{{ $heroUrl }}" class="block w-full rounded-none">
                             @endif
                                 <img src="{{ asset($heroPoster->image_path) }}" 
                                      alt="{{ $heroPoster->title }}" 
-                                     class="w-full h-auto object-contain max-h-[500px] sm:max-h-[600px] mx-auto block rounded-none shadow-sm hover:shadow-md transition-all duration-300 group-hover:scale-[1.005]">
+                                     class="w-full h-auto block rounded-none hover:scale-[1.002] transition-transform duration-300">
                             @if ($heroUrl)
                                 </a>
                             @endif
@@ -586,12 +600,12 @@
         </div>
 
         <div class="max-w-6xl mx-auto px-6 relative z-10">
-            <div class="text-center mb-16 reveal opacity-0 translate-y-8 transition-all duration-700">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
-                    ระบบบริการ <span class="text-red-600 dark:text-red-500">HR</span>
+            <div class="text-center mb-12">
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+                    ระบบบริการงานบุคคล
                 </h2>
-                <p class="text-slate-600 dark:text-gray-300 max-w-lg mx-auto text-sm leading-relaxed">
-                    เลือกใช้งานระบบจัดการและพัฒนาทักษะ เพื่อยกระดับความสามารถในการทำงานร่วมกันอย่างมีประสิทธิภาพ
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-2 max-w-md mx-auto">
+                    ศูนย์รวมระบบงานและบริการสำหรับพนักงานและฝ่ายบริหาร
                 </p>
             </div>
 
@@ -600,248 +614,260 @@
             @endphp
 
             @if ($isHrOrAdmin)
-                <!-- Bento Grid for Admin / HR (2 Columns on Mobile, 4 Columns on Desktop) -->
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
+                <!-- Admin & HR Layout: 5 Services (Balanced & Fully Clickable) -->
+                <div class="flex flex-wrap justify-center gap-5 sm:gap-6">
                     
                     <!-- Card 1: HR Request -->
-                    <div class="col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
-                        @auth
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 relative overflow-hidden h-full w-full">
-                        @else
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 w-full login-open-btn cursor-pointer relative overflow-hidden h-full">
-                        @endauth
-                                <div class="flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
-                                            <i class="fa-regular fa-file-lines"></i>
-                                        </div>
-                                        <h3 class="text-sm sm:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการคำร้อง</h3>
-                                        <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-2 sm:mb-6 line-clamp-2 sm:line-clamp-none">ดำเนินการยื่นขอเอกสาร การลางาน และการปรับแก้ไขเวลาทำงาน พร้อมติดตามความคืบหน้าอย่างรวดเร็ว</p>
-                                    </div>
-                                    @auth
-                                        <a href="{{ route('request.hr') }}" class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform focus:outline-none">
-                                            เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
-                                        </a>
-                                    @else
-                                        <span class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform">
-                                            เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
-                                        </span>
-                                    @endauth
-                                </div>
-                                
-                                <!-- Quick Actions Section inside the card -->
-                                <div class="w-full md:w-56 shrink-0 flex flex-col gap-1 sm:gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-2.5 md:pt-0 md:pl-6">
-                                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">เมนูด่วน / Quick Links</span>
-                                    @auth
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
-                                            <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </a>
-                                    @else
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
-                                            <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </button>
-                                    @endauth
-                                </div>
+                    <div class="relative group cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-regular fa-file-lines"></i>
                             </div>
-                    </div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบจัดการคำร้อง
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                ยื่นเอกสารขอรับรอง ลางาน และปรับเวลาทำงาน พร้อมติดตามผลการอนุมัติ
+                            </p>
+                        </div>
 
-                    <!-- Card 2: Manpower (Col 1 on Mobile 2-col Grid) -->
-                    <div class="col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-75">
-                        <a href="{{ route('manpower.dashboard') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[150px] sm:min-h-[250px]">
-                            <div>
-                                <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
-                                    <i class="fa-solid fa-users-gear"></i>
-                                </div>
-                                <h3 class="text-xs sm:text-lg font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบอัตรากำลังพล</h3>
-                                <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-tight sm:leading-relaxed line-clamp-2 sm:line-clamp-none">วิเคราะห์แผนกำลังพล ความต้องการของแผนกต่างๆ และการอนุมัติสิทธิ์อัตรากำลัง</p>
-                            </div>
-                            <span class="inline-flex items-center text-[10px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-2 sm:mt-4">
-                                ดูข้อมูลวิเคราะห์ <i class="fas fa-arrow-right ml-1"></i>
-                            </span>
-                        </a>
-                    </div>
-
-                    <!-- Card 3: Training (Col 2 on Mobile 2-col Grid) -->
-                    <div class="col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
-                        @auth
-                            <a href="{{ route('training.index') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[150px] sm:min-h-[250px]">
-                        @else
-                            <button type="button" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3 sm:p-8 text-left transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[150px] sm:min-h-[250px] login-open-btn w-full">
-                        @endauth
-                                <div>
-                                    <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
-                                        <i class="fa-solid fa-chalkboard-user"></i>
-                                    </div>
-                                    <h3 class="text-xs sm:text-lg font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบฝึกอบรม</h3>
-                                    <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-tight sm:leading-relaxed mb-2 sm:mb-4 line-clamp-2 sm:line-clamp-none">พัฒนาศักยภาพการปฏิบัติงานผ่านหลักสูตรและการฝึกอบรมในองค์กรอย่างต่อเนื่อง</p>
-                                    <!-- Course tag badges -->
-                                    <div class="flex flex-wrap gap-1 mb-1 sm:mb-2">
-                                        <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 rounded">#Safety</span>
-                                        <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 rounded">#Skills</span>
-                                    </div>
-                                </div>
-                                <span class="inline-flex items-center text-[10px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-2 sm:mt-4">
-                                    เข้าชมหลักสูตร <i class="fas fa-arrow-right ml-1"></i>
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            <a href="{{ route('request.hr') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                <span>เปิดใช้งานระบบ</span>
+                                <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                    <i class="fa-solid fa-arrow-right"></i>
                                 </span>
-                        @auth
                             </a>
-                        @else
-                            </button>
-                        @endauth
+                            <a href="{{ route('request.hr') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                ขอหนังสือรับรอง
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Manpower -->
+                    <div class="relative group cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-solid fa-users-gear"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบอัตรากำลังพล
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                วางแผนและวิเคราะห์อัตรากำลังคน ตรวจสอบโควต้า และจัดทำคำขออัตรากำลัง
+                            </p>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            <a href="{{ route('manpower.dashboard') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                <span>เข้าสู่ระบบกำลังพล</span>
+                                <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </a>
+                            <a href="{{ route('manpower-request.index') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                ขออัตรากำลัง (QF-HR-13)
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Training -->
+                    <div class="relative group cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบฝึกอบรม
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                หลักสูตรฝึกอบรมภายในและภายนอกองค์กร พร้อมบันทึกประวัติการพัฒนาทักษะ
+                            </p>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            <a href="{{ route('training.index') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                <span>เข้าชมหลักสูตร</span>
+                                <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </a>
+                            <a href="{{ route('training.dashboard') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                แดชบอร์ดฝึกอบรม
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Card 4: Recruitment -->
-                    <div class="col-span-2 lg:col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-125">
-                        <a href="{{ route('recruitment.index') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[150px] sm:min-h-[250px]">
-                            <div>
-                                <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
-                                    <i class="fa-solid fa-briefcase"></i>
-                                </div>
-                                <h3 class="text-xs sm:text-lg font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบรับสมัครงาน</h3>
-                                <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-tight sm:leading-relaxed mb-2 sm:mb-4 line-clamp-2 sm:line-clamp-none">ค้นหาตำแหน่งงานที่เปิดรับสมัคร ส่งใบสมัครออนไลน์ และติดตามสถานะ</p>
-                                <!-- Job tag badges -->
-                                <div class="flex flex-wrap gap-1 mb-1 sm:mb-2">
-                                    <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 rounded">#Careers</span>
-                                    <span class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 rounded">#Jobs</span>
-                                </div>
+                    <div class="relative group cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-solid fa-briefcase"></i>
                             </div>
-                            <span class="inline-flex items-center text-[10px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-2 sm:mt-4">
-                                ดูตำแหน่งงานว่าง <i class="fas fa-arrow-right ml-1"></i>
-                            </span>
-                        </a>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบรับสมัครงาน
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                ประกาศรับสมัครงาน ส่งใบสมัครออนไลน์ และติดตามผลการคัดเลือกบุคลากร
+                            </p>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            <a href="{{ route('recruitment.index') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                <span>ดูตำแหน่งงานว่าง</span>
+                                <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </a>
+                            <a href="{{ route('recruitment.track') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                ติดตามการสมัคร
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Card 5: Data Management -->
-                    <div class="col-span-2 lg:col-span-3 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-150">
-                        <a href="{{ route('request.data') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 relative overflow-hidden h-full">
-                            <div class="flex-1 flex flex-col justify-between">
-                                <div>
-                                    <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
-                                        <i class="fa-solid fa-database"></i>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการข้อมูล</h3>
-                                    <p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-6">ตรวจสอบคำร้องจากพนักงาน ปรับปรุงข้อมูลทะเบียนประวัติ และรายงานภาพรวมระบบสารสนเทศบุคคล</p>
-                                </div>
-                                <span class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform">
-                                    เข้าสู่ระบบข้อมูล <i class="fas fa-arrow-right ml-1.5"></i>
+                    <div class="relative group cursor-pointer w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบจัดการข้อมูล
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                ฐานข้อมูลสารสนเทศพนักงาน โครงสร้างฝ่าย แผนก และการกำหนดค่าแบบฟอร์ม
+                            </p>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            <a href="{{ route('request.data') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                <span>เข้าสู่ระบบข้อมูล</span>
+                                <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                    <i class="fa-solid fa-arrow-right"></i>
                                 </span>
-                            </div>
-                            
-                            <!-- Mini Data Stats/Status List inside card -->
-                            <div class="w-full md:w-56 shrink-0 flex flex-col gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-6 md:pt-0 md:pl-6">
-                                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">ภาพรวมข้อมูล / Stats Overview</span>
-                                <div class="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-900/40 rounded-lg text-xs">
-                                    <span class="text-slate-500">บัญชีพนักงาน</span>
-                                    <span class="font-bold text-slate-800 dark:text-slate-200">Active</span>
-                                </div>
-                                <div class="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-900/40 rounded-lg text-xs">
-                                    <span class="text-slate-500">ความปลอดภัยข้อมูล</span>
-                                    <span class="font-bold text-green-600 dark:text-green-500">Secure</span>
-                                </div>
-                                <div class="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-900/40 rounded-lg text-xs">
-                                    <span class="text-slate-500">ระบบเชื่อมโยงภายนอก</span>
-                                    <span class="font-bold text-slate-800 dark:text-slate-200">Connected</span>
-                                </div>
-                            </div>
-                        </a>
+                            </a>
+                            <a href="{{ route('request-types.index') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                ประเภทคำร้อง
+                            </a>
+                        </div>
                     </div>
 
                 </div>
             @else
-                <!-- Normal User / Staff Layout (2 Columns on Mobile, 3 Columns on Desktop) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 max-w-5xl mx-auto">
+                <!-- Normal User / Staff Layout: 3 Services (Equal 3 Columns & Fully Clickable) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 max-w-6xl mx-auto">
                     
                     <!-- Card 1: HR Request -->
-                    <div class="col-span-1 md:col-span-2 h-full reveal opacity-0 translate-y-8 transition-all duration-700">
-                        @auth
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 relative overflow-hidden h-full w-full">
-                        @else
-                            <div class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-3.5 sm:p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col md:flex-row justify-between gap-3 sm:gap-6 w-full login-open-btn cursor-pointer relative overflow-hidden h-full">
-                        @endauth
-                                <div class="flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-sm sm:text-xl mb-2 sm:mb-4 group-hover:scale-105 transition-transform">
-                                            <i class="fa-regular fa-file-lines"></i>
-                                        </div>
-                                        <h3 class="text-sm sm:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบจัดการคำร้อง</h3>
-                                        <p class="text-[11px] sm:text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-2 sm:mb-6 line-clamp-2 sm:line-clamp-none">ดำเนินการยื่นขอเอกสาร การลางาน และการปรับแก้ไขเวลาทำงาน พร้อมติดตามความคืบหน้าการอนุมัติได้ง่ายๆ</p>
-                                    </div>
-                                    @auth
-                                        <a href="{{ route('request.hr') }}" class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform focus:outline-none">
-                                            เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
-                                        </a>
-                                    @else
-                                        <span class="inline-flex items-center text-[11px] sm:text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform">
-                                            เปิดใช้งานระบบ <i class="fas fa-arrow-right ml-1.5"></i>
-                                        </span>
-                                    @endauth
-                                </div>
-                                
-                                <!-- Quick Actions Section inside the card -->
-                                <div class="w-full md:w-56 shrink-0 flex flex-col gap-1 sm:gap-2.5 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/80 pt-2.5 md:pt-0 md:pl-6">
-                                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-0.5">เมนูด่วน / Quick Links</span>
-                                    @auth
-                                        <a href="{{ route('request.hr') }}" class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors">
-                                            <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </a>
-                                    @else
-                                        <button type="button" class="login-open-btn flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800/50 rounded-lg text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 hover:text-kumwell-red dark:hover:text-red-500 font-medium transition-colors text-left w-full">
-                                            <i class="fa-solid fa-file-invoice text-[10px] opacity-75"></i> ขอหนังสือรับรอง
-                                        </button>
-                                    @endauth
-                                </div>
+                    <div class="relative group cursor-pointer bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-regular fa-file-lines"></i>
                             </div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบจัดการคำร้อง
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                ดำเนินการยื่นขอเอกสาร การลางาน และการปรับแก้ไขเวลาทำงาน พร้อมติดตามผลอนุมัติ
+                            </p>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            @auth
+                                <a href="{{ route('request.hr') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                    <span>เปิดใช้งานระบบ</span>
+                                    <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </span>
+                                </a>
+                                <a href="{{ route('request.hr') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                    ขอหนังสือรับรอง
+                                </a>
+                            @else
+                                <button type="button" class="login-open-btn font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none text-left">
+                                    <span>เปิดใช้งานระบบ</span>
+                                    <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </span>
+                                </button>
+                                <button type="button" class="login-open-btn relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                    ขอหนังสือรับรอง
+                                </button>
+                            @endauth
+                        </div>
                     </div>
 
                     <!-- Card 2: Training -->
-                    <div class="col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-100">
-                        @auth
-                            <a href="{{ route('training.index') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px]">
-                        @else
-                            <button type="button" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 text-left transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px] login-open-btn w-full">
-                        @endauth
-                                <div>
-                                    <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
-                                        <i class="fa-solid fa-chalkboard-user"></i>
-                                    </div>
-                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบฝึกอบรม</h3>
-                                    <p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-4">พัฒนาศักยภาพการปฏิบัติงานผ่านหลักสูตรและการฝึกอบรมในองค์กรอย่างต่อเนื่อง</p>
-                                    <!-- Course tag badges -->
-                                    <div class="flex flex-wrap gap-1.5 mb-2">
-                                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Safety</span>
-                                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Skills</span>
-                                        <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Learning</span>
-                                    </div>
-                                </div>
-                                <span class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-4">
-                                    เข้าชมหลักสูตร <i class="fas fa-arrow-right ml-1.5"></i>
-                                </span>
-                        @auth
-                            </a>
-                        @else
-                            </button>
-                        @endauth
+                    <div class="relative group cursor-pointer bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบฝึกอบรม
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                พัฒนาศักยภาพการปฏิบัติงานผ่านหลักสูตรและการฝึกอบรมในองค์กรอย่างต่อเนื่อง
+                            </p>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            @auth
+                                <a href="{{ route('training.index') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                    <span>เข้าชมหลักสูตร</span>
+                                    <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </span>
+                                </a>
+                                <a href="{{ route('training.dashboard') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                    แดชบอร์ดฝึกอบรม
+                                </a>
+                            @else
+                                <button type="button" class="login-open-btn font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none text-left">
+                                    <span>เข้าชมหลักสูตร</span>
+                                    <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </span>
+                                </button>
+                                <button type="button" class="login-open-btn relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                    แดชบอร์ดฝึกอบรม
+                                </button>
+                            @endauth
+                        </div>
                     </div>
 
                     <!-- Card 3: Recruitment -->
-                    <div class="col-span-1 h-full reveal opacity-0 translate-y-8 transition-all duration-700 delay-150">
-                        <a href="{{ route('recruitment.index') }}" class="group bg-white dark:bg-[#151B26]/35 border border-slate-200/60 dark:border-slate-800/80 rounded-xl p-8 transition-all duration-300 hover:border-red-500/30 hover:shadow-md flex flex-col justify-between h-full min-h-[250px]">
-                            <div>
-                                <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform">
-                                    <i class="fa-solid fa-briefcase"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">ระบบรับสมัครงาน</h3>
-                                <p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed mb-4">ค้นหาตำแหน่งงานที่เปิดรับสมัคร ส่งใบสมัครออนไลน์ และติดตามสถานะการสมัครงานของคุณ</p>
-                                <!-- Job tag badges -->
-                                <div class="flex flex-wrap gap-1.5 mb-2">
-                                    <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Careers</span>
-                                    <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 dark:text-slate-400 rounded">#Jobs</span>
-                                </div>
+                    <div class="relative group cursor-pointer bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 hover:shadow-xl hover:shadow-slate-300/60 dark:hover:shadow-black/70 hover:ring-2 hover:ring-red-500/20 dark:hover:ring-red-500/25 hover:-translate-y-1.5 rounded-xl p-6 flex flex-col justify-between transition-all duration-200 ease-out overflow-hidden">
+                        <div class="absolute top-0 inset-x-0 h-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                        <div>
+                            <div class="w-11 h-11 rounded-lg bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white group-hover:scale-105 group-hover:shadow-md group-hover:shadow-red-600/30 flex items-center justify-center text-lg mb-4 transition-all duration-200">
+                                <i class="fa-solid fa-briefcase"></i>
                             </div>
-                            <span class="inline-flex items-center text-xs font-semibold text-red-600 dark:text-red-500 group-hover:translate-x-1 transition-transform mt-4">
-                                ดูตำแหน่งงานว่าง <i class="fas fa-arrow-right ml-1.5"></i>
-                            </span>
-                        </a>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-1.5">
+                                ระบบรับสมัครงาน
+                            </h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed min-h-[38px]">
+                                ค้นหาตำแหน่งงานที่เปิดรับสมัคร ส่งใบสมัครออนไลน์ และติดตามสถานะ
+                            </p>
+                        </div>
+
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 group-hover:border-slate-200 dark:group-hover:border-slate-700/80 flex items-center justify-between text-xs transition-colors">
+                            <a href="{{ route('recruitment.index') }}" class="font-semibold text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 inline-flex items-center gap-2 after:absolute after:inset-0 focus:outline-none">
+                                <span>ดูตำแหน่งงานว่าง</span>
+                                <span class="w-5 h-5 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white dark:group-hover:bg-red-600 dark:group-hover:text-white flex items-center justify-center text-[10px] transition-all duration-200 group-hover:translate-x-1">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </a>
+                            <a href="{{ route('recruitment.track') }}" class="relative z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:underline transition-colors">
+                                ตรวจสอบสถานะ
+                            </a>
+                        </div>
                     </div>
 
                 </div>
@@ -850,260 +876,270 @@
     </div>
 
     <!-- ==================== BLOG / NEWS ==================== -->
-    <div id="news-grid" class="py-10 sm:py-14 bg-white dark:bg-[#0B0F17] border-t border-slate-200 dark:border-slate-800 relative">
+    <div id="news-grid" class="py-12 sm:py-16 bg-white dark:bg-[#0B0F17] border-t border-slate-200 dark:border-slate-800 relative scroll-mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <!-- Section Header (PCRU / KUMWELL NEWS Style) -->
-            <div class="mb-5 sm:mb-6 reveal opacity-0 translate-y-6 transition-all duration-500">
-                <div class="flex items-end justify-between">
-                    <div>
-                        <h2 class="text-2xl sm:text-3xl font-black text-[#231F40] dark:text-white tracking-tight">
-                            ข่าวประชาสัมพันธ์
-                        </h2>
-                    </div>
-                    <a href="{{ route('news.newsAll') }}" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-500 transition-colors group">
-                        <span>ดูข่าวทั้งหมด</span>
-                        <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-0.5 transition-transform"></i>
-                    </a>
-                </div>
+            <!-- Section Header (Centered Title like Reference) -->
+            <div class="text-center mb-6 sm:mb-8 reveal opacity-0 translate-y-6 transition-all duration-500">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 dark:text-white tracking-tight">
+                    ข่าวสาร/กิจกรรม
+                </h2>
             </div>
 
             @php
-                $thai_short_months = [
-                    1 => 'ม.ค.', 2 => 'ก.พ.', 3 => 'มี.ค.', 4 => 'เม.ย.',
-                    5 => 'พ.ค.', 6 => 'มิ.ย.', 7 => 'ก.ค.', 8 => 'ส.ค.',
-                    9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
+                $thai_full_months = [
+                    1 => 'มกราคม', 2 => 'กุมภาพันธ์', 3 => 'มีนาคม', 4 => 'เมษายน',
+                    5 => 'พฤษภาคม', 6 => 'มิถุนายน', 7 => 'กรกฎาคม', 8 => 'สิงหาคม',
+                    9 => 'กันยายน', 10 => 'ตุลาคม', 11 => 'พฤศจิกายน', 12 => 'ธันวาคม'
                 ];
 
-                $formatThaiDate = function($raw_date) use ($thai_short_months) {
-                    if (!$raw_date) return '25 ส.ค. 2569';
-                    $d = \Carbon\Carbon::parse($raw_date);
-                    return $d->day . ' ' . ($thai_short_months[$d->month] ?? '') . ' ' . ($d->year + 543);
+                $formatThaiFullDate = function($raw_date) use ($thai_full_months) {
+                    if (!$raw_date) return '1 ตุลาคม 2569';
+                    try {
+                        $d = \Carbon\Carbon::parse($raw_date);
+                        return $d->day . ' ' . ($thai_full_months[$d->month] ?? '') . ' ' . ($d->year + 543);
+                    } catch (\Exception $e) {
+                        return '1 ตุลาคม 2569';
+                    }
                 };
 
-                // Sample fallback items to complete 9 slots if DB has fewer
-                $fallbackNews = [
-                    (object)[
+                // Sample fallback items to complete categories
+                $fallbackNewsList = [
+                    [
                         'news_id' => 1,
-                        'title' => '“สภากาแฟ” ประจำปีงบประมาณ พ.ศ. 2569 ครั้งที่ 11',
-                        'content' => '“สภากาแฟ” ประจำปีงบประมาณ พ.ศ. 2569 ครั้งที่ 11 ร่วมแลกเปลี่ยนเรียนรู้และสร้างความร่วมมือ...',
-                        'published_date' => '2026-08-27',
-                        'views' => 90,
-                        'image_url' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
+                        'title' => 'ผลการประกวดออกแบบ นวัตกรรมระบบความปลอดภัย Kumwell SafeTech 2026',
+                        'subtitle' => 'บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)',
+                        'published_date' => '2026-10-01',
+                        'category' => 'all events ccsv',
+                        'image_url' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80',
                     ],
-                    (object)[
+                    [
                         'news_id' => 2,
-                        'title' => 'รับสมัครนักศึกษาทุนพิการ ประจำภาคการศึกษาที่ 1/2569',
-                        'content' => 'ประกาศรับสมัครทุนการศึกษาสำหรับนักศึกษาผู้มีความบกพร่องทางร่างกาย...',
-                        'published_date' => '2026-08-25',
-                        'views' => 59,
+                        'title' => 'พิธีมอบเกียรติบัตรและทุนพัฒนาศักยภาพบุคลากร ประจำปี 2569',
+                        'subtitle' => 'วันที่ 5-8 ตุลาคม 2569',
+                        'published_date' => '2026-08-05',
+                        'category' => 'all training',
                         'image_url' => 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80',
                     ],
-                    (object)[
+                    [
                         'news_id' => 3,
-                        'title' => 'Kumwell Market Place เปิดพื้นที่ผลิตภัณฑ์นวัตกรรม สินค้าแปรรูป และผลิตภัณฑ์ชุมชน',
-                        'content' => 'เปิดพื้นที่ส่งเสริมผู้ประกอบการและบุคลากรนำสินค้าและนวัตกรรมมาจัดแสดง...',
-                        'published_date' => '2026-08-25',
-                        'views' => 68,
-                        'image_url' => 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=600&q=80',
+                        'title' => 'คู่มือการเข้าใช้งานระบบบริการบุคคล Mobile App รูปแบบใหม่ เพิ่มความปลอดภัย',
+                        'subtitle' => 'เริ่มวันที่ 30 กันยายน 2569',
+                        'published_date' => '2026-09-28',
+                        'category' => 'all training ccsv',
+                        'image_url' => 'https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=600&q=80',
                     ],
-                    (object)[
+                    [
                         'news_id' => 4,
-                        'title' => 'ร่วมแลกเปลี่ยนเรียนรู้กับคณะผู้บริหารและพันธมิตรเครือข่ายความปลอดภัย',
-                        'content' => 'ต้อนรับคณะผู้บริหารและตัวแทนหน่วยงานเครือข่ายเข้าศึกษาดูงานและแลกเปลี่ยน...',
-                        'published_date' => '2026-08-25',
-                        'views' => 45,
-                        'image_url' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80',
-                    ],
-                    (object)[
-                        'news_id' => 5,
-                        'title' => 'ขอเชิญชวนร่วมกิจกรรม "CREATOR SPARK 2026" จุดประกายพลังสร้างสรรค์ สู่โอกาสแห่งอนาคต',
-                        'content' => 'เปิดเวทีสร้างสรรค์ผลงานด้านนวัตกรรมและเทคโนโลยีป้องกันฟ้าผ่าและความปลอดภัย...',
-                        'published_date' => '2026-08-14',
-                        'views' => 130,
-                        'image_url' => 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80',
-                    ],
-                    (object)[
-                        'news_id' => 6,
-                        'title' => 'Kumwell CHANNEL: พิธีรับเครื่องหมายตราสัญลักษณ์และรางวัลความปลอดภัยดีเด่น หล่อหลอมความภาคภูมิใจ',
-                        'content' => 'พิธีมอบรางวัลเกียรติยศและตราสัญลักษณ์เชิดชูเกียรติแก่หน่วยงานยอดเยี่ยม...',
-                        'published_date' => '2026-08-14',
-                        'views' => 225,
+                        'title' => 'ขอเชิญร่วมงาน Kumwell Innovation & Safety Tech Expo 2026 เข้าชมฟรี',
+                        'subtitle' => 'วันที่ 5–8 พฤศจิกายน 2569',
+                        'published_date' => '2026-10-01',
+                        'category' => 'all events',
                         'image_url' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
                     ],
-                    (object)[
-                        'news_id' => 7,
-                        'title' => 'เปิดระบบรับสมัครนักศึกษาและฝึกงานวันแรก ประจำปี 2570',
-                        'content' => 'เปิดรับสมัครบุคคลเข้าฝึกประสบการณ์วิชาชีพและร่วมงานกับทีมวิศวกรรม Kumwell...',
-                        'published_date' => '2026-08-10',
-                        'views' => 414,
+                    [
+                        'news_id' => 5,
+                        'title' => 'สิทธิประโยชน์และบริการสวัสดิการด้านสุขอนามัยสำหรับบุคลากร Kumwell Group',
+                        'subtitle' => 'ฝ่ายทรัพยากรมนุษย์ (HA)',
+                        'published_date' => '2026-09-23',
+                        'category' => 'all jobs',
+                        'image_url' => 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=600&q=80',
+                    ],
+                    [
+                        'news_id' => 6,
+                        'title' => 'เปิดรับสมัครบุคลากรใหม่หลายตำแหน่ง ร่วมงานกับครอบครัว Kumwell',
+                        'subtitle' => 'รับสมัครด่วน ฝ่ายวิศวกรรมและการผลิต',
+                        'published_date' => '2026-09-20',
+                        'category' => 'all jobs',
                         'image_url' => 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80',
                     ],
-                    (object)[
-                        'news_id' => 8,
-                        'title' => 'เลื่อนและขยายเวลาการรับสมัครสอบวัดระดับมาตรฐานความปลอดภัย ประจำปี 2569',
-                        'content' => 'ประกาศขยายเวลาเพื่ออำนวยความสะดวกแก่ผู้เข้าร่วมทดสอบมาตรฐาน...',
-                        'published_date' => '2026-08-10',
-                        'views' => 135,
-                        'image_url' => 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80',
+                    [
+                        'news_id' => 7,
+                        'title' => 'ประกาศผลการจัดซื้อจัดจ้างวัสดุอุปกรณ์ห้องปฏิบัติการทดสอบ ประจำไตรมาส 3/2569',
+                        'subtitle' => 'ฝ่ายจัดซื้อและคลังสินค้า',
+                        'published_date' => '2026-09-18',
+                        'category' => 'all procure',
+                        'image_url' => 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80',
                     ],
-                    (object)[
-                        'news_id' => 9,
-                        'title' => 'Kumwell CHANNEL: สืบศิลป์ผ้าไทย เทิดไท้พระพันปีหลวง สานสายใยรักวันแม่แห่งชาติ ประจำปี ๒๕๖๙',
-                        'content' => 'ร่วมจัดกิจกรรมเฉลิมพระเกียรติและอนุรักษ์วัฒนธรรมไทย...',
-                        'published_date' => '2026-08-05',
-                        'views' => 108,
-                        'image_url' => 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=600&q=80',
+                    [
+                        'news_id' => 8,
+                        'title' => 'สัมมนาวิชาการมาตรฐานระบบต่อลงดินและป้องกันฟ้าผ่าสู่อาเซียน',
+                        'subtitle' => 'ศูนย์ฝึกอบรม Kumwell Academy',
+                        'published_date' => '2026-09-15',
+                        'category' => 'all events training',
+                        'image_url' => 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80',
                     ],
                 ];
 
-                // Build standardized collection of 9 items
-                $displayItems = collect();
-                if (isset($newsItems)) {
-                    foreach ($newsItems as $item) {
-                        $img = !empty($item->image_path) ? asset(is_array($item->image_path) ? $item->image_path[0] : $item->image_path) : null;
-                        $displayItems->push((object)[
-                            'news_id' => $item->news_id,
-                            'title' => $item->title,
-                            'content' => strip_tags($item->content),
-                            'published_date' => $item->published_date ?? $item->created_at,
-                            'views' => $item->views ?? 0,
-                            'image_url' => $img ?: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
+                // Build unified collection with DB items first
+                $newsCardList = collect();
+                if (isset($newsItems) && $newsItems->count() > 0) {
+                    foreach ($newsItems as $n) {
+                        $img = !empty($n->image_path) ? asset(is_array($n->image_path) ? $n->image_path[0] : $n->image_path) : null;
+                        $newsCardList->push((object)[
+                            'news_id' => $n->news_id,
+                            'title' => $n->title,
+                            'subtitle' => 'บริษัท คัมเวล คอร์ปอเรชั่น จำกัด (มหาชน)',
+                            'formatted_date' => $formatThaiFullDate($n->published_date ?? $n->created_at),
+                            'category' => 'all ' . ($n->newto ?: 'events'),
+                            'image_url' => $img ?: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80',
                             'is_real' => true,
                         ]);
                     }
                 }
 
-                // Append fallbacks until we have 9 items
-                $fbIndex = 0;
-                while ($displayItems->count() < 9 && $fbIndex < count($fallbackNews)) {
-                    $fb = $fallbackNews[$fbIndex];
-                    $fb->is_real = false;
-                    $displayItems->push($fb);
-                    $fbIndex++;
+                // Fill from fallback list
+                foreach ($fallbackNewsList as $fb) {
+                    if ($newsCardList->count() < 10) {
+                        $newsCardList->push((object)[
+                            'news_id' => $fb['news_id'],
+                            'title' => $fb['title'],
+                            'subtitle' => $fb['subtitle'],
+                            'formatted_date' => $formatThaiFullDate($fb['published_date']),
+                            'category' => $fb['category'],
+                            'image_url' => $fb['image_url'],
+                            'is_real' => false,
+                        ]);
+                    }
                 }
-
-                $mainNews = $displayItems->first();
-                $sideNews = $displayItems->slice(1, 5);
-                $bottomNews = $displayItems->slice(6, 3);
             @endphp
 
-            <div class="space-y-4 sm:space-y-5 reveal opacity-0 translate-y-6 transition-all duration-500 delay-100">
-                
-                <!-- TOP ROW: Main Large Card (Left 8 cols) + 5 Compact Stacked Cards (Right 4 cols) -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 items-stretch">
-                    
-                    <!-- Left: 1 Large Card (8 Cols) -->
-                    @if ($mainNews)
-                        <div class="lg:col-span-8 flex flex-col">
-                            <a href="{{ $mainNews->is_real ? route('news.detail', $mainNews->news_id) : route('news.newsAll') }}" 
-                               class="group bg-white dark:bg-[#151B26] rounded-sm border border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col h-full overflow-hidden">
-                                
-                                <!-- Main Image (16:9) -->
-                                <div class="relative aspect-[16/9.2] w-full overflow-hidden bg-slate-900">
-                                    <img src="{{ $mainNews->image_url }}" 
-                                         alt="{{ $mainNews->title }}" 
-                                         loading="lazy" 
-                                         class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500">
-                                </div>
-                                
-                                <!-- Meta & Content -->
-                                <div class="p-4 sm:p-5 flex-1 flex flex-col justify-start">
-                                    <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mb-2">
-                                        <span class="inline-flex items-center gap-1.5">
-                                            <i class="fa-regular fa-calendar text-slate-400 text-[11px]"></i>
-                                            {{ $formatThaiDate($mainNews->published_date) }}
-                                        </span>
-                                        <span class="inline-flex items-center gap-1.5">
-                                            <i class="fa-regular fa-eye text-slate-400 text-[11px]"></i>
-                                            {{ number_format($mainNews->views) }} ครั้ง
-                                        </span>
-                                    </div>
-                                    <h3 class="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors leading-snug line-clamp-2 mb-1.5">
-                                        {{ $mainNews->title }}
-                                    </h3>
-                                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 line-clamp-1 leading-relaxed">
-                                        {{ $mainNews->content }}
-                                    </p>
-                                </div>
-                            </a>
+            <!-- Category Tabs Navigation (KU-Style Tab Bar) -->
+            <div class="mb-7 border-b border-slate-300 dark:border-slate-800 flex justify-center overflow-x-auto scrollbar-none reveal opacity-0 translate-y-6 transition-all duration-500 delay-75">
+                <div class="flex items-center gap-1 min-w-max">
+                    <button type="button" 
+                            class="news-category-tab px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-semibold transition-all rounded-none bg-[#1e242b] text-white border-b-2 border-[#1e242b] active" 
+                            data-filter="all">
+                        ข่าวประชาสัมพันธ์
+                    </button>
+                    <button type="button" 
+                            class="news-category-tab px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium transition-all rounded-none text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white border-b-2 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800" 
+                            data-filter="events">
+                        กิจกรรม/สัมมนา
+                    </button>
+                    <button type="button" 
+                            class="news-category-tab px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium transition-all rounded-none text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white border-b-2 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800" 
+                            data-filter="training">
+                        การศึกษา/ฝึกอบรม
+                    </button>
+                    <button type="button" 
+                            class="news-category-tab px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium transition-all rounded-none text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white border-b-2 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800" 
+                            data-filter="procure">
+                        จัดซื้อจัดจ้าง
+                    </button>
+                    <button type="button" 
+                            class="news-category-tab px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium transition-all rounded-none text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white border-b-2 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800" 
+                            data-filter="jobs">
+                        รับสมัครบุคลากร
+                    </button>
+                    <button type="button" 
+                            class="news-category-tab px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-medium transition-all rounded-none text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white border-b-2 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800" 
+                            data-filter="ccsv">
+                        นวัตกรรม CCSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- News Cards Grid (Single Horizontal Row of 5 Cards with Landscape Images) -->
+            <div id="news-grid-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 items-stretch reveal opacity-0 translate-y-6 transition-all duration-500 delay-100">
+                @foreach ($newsCardList as $idx => $card)
+                    <a href="{{ $card->is_real ? route('news.detail', $card->news_id) : route('news.newsAll') }}" 
+                       class="news-card-item group bg-white dark:bg-[#151B26] border border-slate-200 dark:border-slate-800 rounded-none shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col h-full overflow-hidden {{ $idx >= 5 ? 'hidden' : '' }}"
+                       style="{{ $idx >= 5 ? 'display: none !important;' : '' }}"
+                       data-categories="{{ $card->category }}">
+                        
+                        <!-- Landscape Thumbnail Image Top (แนวนอน 16:10 / 16:9) -->
+                        <div class="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80">
+                            <img src="{{ $card->image_url }}" 
+                                 alt="{{ $card->title }}" 
+                                 loading="lazy" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         </div>
-                    @endif
-
-                    <!-- Right: 5 Stacked Cards (4 Cols) -->
-                    <div class="lg:col-span-4 flex flex-col justify-between gap-2 sm:gap-2.5">
-                        @foreach ($sideNews as $sItem)
-                            <a href="{{ $sItem->is_real ? route('news.detail', $sItem->news_id) : route('news.newsAll') }}" 
-                               class="group bg-white dark:bg-[#151B26] p-2 sm:p-2.5 rounded-sm border border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center gap-3 h-full">
-                                
-                                <!-- Thumbnail (Compact Rectangle) -->
-                                <div class="w-24 h-16 sm:w-28 sm:h-16 overflow-hidden shrink-0 bg-slate-900 relative rounded-xs">
-                                    <img src="{{ $sItem->image_url }}" 
-                                         alt="{{ $sItem->title }}" 
-                                         loading="lazy" 
-                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                </div>
-                                
-                                <!-- Details -->
-                                <div class="flex-1 min-w-0 pr-1">
-                                    <div class="flex items-center gap-2.5 text-[10.5px] text-slate-400 mb-1">
-                                        <span class="inline-flex items-center gap-1">
-                                            <i class="fa-regular fa-calendar text-[9.5px]"></i>
-                                            {{ $formatThaiDate($sItem->published_date) }}
-                                        </span>
-                                        <span class="inline-flex items-center gap-1">
-                                            <i class="fa-regular fa-eye text-[9.5px]"></i>
-                                            {{ number_format($sItem->views) }}
-                                        </span>
-                                    </div>
-                                    <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors line-clamp-2 leading-snug">
-                                        {{ $sItem->title }}
-                                    </h4>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-
-                </div>
-
-                <!-- BOTTOM ROW: 3 Equal Vertical Cards (3 Columns) -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
-                    @foreach ($bottomNews as $bItem)
-                        <a href="{{ $bItem->is_real ? route('news.detail', $bItem->news_id) : route('news.newsAll') }}" 
-                           class="group bg-white dark:bg-[#151B26] rounded-sm border border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col h-full overflow-hidden">
-                            
-                            <!-- Thumbnail (16:9) -->
-                            <div class="relative aspect-[16/8.5] w-full overflow-hidden bg-slate-900">
-                                <img src="{{ $bItem->image_url }}" 
-                                     alt="{{ $bItem->title }}" 
-                                     loading="lazy" 
-                                     class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500">
+                        
+                        <!-- Content Body -->
+                        <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors line-clamp-2 leading-snug mb-1.5 min-h-[2.5rem]">
+                                    {{ $card->title }}
+                                </h3>
+                                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                                    {{ $card->subtitle }}
+                                </p>
                             </div>
                             
-                            <!-- Content -->
-                            <div class="p-3.5 sm:p-4 flex-1 flex flex-col justify-start">
-                                <div class="flex items-center gap-2.5 text-[10.5px] text-slate-400 mb-1.5">
-                                    <span class="inline-flex items-center gap-1">
-                                        <i class="fa-regular fa-calendar text-[9.5px]"></i>
-                                        {{ $formatThaiDate($bItem->published_date) }}
-                                    </span>
-                                    <span class="inline-flex items-center gap-1">
-                                        <i class="fa-regular fa-eye text-[9.5px]"></i>
-                                        {{ number_format($bItem->views) }}
-                                    </span>
-                                </div>
-                                <h4 class="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors line-clamp-2 leading-snug">
-                                    {{ $bItem->title }}
-                                </h4>
+                            <!-- Date at bottom left -->
+                            <div class="mt-3 pt-2 border-t border-slate-100/90 dark:border-slate-800/70">
+                                <span class="text-[11px] sm:text-xs text-slate-400">
+                                    {{ $card->formatted_date }}
+                                </span>
                             </div>
-                        </a>
-                    @endforeach
-                </div>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
 
+            <!-- Centered Bottom Button 'ข่าวทั้งหมด >' (Square Dark Button) -->
+            <div class="text-center mt-8 sm:mt-10 reveal opacity-0 translate-y-6 transition-all duration-500 delay-150">
+                <a href="{{ route('news.newsAll') }}" 
+                   class="inline-flex items-center gap-2 bg-[#212529] hover:bg-black text-white text-xs sm:text-sm font-medium px-6 py-2.5 rounded-none shadow-xs hover:shadow transition-colors">
+                    ข่าวทั้งหมด <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </a>
             </div>
 
         </div>
     </div>
+
+    <!-- Script for Category Tabs Filtering -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.news-category-tab');
+            const cards = document.querySelectorAll('.news-card-item');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    const filter = this.getAttribute('data-filter');
+
+                    // Update Tab active styles
+                    tabs.forEach(t => {
+                        t.classList.remove('bg-[#1e242b]', 'text-white', 'border-[#1e242b]', 'active', 'font-semibold');
+                        t.classList.add('text-slate-600', 'dark:text-slate-300', 'border-transparent', 'font-medium');
+                    });
+                    this.classList.add('bg-[#1e242b]', 'text-white', 'border-[#1e242b]', 'active', 'font-semibold');
+                    this.classList.remove('text-slate-600', 'dark:text-slate-300', 'border-transparent', 'font-medium');
+
+                    // Filter Cards: show up to 5 matching cards in 1 row
+                    let matchCount = 0;
+                    cards.forEach(card => {
+                        const categories = card.getAttribute('data-categories') || '';
+                        const matches = filter === 'all' || categories.includes(filter);
+
+                        if (matches && matchCount < 5) {
+                            card.classList.remove('hidden');
+                            card.style.setProperty('display', 'flex', 'important');
+                            matchCount++;
+                        } else {
+                            card.classList.add('hidden');
+                            card.style.setProperty('display', 'none', 'important');
+                        }
+                    });
+                });
+            });
+
+            // Initialize initial display (show first 5 cards only)
+            let initCount = 0;
+            cards.forEach(card => {
+                if (initCount < 5) {
+                    card.classList.remove('hidden');
+                    card.style.setProperty('display', 'flex', 'important');
+                    initCount++;
+                } else {
+                    card.classList.add('hidden');
+                    card.style.setProperty('display', 'none', 'important');
+                }
+            });
+        });
+    </script>
+
 
 
     <!-- Scroll to Top Button -->
@@ -1285,5 +1321,5 @@
         });
     </script>
 
-    @include('layouts.footer');
+    @include('layouts.footer')
 @endsection
